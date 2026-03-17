@@ -1,4 +1,4 @@
-import * as fs from 'node:fs'
+import * as fs from 'fs'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 

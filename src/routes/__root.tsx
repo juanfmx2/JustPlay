@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 import {
   Outlet,
   createRootRoute,
   HeadContent,
   Scripts,
 } from '@tanstack/react-router'
+import { ThemeContext } from '../hooks/ThemeContext'
+import { ThemeProvider } from '../hooks/ThemeContextProvider'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import '../styles/styles.css'
+
 
 export const Route = createRootRoute({
   head: () => ({
@@ -24,19 +28,30 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  notFoundComponent: () => (
+    <div>
+      <h1>Page not found</h1>
+      <p>The page you are looking for does not exist.</p>
+      <a href="/">Go home</a>
+    </div>
+  )
 })
 
 function RootComponent() {
   return (
     <RootDocument>
-      <SiteLayout>
-        <Outlet />
-      </SiteLayout>
+      <ThemeProvider>
+        <SiteLayout>
+          <Outlet />
+        </SiteLayout>
+      </ThemeProvider>
     </RootDocument>
   )
 }
 
-function SiteLayout({ children }: { readonly children: ReactNode }) {
+function SiteLayout({ children }: {readonly children: ReactNode }) {
+  const { theme, toggleTheme } = useContext(ThemeContext)
+
   // Bootstrap JS is browser-only; import it lazily on the client
   useEffect(() => {
     import('bootstrap/dist/js/bootstrap.bundle.min.js')
@@ -102,18 +117,28 @@ function SiteLayout({ children }: { readonly children: ReactNode }) {
               </li>
             </ul>
 
-            {/* Search bar */}
-            <form className="d-flex" role="search">
+            {/* Search bar + theme toggle */}
+            <div className="d-flex flex-column flex-lg-row gap-2 align-items-stretch align-items-lg-center">
+              <button
+                className="btn btn-banana theme-toggle"
+                type="button"
+                onClick={toggleTheme}
+              >
+                {theme} Mode
+              </button>
+
+              <form className="d-flex" role="search">
               <input
                 className="form-control me-2"
                 type="search"
                 placeholder="Search..."
                 aria-label="Search"
               />
-              <button className="btn btn-outline-primary" type="submit">
+              <button className="btn btn-banana" type="submit">
                 Search
               </button>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </nav>
@@ -126,8 +151,9 @@ function SiteLayout({ children }: { readonly children: ReactNode }) {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
