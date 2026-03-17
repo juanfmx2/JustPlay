@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { ThemeContext, type Theme, type ResolvedTheme, AUTO_THEME_KEY} from './ThemeContext'
+import { ThemeContext, ThemeEnum, ResolvedThemeEnum, type Theme, type ResolvedTheme } from './ThemeContext'
 import { ScriptOnce } from '@tanstack/react-router'
 
 type ThemeProviderProps = {
@@ -17,9 +17,9 @@ const DATA_BS_ATTRIBUTE = 'data-bs-theme'
 
 const themeScript = `(function() {
   try {
-    const theme = localStorage.getItem('${STORAGE_KEY}') || '${AUTO_THEME_KEY}';
-    const resolved = theme === '${AUTO_THEME_KEY}'
-      ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    const theme = localStorage.getItem('${STORAGE_KEY}') || '${ThemeEnum.AUTO}';
+    const resolved = theme === '${ThemeEnum.AUTO}'
+      ? (matchMedia('(prefers-color-scheme: dark)').matches ? '${ThemeEnum.DARK}' : '${ThemeEnum.LIGHT}')
       : theme;
     console.log('Initial theme:', theme, 'Resolved theme:', resolved);
     document.documentElement.setAttribute('${DATA_BS_ATTRIBUTE}', resolved);
@@ -29,25 +29,24 @@ const themeScript = `(function() {
 
 function getSystemTheme(): ResolvedTheme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
+    ? ResolvedThemeEnum.DARK
+    : ResolvedThemeEnum.LIGHT
 }
 
 function resolveTheme(theme: Theme): ResolvedTheme {
-  if (theme === AUTO_THEME_KEY) {
+  if (theme === ThemeEnum.AUTO) {
     return getSystemTheme()
   }
-
-  return theme
+  return theme as unknown as ResolvedTheme
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(AUTO_THEME_KEY)
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
+  const [theme, setThemeState] = useState<Theme>(ThemeEnum.AUTO)
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(ResolvedThemeEnum.LIGHT)
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null
-    const initialTheme: Theme = saved ?? AUTO_THEME_KEY
+    const initialTheme: Theme = saved ?? ThemeEnum.AUTO
 
     setThemeState(initialTheme)
     setResolvedTheme(resolveTheme(initialTheme))
@@ -58,8 +57,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     const handleChange = () => {
       setResolvedTheme((current) => {
-        if (theme !== AUTO_THEME_KEY) return current
-        return media.matches ? 'dark' : 'light'
+        if (theme !== ThemeEnum.AUTO) return current
+        return media.matches ? ResolvedThemeEnum.DARK : ResolvedThemeEnum.LIGHT
       })
     }
 
@@ -80,7 +79,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    setTheme((theme === 'dark') ? AUTO_THEME_KEY : (theme === AUTO_THEME_KEY ? 'light': 'dark'))
+    setTheme((theme === ThemeEnum.DARK) ? ThemeEnum.AUTO : (theme === ThemeEnum.AUTO ? ThemeEnum.LIGHT : ThemeEnum.DARK))
   }, [theme, setTheme])
 
   const value = useMemo(
