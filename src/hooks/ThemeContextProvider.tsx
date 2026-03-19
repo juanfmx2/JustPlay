@@ -17,11 +17,12 @@ const DATA_BS_ATTRIBUTE = 'data-bs-theme'
 
 const themeScript = `(function() {
   try {
-    const theme = localStorage.getItem('${STORAGE_KEY}') || '${ThemeEnum.AUTO}';
-    const resolved = theme === '${ThemeEnum.AUTO}'
+    const theme = localStorage.getItem('${STORAGE_KEY}');
+    const validTheme = ${JSON.stringify(Object.values(ThemeEnum))}.includes(theme) ? theme : '${ThemeEnum.AUTO}';
+    const resolved = validTheme === '${ThemeEnum.AUTO}'
       ? (matchMedia('(prefers-color-scheme: dark)').matches ? '${ThemeEnum.DARK}' : '${ThemeEnum.LIGHT}')
-      : theme;
-    console.log('Initial theme:', theme, 'Resolved theme:', resolved);
+      : validTheme;
+    console.log('Theme in Storage:', theme, ' - Initial Valid Theme:', validTheme, ' - Resolved Theme:', resolved);
     document.documentElement.setAttribute('${DATA_BS_ATTRIBUTE}', resolved);
   } catch (e) {}
 })();`
@@ -46,7 +47,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY) as Theme | null
-    const initialTheme: Theme = saved ?? ThemeEnum.AUTO
+    const initialTheme: Theme = Object.values(ThemeEnum).includes(saved as Theme) ? (saved as Theme) : ThemeEnum.AUTO
 
     setThemeState(initialTheme)
     setResolvedTheme(resolveTheme(initialTheme))
