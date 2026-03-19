@@ -1,9 +1,7 @@
-
-import { useContext } from 'react'
-import { ThemeContext, getThemeLabelComponent } from '../hooks/ThemeContext'
+import { useTheme, getThemeLabelComponent } from '../hooks/ThemeContext'
 
 export function NavBar() {
-    const { theme, toggleTheme } = useContext(ThemeContext)
+    const { theme, toggleTheme } = useTheme()
 
     return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top shadow-sm">
