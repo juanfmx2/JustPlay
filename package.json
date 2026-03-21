@@ -2,13 +2,14 @@
   "name": "justplay",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "mpnpain": "index.js",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "scrape-cva": "tsc ./src-util/ScrapeCVAData.ts -m nodenext --outDir ./dist/dist-util && node ./dist/dist-util/ScrapeCVAData.js"
   },
   "keywords": [],
   "author": "",
