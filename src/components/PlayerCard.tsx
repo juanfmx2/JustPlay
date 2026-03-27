@@ -11,6 +11,8 @@ type PlayerCardProps = {
   levelOptions: readonly string[]
   onPositionChange: (value: string) => void
   onLevelChange: (value: string) => void
+  showLevel?: boolean
+  disablePositionDropdown?: boolean
   draggable?: boolean
   compact?: boolean
   onDragStart?: () => void
@@ -37,6 +39,8 @@ export function PlayerCard({
   levelOptions,
   onPositionChange,
   onLevelChange,
+  showLevel = true,
+  disablePositionDropdown = false,
   draggable = false,
   compact = false,
   onDragStart,
@@ -55,11 +59,11 @@ export function PlayerCard({
       <div className={`card-body ${compact ? 'py-2 px-3' : ''}`}>
         <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
           <h3 className="mb-0 h6">{player.player_name}</h3>
-          <span className="badge badge-banana-subtle">{player.id}</span>
+          <span className="badge badge-banana">{player.id}</span>
         </div>
 
         <div className="row g-2">
-          <div className="col-6">
+          <div className={showLevel ? 'col-6' : 'col-12'}>
             <SplitButton
               id={positionId}
               title={player.position}
@@ -69,7 +73,7 @@ export function PlayerCard({
               onClick={() =>
                 onPositionChange(getNextOption(positionOptions, player.position))
               }
-              disabled={positionOptions.length === 0}
+              disabled={disablePositionDropdown || positionOptions.length === 0}
             >
               {positionOptions.map((position) => (
                 <Dropdown.Item
@@ -83,27 +87,29 @@ export function PlayerCard({
             </SplitButton>
           </div>
 
-          <div className="col-6">
-            <SplitButton
-              id={levelId}
-              title={player.level}
-              variant="banana"
-              size="sm"
-              className="organizer-split-button"
-              onClick={() => onLevelChange(getNextOption(levelOptions, player.level))}
-              disabled={levelOptions.length === 0}
-            >
-              {levelOptions.map((level) => (
-                <Dropdown.Item
-                  key={level}
-                  active={level === player.level}
-                  onClick={() => onLevelChange(level)}
-                >
-                  {level}
-                </Dropdown.Item>
-              ))}
-            </SplitButton>
-          </div>
+          {showLevel && (
+            <div className="col-6">
+              <SplitButton
+                id={levelId}
+                title={player.level}
+                variant="banana"
+                size="sm"
+                className="organizer-split-button"
+                onClick={() => onLevelChange(getNextOption(levelOptions, player.level))}
+                disabled={levelOptions.length === 0}
+              >
+                {levelOptions.map((level) => (
+                  <Dropdown.Item
+                    key={level}
+                    active={level === player.level}
+                    onClick={() => onLevelChange(level)}
+                  >
+                    {level}
+                  </Dropdown.Item>
+                ))}
+              </SplitButton>
+            </div>
+          )}
         </div>
       </div>
     </article>

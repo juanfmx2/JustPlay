@@ -409,6 +409,8 @@ function TeamsOrganizer() {
                         }
                         draggable
                         compact
+                        showLevel={false}
+                        disablePositionDropdown
                         onDragStart={() => onDragStart(player.id, teamName)}
                         onDragEnd={clearDragState}
                       />
