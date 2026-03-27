@@ -51,6 +51,11 @@ export function NavBar() {
                 </a>
                 </li>
                 <li className="nav-item">
+                <a className="nav-link" href="/teams-organizer">
+                    Teams Organizer
+                </a>
+                </li>
+                <li className="nav-item">
                 <a className="nav-link" href="/schedule">
                     Schedule
                 </a>

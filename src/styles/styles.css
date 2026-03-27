@@ -53,8 +53,186 @@ body {
   --bs-btn-active-color: #1f1a00;
   --bs-btn-active-bg: #f4c81e;
   --bs-btn-active-border-color: #f4c81e;
+  --bs-btn-focus-shadow-rgb: 255, 218, 71;
+  --bs-btn-disabled-color: rgba(31, 26, 0, 0.72);
+  --bs-btn-disabled-bg: color-mix(in srgb, var(--banana-300) 72%, white);
+  --bs-btn-disabled-border-color: color-mix(in srgb, var(--banana-300) 72%, white);
+}
+
+.btn-banana.dropdown-toggle-split {
+  border-left-color: color-mix(in srgb, var(--banana-700) 35%, var(--banana-500));
+}
+
+.btn-banana:hover,
+.btn-banana:focus-visible {
+  color: #1f1a00;
+}
+
+:root[data-bs-theme='dark'] .btn-banana {
+  --bs-btn-color: #231b00;
+  --bs-btn-bg: var(--banana-500);
+  --bs-btn-border-color: var(--banana-500);
+  --bs-btn-hover-color: #231b00;
+  --bs-btn-hover-bg: #ffe37d;
+  --bs-btn-hover-border-color: #ffe37d;
 }
 
 .theme-toggle {
   min-width: 7.5rem;
+}
+
+.teams-organizer-page .organizer-split-button {
+  display: flex;
+  width: 100%;
+}
+
+.teams-organizer-page .organizer-split-button > .btn:first-child {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.teams-organizer-page .player-card {
+  position: relative;
+  overflow: visible;
+  cursor: grab;
+  border: 1px solid #ccd7e5;
+  background-color: color-mix(in srgb, #ffffff 92%, var(--bs-body-bg));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.teams-organizer-page .player-card:focus-within,
+.teams-organizer-page .player-card:has(.dropdown-menu.show) {
+  z-index: 30;
+}
+
+.teams-organizer-page .player-card .organizer-split-button,
+.teams-organizer-page .player-card .dropdown,
+.teams-organizer-page .player-card .btn-group {
+  position: relative;
+}
+
+.teams-organizer-page .player-card .dropdown-menu {
+  z-index: 40;
+}
+
+.teams-organizer-page .player-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.teams-organizer-page .player-card:active {
+  cursor: grabbing;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .player-card {
+  border-color: #9eb0c5;
+  background-color: color-mix(in srgb, #2a2f34 88%, var(--bs-body-bg));
+}
+
+.teams-organizer-page .team-drop-zone {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(248, 249, 250, 0.9) 100%
+  );
+}
+
+.teams-organizer-page .team-drop-zone.team-a {
+  --team-bg: #ffd6dd;
+  --team-border: #df97a7;
+}
+
+.teams-organizer-page .team-drop-zone.team-b {
+  --team-bg: #ffe9bf;
+  --team-border: #d9b16d;
+}
+
+.teams-organizer-page .team-drop-zone.team-c {
+  --team-bg: #d2f0d8;
+  --team-border: #86bc90;
+}
+
+.teams-organizer-page .team-drop-zone.team-d {
+  --team-bg: #d3ebff;
+  --team-border: #82b3db;
+}
+
+.teams-organizer-page .team-drop-zone.team-e {
+  --team-bg: #dfd6ff;
+  --team-border: #a698d9;
+}
+
+.teams-organizer-page .team-drop-zone.team-f {
+  --team-bg: #ffd7ed;
+  --team-border: #d396b8;
+}
+
+.teams-organizer-page .team-drop-zone {
+  border-color: var(--team-border, rgba(0, 0, 0, 0.08));
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--team-bg, #ffffff) 78%, white) 0%,
+    color-mix(in srgb, var(--team-bg, #f8f9fa) 62%, #f8f9fa) 100%
+  );
+}
+
+.teams-organizer-page .team-drop-zone .card-header {
+  background-color: color-mix(in srgb, var(--team-bg, #ffffff) 55%, white);
+  border-bottom-color: color-mix(in srgb, var(--team-border, #dee2e6) 75%, #dee2e6);
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone {
+  background-image: linear-gradient(
+    180deg,
+    rgba(33, 37, 41, 0.92) 0%,
+    rgba(24, 26, 27, 0.92) 100%
+  );
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-a {
+  --team-bg: #7f4a5a;
+  --team-border: #c796a5;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-b {
+  --team-bg: #7e643b;
+  --team-border: #d0b07b;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-c {
+  --team-bg: #3b6c4d;
+  --team-border: #93c5a2;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-d {
+  --team-bg: #3e6787;
+  --team-border: #97bad5;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-e {
+  --team-bg: #62588b;
+  --team-border: #b3a6db;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone.team-f {
+  --team-bg: #7d4c71;
+  --team-border: #ca97bd;
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone {
+  border-color: color-mix(in srgb, var(--team-border) 80%, #495057);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--team-bg) 78%, #212529) 0%,
+    color-mix(in srgb, var(--team-bg) 58%, #1b1d1f) 100%
+  );
+}
+
+:root[data-bs-theme='dark'] .teams-organizer-page .team-drop-zone .card-header {
+  background-color: color-mix(in srgb, var(--team-bg) 45%, #212529);
+  border-bottom-color: color-mix(in srgb, var(--team-border) 65%, #495057);
 }

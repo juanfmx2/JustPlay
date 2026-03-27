@@ -1,0 +1,218 @@
+[
+  {
+    "id": "1",
+    "player_name": "Aaron Pocock",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "2",
+    "player_name": "Adrian Czuchaj",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "3",
+    "player_name": "Bianca Fraunhoffer",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "4",
+    "player_name": "Evangelos Karatzas",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "5",
+    "player_name": "Jordan Byford",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "6",
+    "player_name": "Luke Hartley",
+    "position": "MB",
+    "level": "CVA"
+  },
+  {
+    "id": "7",
+    "player_name": "Cecilia Tognoloni",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "8",
+    "player_name": "Dariusz H",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "9",
+    "player_name": "Federica Balduzzi",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "10",
+    "player_name": "Aurora Cerutti",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "11",
+    "player_name": "Mariarosaria Ferraro",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "12",
+    "player_name": "Michalis Koukellis",
+    "position": "MB/L",
+    "level": "CVA"
+  },
+  {
+    "id": "13",
+    "player_name": "Ambra Cortese",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "14",
+    "player_name": "Andrei Sosnikhin",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "15",
+    "player_name": "Arif Ismail",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "16",
+    "player_name": "Chrissy Nikolova",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "17",
+    "player_name": "Fran Martinez",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "18",
+    "player_name": "Gift Nuka",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "19",
+    "player_name": "Grace Davies",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "20",
+    "player_name": "Larissa Franca",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "21",
+    "player_name": "Olga Viliura",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "22",
+    "player_name": "Olga Zotova",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "23",
+    "player_name": "Pietro Castellanza",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "24",
+    "player_name": "Raphael Le Brun",
+    "position": "OH",
+    "level": "CVA"
+  },
+  {
+    "id": "25",
+    "player_name": "Andrew Nightingale",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "26",
+    "player_name": "Claudia Gittel",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "27",
+    "player_name": "Germana Baldi",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "28",
+    "player_name": "Juan Mosquera",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "29",
+    "player_name": "Julien Le Brun",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "30",
+    "player_name": "Mara Tatari",
+    "position": "OPP",
+    "level": "CVA"
+  },
+  {
+    "id": "31",
+    "player_name": "Dan Tinkler",
+    "position": "S",
+    "level": "CVA"
+  },
+  {
+    "id": "32",
+    "player_name": "Erika Santoni",
+    "position": "S",
+    "level": "CVA"
+  },
+  {
+    "id": "33",
+    "player_name": "Maya Stancheva",
+    "position": "S",
+    "level": "CVA"
+  },
+  {
+    "id": "34",
+    "player_name": "Roberto Zanchi",
+    "position": "S",
+    "level": "CVA"
+  },
+  {
+    "id": "35",
+    "player_name": "Viktoria Tatsidou",
+    "position": "S",
+    "level": "CVA"
+  },
+  {
+    "id": "36",
+    "player_name": "Viviana Fascianella",
+    "position": "S",
+    "level": "CVA"
+  }
+]
