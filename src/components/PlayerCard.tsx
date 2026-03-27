@@ -55,7 +55,7 @@ export function PlayerCard({
       <div className={`card-body ${compact ? 'py-2 px-3' : ''}`}>
         <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
           <h3 className="mb-0 h6">{player.player_name}</h3>
-          <span className="badge text-bg-light text-dark border">{player.id}</span>
+          <span className="badge badge-banana-subtle">{player.id}</span>
         </div>
 
         <div className="row g-2">

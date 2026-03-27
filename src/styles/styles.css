@@ -4,6 +4,12 @@
   --banana-500: #ffda47;
   --banana-700: #d4ac0d;
   --banana-900: #7a5f00;
+
+  --color-accent: var(--banana-500);
+  --color-accent-soft: var(--banana-300);
+  --color-accent-pale: var(--banana-100);
+  --color-accent-strong: var(--banana-700);
+  --color-accent-ink: #231b00;
 }
 
 html,
@@ -18,20 +24,75 @@ body {
 
 /* Light mode */
 :root[data-bs-theme='light'] {
+  --color-bg-app: #fffef8;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-muted: #fff8dc;
+  --color-text-strong: #332800;
+  --color-text-muted: #736232;
+  --color-border-soft: #e6d9a7;
+  --color-border-strong: #cfb86a;
+  --color-interactive-hover: color-mix(in srgb, var(--color-accent-soft) 65%, white);
+  --color-interactive-active: var(--color-accent);
+  --color-interactive-active-text: #1f1a00;
+
   --bs-primary: var(--banana-700);
   --bs-primary-rgb: 212, 172, 13;
+  --bs-body-bg: var(--color-bg-app);
+  --bs-body-color: var(--color-text-strong);
+  --bs-emphasis-color: var(--color-text-strong);
+  --bs-secondary-color: var(--color-text-muted);
+  --bs-heading-color: var(--color-text-strong);
   --bs-link-color: #8a6a00;
   --bs-link-hover-color: #6a5200;
-  --bs-body-bg: #fffef8;
+  --bs-border-color: var(--color-border-soft);
+  --bs-tertiary-bg: var(--color-bg-surface-muted);
+  --bs-card-bg: var(--color-bg-surface);
+  --bs-card-border-color: var(--color-border-soft);
+  --bs-dropdown-bg: var(--color-bg-surface);
+  --bs-dropdown-color: var(--color-text-strong);
+  --bs-dropdown-border-color: var(--color-border-soft);
+  --bs-dropdown-link-hover-color: var(--color-text-strong);
+  --bs-dropdown-link-hover-bg: var(--color-interactive-hover);
+  --bs-dropdown-link-active-color: var(--color-interactive-active-text);
+  --bs-dropdown-link-active-bg: var(--color-interactive-active);
+  --bs-focus-ring-color: rgba(255, 218, 71, 0.35);
 }
 
 /* Dark mode */
 :root[data-bs-theme='dark'] {
+  --color-bg-app: #161616;
+  --color-bg-surface: #242424;
+  --color-bg-surface-muted: #2d2a1d;
+  --color-text-strong: #f5edc6;
+  --color-text-muted: #d0bf78;
+  --color-border-soft: #5e5330;
+  --color-border-strong: #b89b2e;
+  --color-interactive-hover: color-mix(in srgb, var(--color-accent-soft) 72%, black);
+  --color-interactive-active: #ffd24d;
+  --color-interactive-active-text: #231b00;
+  --color-accent-pale: var(--banana-900);
+
   --bs-primary: var(--banana-500);
   --bs-primary-rgb: 255, 218, 71;
+  --bs-body-bg: var(--color-bg-app);
+  --bs-body-color: var(--color-text-strong);
+  --bs-emphasis-color: var(--color-text-strong);
+  --bs-secondary-color: var(--color-text-muted);
+  --bs-heading-color: var(--color-text-strong);
   --bs-link-color: #ffde66;
   --bs-link-hover-color: #ffe999;
-  --bs-body-bg: #161616;
+  --bs-border-color: var(--color-border-soft);
+  --bs-tertiary-bg: var(--color-bg-surface-muted);
+  --bs-card-bg: var(--color-bg-surface);
+  --bs-card-border-color: var(--color-border-soft);
+  --bs-dropdown-bg: var(--color-bg-surface);
+  --bs-dropdown-color: var(--color-text-strong);
+  --bs-dropdown-border-color: var(--color-border-soft);
+  --bs-dropdown-link-hover-color: var(--color-interactive-active-text);
+  --bs-dropdown-link-hover-bg: var(--color-interactive-hover);
+  --bs-dropdown-link-active-color: var(--color-interactive-active-text);
+  --bs-dropdown-link-active-bg: var(--color-interactive-active);
+  --bs-focus-ring-color: rgba(255, 218, 71, 0.4);
 }
 
 .navbar-brand {
@@ -44,37 +105,59 @@ body {
 }
 
 .btn-banana {
-  --bs-btn-color: #1f1a00;
-  --bs-btn-bg: var(--banana-500);
-  --bs-btn-border-color: var(--banana-500);
-  --bs-btn-hover-color: #1f1a00;
-  --bs-btn-hover-bg: var(--banana-300);
-  --bs-btn-hover-border-color: var(--banana-300);
-  --bs-btn-active-color: #1f1a00;
-  --bs-btn-active-bg: #f4c81e;
-  --bs-btn-active-border-color: #f4c81e;
+  --bs-btn-color: var(--color-interactive-active-text);
+  --bs-btn-bg: var(--color-accent);
+  --bs-btn-border-color: var(--color-accent);
+  --bs-btn-hover-color: var(--color-interactive-active-text);
+  --bs-btn-hover-bg: var(--color-accent-soft);
+  --bs-btn-hover-border-color: var(--color-accent-soft);
+  --bs-btn-active-color: var(--color-interactive-active-text);
+  --bs-btn-active-bg: color-mix(in srgb, var(--color-accent) 84%, var(--color-accent-strong));
+  --bs-btn-active-border-color: color-mix(in srgb, var(--color-accent) 84%, var(--color-accent-strong));
   --bs-btn-focus-shadow-rgb: 255, 218, 71;
-  --bs-btn-disabled-color: rgba(31, 26, 0, 0.72);
-  --bs-btn-disabled-bg: color-mix(in srgb, var(--banana-300) 72%, white);
-  --bs-btn-disabled-border-color: color-mix(in srgb, var(--banana-300) 72%, white);
+  --bs-btn-disabled-color: color-mix(in srgb, var(--color-interactive-active-text) 72%, transparent);
+  --bs-btn-disabled-bg: color-mix(in srgb, var(--color-accent-soft) 72%, var(--color-bg-surface));
+  --bs-btn-disabled-border-color: color-mix(in srgb, var(--color-accent-soft) 72%, var(--color-bg-surface));
 }
 
 .btn-banana.dropdown-toggle-split {
-  border-left-color: color-mix(in srgb, var(--banana-700) 35%, var(--banana-500));
+  border-left-color: color-mix(in srgb, var(--color-accent-strong) 35%, var(--color-accent));
 }
 
 .btn-banana:hover,
 .btn-banana:focus-visible {
-  color: #1f1a00;
+  color: var(--color-interactive-active-text);
 }
 
 :root[data-bs-theme='dark'] .btn-banana {
-  --bs-btn-color: #231b00;
-  --bs-btn-bg: var(--banana-500);
-  --bs-btn-border-color: var(--banana-500);
-  --bs-btn-hover-color: #231b00;
+  --bs-btn-color: var(--color-interactive-active-text);
+  --bs-btn-bg: var(--color-accent);
+  --bs-btn-border-color: var(--color-accent);
+  --bs-btn-hover-color: var(--color-interactive-active-text);
   --bs-btn-hover-bg: #ffe37d;
   --bs-btn-hover-border-color: #ffe37d;
+}
+
+.alert-banana {
+  --bs-alert-color: var(--color-text-strong);
+  --bs-alert-bg: color-mix(in srgb, var(--color-accent-pale) 72%, var(--color-bg-surface));
+  --bs-alert-border-color: color-mix(in srgb, var(--color-accent-soft) 58%, var(--color-border-soft));
+  color: var(--bs-alert-color);
+  background-color: var(--bs-alert-bg);
+  border-color: var(--bs-alert-border-color);
+}
+
+.badge-banana,
+.text-bg-banana {
+  color: var(--color-interactive-active-text) !important;
+  background-color: var(--color-accent) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 45%, var(--color-accent));
+}
+
+.badge-banana-subtle {
+  color: var(--color-text-strong) !important;
+  background-color: color-mix(in srgb, var(--color-accent-pale) 74%, var(--color-bg-surface)) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent-soft) 58%, var(--color-border-soft));
 }
 
 .theme-toggle {
@@ -98,8 +181,8 @@ body {
   position: relative;
   overflow: visible;
   cursor: grab;
-  border: 1px solid #ccd7e5;
-  background-color: color-mix(in srgb, #ffffff 92%, var(--bs-body-bg));
+  border: 1px solid var(--bs-card-border-color);
+  background-color: color-mix(in srgb, var(--bs-card-bg) 92%, var(--bs-body-bg));
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -118,6 +201,18 @@ body {
   z-index: 40;
 }
 
+.teams-organizer-page .dropdown-menu .dropdown-item:hover,
+.teams-organizer-page .dropdown-menu .dropdown-item:focus {
+  color: var(--color-text-strong) !important;
+  background-color: var(--color-interactive-hover) !important;
+}
+
+.teams-organizer-page .dropdown-menu .dropdown-item.active,
+.teams-organizer-page .dropdown-menu .dropdown-item:active {
+  color: var(--color-interactive-active-text) !important;
+  background-color: var(--color-interactive-active) !important;
+}
+
 .teams-organizer-page .player-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
@@ -128,8 +223,8 @@ body {
 }
 
 :root[data-bs-theme='dark'] .teams-organizer-page .player-card {
-  border-color: #9eb0c5;
-  background-color: color-mix(in srgb, #2a2f34 88%, var(--bs-body-bg));
+  border-color: color-mix(in srgb, var(--color-border-soft) 65%, #9eb0c5);
+  background-color: color-mix(in srgb, var(--color-bg-surface) 88%, var(--bs-body-bg));
 }
 
 .teams-organizer-page .team-drop-zone {

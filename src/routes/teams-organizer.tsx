@@ -319,7 +319,7 @@ function TeamsOrganizer() {
             </div>
 
             <div className="col-12 col-md-4">
-              <div className="alert alert-light border mb-0 small">
+              <div className="alert alert-banana mb-0 small">
                 Showing <strong>{filteredPlayers.length}</strong> of{' '}
                 <strong>{availablePlayers.length}</strong> available players
               </div>
@@ -360,7 +360,7 @@ function TeamsOrganizer() {
 
             {filteredPlayers.length === 0 && (
               <div className="col-12">
-                <div className="alert alert-secondary mb-0">
+                <div className="alert alert-banana mb-0">
                   No players match the selected filters.
                 </div>
               </div>
@@ -379,7 +379,7 @@ function TeamsOrganizer() {
             >
               <div className="card-header d-flex justify-content-between align-items-center">
                 <h2 className="h5 mb-0">Team {teamName}</h2>
-                <span className="badge text-bg-dark">{teams[teamName].length}</span>
+                <span className="badge badge-banana">{teams[teamName].length}</span>
               </div>
               <div className="card-body">
                 {teams[teamName].length === 0 && (
