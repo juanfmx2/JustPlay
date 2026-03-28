@@ -352,6 +352,7 @@ function TeamsOrganizer() {
                   }
                   draggable
                   compact={false}
+                  readOnly={false}
                   onDragStart={() => onDragStart(player.id, 'pool')}
                   onDragEnd={clearDragState}
                 />
@@ -409,8 +410,7 @@ function TeamsOrganizer() {
                         }
                         draggable
                         compact
-                        showLevel={false}
-                        disablePositionDropdown
+                        readOnly={true}
                         onDragStart={() => onDragStart(player.id, teamName)}
                         onDragEnd={clearDragState}
                       />

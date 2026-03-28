@@ -11,8 +11,7 @@ type PlayerCardProps = {
   levelOptions: readonly string[]
   onPositionChange: (value: string) => void
   onLevelChange: (value: string) => void
-  showLevel?: boolean
-  disablePositionDropdown?: boolean
+  readOnly?: boolean
   draggable?: boolean
   compact?: boolean
   onDragStart?: () => void
@@ -39,8 +38,7 @@ export function PlayerCard({
   levelOptions,
   onPositionChange,
   onLevelChange,
-  showLevel = true,
-  disablePositionDropdown = false,
+  readOnly = false,
   draggable = false,
   compact = false,
   onDragStart,
@@ -59,35 +57,35 @@ export function PlayerCard({
       <div className={`card-body ${compact ? 'py-2 px-3' : ''}`}>
         <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
           <h3 className="mb-0 h6">{player.player_name}</h3>
-          <span className="badge badge-banana">{player.id}</span>
+          {readOnly && (
+            <span className="badge badge-banana">{player.position}</span>
+          )}
         </div>
-
-        <div className="row g-2">
-          <div className={showLevel ? 'col-6' : 'col-12'}>
-            <SplitButton
-              id={positionId}
-              title={player.position}
-              variant="banana"
-              size="sm"
-              className="organizer-split-button"
-              onClick={() =>
-                onPositionChange(getNextOption(positionOptions, player.position))
-              }
-              disabled={disablePositionDropdown || positionOptions.length === 0}
-            >
-              {positionOptions.map((position) => (
-                <Dropdown.Item
-                  key={position}
-                  active={position === player.position}
-                  onClick={() => onPositionChange(position)}
-                >
-                  {position}
-                </Dropdown.Item>
-              ))}
-            </SplitButton>
-          </div>
-
-          {showLevel && (
+        {!readOnly && (
+          <div className="row g-2">
+            <div className='col-6'>
+              <SplitButton
+                id={positionId}
+                title={player.position}
+                variant="banana"
+                size="sm"
+                className="organizer-split-button"
+                onClick={() =>
+                  onPositionChange(getNextOption(positionOptions, player.position))
+                }
+                disabled={positionOptions.length === 0}
+              >
+                {positionOptions.map((position) => (
+                  <Dropdown.Item
+                    key={position}
+                    active={position === player.position}
+                    onClick={() => onPositionChange(position)}
+                  >
+                    {position}
+                  </Dropdown.Item>
+                ))}
+              </SplitButton>
+            </div>
             <div className="col-6">
               <SplitButton
                 id={levelId}
@@ -109,8 +107,8 @@ export function PlayerCard({
                 ))}
               </SplitButton>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </article>
   )
