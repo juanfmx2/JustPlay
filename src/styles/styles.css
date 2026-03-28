@@ -331,3 +331,203 @@ body {
   background-color: color-mix(in srgb, var(--team-bg) 45%, #212529);
   border-bottom-color: color-mix(in srgb, var(--team-border) 65%, #495057);
 }
+
+.team-badge.team-a {
+  --team-badge-bg: #ffd6dd;
+  --team-badge-border: #df97a7;
+}
+
+.team-badge.team-b {
+  --team-badge-bg: #ffe9bf;
+  --team-badge-border: #d9b16d;
+}
+
+.team-badge.team-c {
+  --team-badge-bg: #d2f0d8;
+  --team-badge-border: #86bc90;
+}
+
+.team-badge.team-d {
+  --team-badge-bg: #d3ebff;
+  --team-badge-border: #82b3db;
+}
+
+.team-badge.team-e {
+  --team-badge-bg: #dfd6ff;
+  --team-badge-border: #a698d9;
+}
+
+.team-badge.team-f {
+  --team-badge-bg: #ffd7ed;
+  --team-badge-border: #d396b8;
+}
+
+.team-badge {
+  color: var(--color-text-strong) !important;
+  border: 1px solid var(--team-badge-border);
+}
+
+.team-badge.team-badge-strong {
+  background-color: var(--team-badge-bg) !important;
+}
+
+.team-badge.team-badge-subtle {
+  background-color: color-mix(in srgb, var(--team-badge-bg) 55%, var(--bs-card-bg)) !important;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-a {
+  --team-badge-bg: #7f4a5a;
+  --team-badge-border: #c796a5;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-b {
+  --team-badge-bg: #7e643b;
+  --team-badge-border: #d0b07b;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-c {
+  --team-badge-bg: #3b6c4d;
+  --team-badge-border: #93c5a2;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-d {
+  --team-badge-bg: #3e6787;
+  --team-badge-border: #97bad5;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-e {
+  --team-badge-bg: #62588b;
+  --team-badge-border: #b3a6db;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-f {
+  --team-badge-bg: #7d4c71;
+  --team-badge-border: #ca97bd;
+}
+
+:root[data-bs-theme='dark'] .team-badge {
+  color: #f7f1da !important;
+}
+
+:root[data-bs-theme='dark'] .team-badge.team-badge-subtle {
+  background-color: color-mix(in srgb, var(--team-badge-bg) 48%, #212529) !important;
+}
+
+.mega-banana-cup-page .cup-timeline-card,
+.mega-banana-cup-page .cup-court-card {
+  border: 1px solid var(--bs-card-border-color);
+  background:
+    radial-gradient(circle at 100% -30%, color-mix(in srgb, var(--color-accent-pale) 55%, transparent), transparent 45%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bs-card-bg) 92%, var(--bs-body-bg)) 0%,
+      color-mix(in srgb, var(--bs-card-bg) 88%, var(--bs-body-bg)) 100%
+    );
+}
+
+.mega-banana-cup-page .cup-timeline-item + .cup-timeline-item {
+  padding-top: 0.25rem;
+  border-top: 1px dashed color-mix(in srgb, var(--color-border-soft) 70%, transparent);
+}
+
+.mega-banana-cup-page .cup-timeline-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 75%, transparent);
+  background-color: color-mix(in srgb, var(--bs-card-bg) 92%, var(--bs-body-bg));
+}
+
+.mega-banana-cup-page .cup-timeline-pill.cup-warmup,
+.mega-banana-cup-page .cup-timeline-pill.cup-buffer {
+  background-color: color-mix(in srgb, var(--color-accent-pale) 75%, var(--bs-card-bg));
+}
+
+.mega-banana-cup-page .cup-timeline-pill.cup-transition {
+  background-color: color-mix(in srgb, var(--color-accent-soft) 38%, var(--bs-card-bg));
+}
+
+.mega-banana-cup-page .cup-timeline-pill.cup-match {
+  background-color: color-mix(in srgb, var(--color-accent-soft) 30%, var(--bs-card-bg));
+}
+
+.mega-banana-cup-page .cup-match-block {
+  padding: 0.8rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 70%, transparent);
+  background-color: color-mix(in srgb, var(--bs-card-bg) 92%, var(--bs-body-bg));
+}
+
+.mega-banana-cup-page .cup-team-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mega-banana-cup-page .cup-standings-table {
+  --bs-table-bg: transparent;
+  --bs-table-border-color: color-mix(in srgb, var(--color-border-soft) 65%, transparent);
+}
+
+.mega-banana-cup-page .cup-standings-table th {
+  font-size: 0.74rem;
+  color: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.mega-banana-cup-page .cup-standings-table .cup-row-winner td {
+  background-color: color-mix(in srgb, var(--color-accent-pale) 72%, var(--bs-card-bg));
+}
+
+.mega-banana-cup-page .cup-rules-alert {
+  border: 1px solid color-mix(in srgb, var(--color-accent-soft) 56%, var(--color-border-soft));
+}
+
+.mega-banana-cup-page .cup-phase-pool-block {
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 65%, transparent);
+  background-color: color-mix(in srgb, var(--bs-card-bg) 93%, var(--bs-body-bg));
+}
+
+.mega-banana-cup-page .cup-score-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mega-banana-cup-page .cup-score-input-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.mega-banana-cup-page .cup-score-input {
+  text-align: center;
+  font-weight: 600;
+  border-color: color-mix(in srgb, var(--color-border-soft) 72%, transparent);
+}
+
+.mega-banana-cup-page .cup-score-input:focus {
+  border-color: color-mix(in srgb, var(--color-accent) 62%, var(--color-border-soft));
+  box-shadow: 0 0 0 0.2rem rgba(255, 218, 71, 0.24);
+}
+
+.mega-banana-cup-page .cup-admin-controls {
+  min-width: 12rem;
+}
+
+@media (max-width: 575.98px) {
+  .mega-banana-cup-page .cup-team-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mega-banana-cup-page .cup-score-grid {
+    width: 100%;
+  }
+}
