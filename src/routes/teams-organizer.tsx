@@ -5,6 +5,7 @@ import { Dropdown, SplitButton } from 'react-bootstrap'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import playersData from '../../data/players.json'
+import teamsData from '../../data/teams.json'
 import { PlayerCard } from '../components/PlayerCard.tsx'
 
 type PlayerInput = {
@@ -20,6 +21,8 @@ type Player = {
   position: string
   level: string
 }
+
+type SavedTeams = Record<TeamName, Player[]>
 
 const TEAM_NAMES = ['A', 'B', 'C', 'D', 'E', 'F'] as const
 type TeamName = (typeof TEAM_NAMES)[number]
@@ -61,6 +64,40 @@ const INITIAL_TEAMS: Record<TeamName, string[]> = {
   F: [],
 }
 
+const typedTeams = teamsData as Partial<Record<TeamName, PlayerInput[]>>
+
+const savedPlayersById = new Map(
+  TEAM_NAMES.flatMap((teamName) =>
+    (typedTeams[teamName] ?? []).map((player) => [player.id, player] as const),
+  ).filter((entry): entry is readonly [string, PlayerInput] => entry[0] !== undefined),
+)
+
+const initialPlayersFromSavedTeams: Player[] = initialPlayers.map((player) => {
+  const savedPlayer = savedPlayersById.get(player.id)
+
+  if (!savedPlayer) {
+    return player
+  }
+
+  return {
+    ...player,
+    player_name: savedPlayer.player_name,
+    position: savedPlayer.position,
+    level: savedPlayer.level,
+  }
+})
+
+const INITIAL_TEAMS_FROM_FILE: Record<TeamName, string[]> = TEAM_NAMES.reduce(
+  (result, teamName) => {
+    result[teamName] = (typedTeams[teamName] ?? [])
+      .map((player) => player.id)
+      .filter((playerId): playerId is string => playerId !== undefined)
+
+    return result
+  },
+  { ...INITIAL_TEAMS },
+)
+
 const savePlayers = createServerFn({ method: 'POST' })
   .inputValidator((players: Player[]) => players)
   .handler(async ({ data }) => {
@@ -73,17 +110,30 @@ const savePlayers = createServerFn({ method: 'POST' })
     }
   })
 
+const saveTeams = createServerFn({ method: 'POST' })
+  .inputValidator((teams: SavedTeams) => teams)
+  .handler(async ({ data }) => {
+    const filePath = path.resolve(process.cwd(), 'data/teams.json')
+    await fs.promises.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8')
+
+    return {
+      savedCount: Object.values(data).reduce((count, teamPlayers) => count + teamPlayers.length, 0),
+      filePath,
+    }
+  })
+
 export const Route = createFileRoute('/teams-organizer')({
   component: TeamsOrganizer,
 })
 
 function TeamsOrganizer() {
-  const [players, setPlayers] = useState<Player[]>(initialPlayers)
-  const [teams, setTeams] = useState<Record<TeamName, string[]>>(INITIAL_TEAMS)
+  const [players, setPlayers] = useState<Player[]>(initialPlayersFromSavedTeams)
+  const [teams, setTeams] = useState<Record<TeamName, string[]>>(INITIAL_TEAMS_FROM_FILE)
   const [dragging, setDragging] = useState<DragSource | null>(null)
   const [positionFilter, setPositionFilter] = useState<string>(ALL_FILTER_VALUE)
   const [levelFilter, setLevelFilter] = useState<string>(ALL_FILTER_VALUE)
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSavingPlayers, setIsSavingPlayers] = useState(false)
+  const [isSavingTeams, setIsSavingTeams] = useState(false)
   const [saveFeedback, setSaveFeedback] = useState<string>('')
   const [saveError, setSaveError] = useState<string>('')
 
@@ -165,7 +215,7 @@ function TeamsOrganizer() {
   }
 
   const handleSavePlayers = async () => {
-    setIsSaving(true)
+    setIsSavingPlayers(true)
     setSaveFeedback('')
     setSaveError('')
 
@@ -177,7 +227,32 @@ function TeamsOrganizer() {
     } catch {
       setSaveError('Could not save players.json. Please try again.')
     } finally {
-      setIsSaving(false)
+      setIsSavingPlayers(false)
+    }
+  }
+
+  const handleSaveTeams = async () => {
+    setIsSavingTeams(true)
+    setSaveFeedback('')
+    setSaveError('')
+
+    try {
+      const teamsToSave = TEAM_NAMES.reduce((result, teamName) => {
+        result[teamName] = teams[teamName]
+          .map((playerId) => playersById.get(playerId))
+          .filter((player): player is Player => player !== undefined)
+
+        return result
+      }, {} as SavedTeams)
+
+      const response = await saveTeams({ data: teamsToSave })
+      setSaveFeedback(
+        `Saved ${response.savedCount} assigned players to data/teams.json.`,
+      )
+    } catch {
+      setSaveError('Could not save teams.json. Please try again.')
+    } finally {
+      setIsSavingTeams(false)
     }
   }
 
@@ -235,14 +310,25 @@ function TeamsOrganizer() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-banana"
-          onClick={handleSavePlayers}
-          disabled={isSaving}
-        >
-          {isSaving ? 'Saving...' : 'Save Players'}
-        </button>
+        <div className="d-flex flex-column flex-sm-row gap-2">
+          <button
+            type="button"
+            className="btn btn-banana"
+            onClick={handleSavePlayers}
+            disabled={isSavingPlayers || isSavingTeams}
+          >
+            {isSavingPlayers ? 'Saving...' : 'Save Players'}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={handleSaveTeams}
+            disabled={isSavingPlayers || isSavingTeams}
+          >
+            {isSavingTeams ? 'Saving...' : 'Save Teams'}
+          </button>
+        </div>
       </div>
 
       {saveFeedback !== '' && (
