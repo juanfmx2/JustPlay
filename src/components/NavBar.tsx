@@ -46,23 +46,13 @@ export function NavBar() {
                 </a>
                 </li>
                 <li className="nav-item">
-                <a className="nav-link" href="/teams">
-                    Teams
-                </a>
-                </li>
-                <li className="nav-item">
                 <a className="nav-link" href="/teams-organizer">
                     Teams Organizer
                 </a>
                 </li>
                 <li className="nav-item">
-                <a className="nav-link" href="/schedule">
-                    Schedule
-                </a>
-                </li>
-                <li className="nav-item">
-                <a className="nav-link" href="/about">
-                    About
+                <a className="nav-link" href="/mega-banana-cup">
+                    Mega Banana Cup
                 </a>
                 </li>
             </ul>
