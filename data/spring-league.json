@@ -1,0 +1,90 @@
+[
+  {
+    "division_name": "Division 1",
+    "division_short": "Div 1",
+    "teams": [
+      {
+        "team_name": "Cambridge Blues",
+        "captain": "Jerry Y"
+      },
+      {
+        "team_name": "Arepas & Feta",
+        "captain": "Andres"
+      },
+      {
+        "team_name": "Team salsa",
+        "captain": "Abhishek"
+      },
+      {
+        "team_name": "Kiss My Ace",
+        "captain": "Liz L"
+      }
+    ]
+  },
+  {
+    "division_name": "Division 2",
+    "division_short": "Div 2",
+    "teams": [
+      {
+        "team_name": "Hit and Miss",
+        "captain": "Emanuela"
+      },
+      {
+        "team_name": "Mikasa es su casa",
+        "captain": "Carrie F"
+      },
+      {
+        "team_name": "Big Guys",
+        "captain": "Luke"
+      },
+      {
+        "team_name": "Net Ninjas",
+        "captain": "Essar"
+      }
+    ]
+  },
+  {
+    "division_name": "Division 3",
+    "division_short": "Div 3",
+    "teams": [
+      {
+        "team_name": "United Cambridge Colleges",
+        "captain": "Jerry Y"
+      },
+      {
+        "team_name": "MSG",
+        "captain": "Kyle"
+      },
+      {
+        "team_name": "Bouncy Noodles",
+        "captain": "Rachel"
+      },
+      {
+        "team_name": "Banana Split",
+        "captain": "Germana"
+      }
+    ]
+  },
+  {
+    "division_name": "Division 4",
+    "division_short": "Div 4",
+    "teams": [
+      {
+        "team_name": "Andrew's Minions",
+        "captain": "Rachel"
+      },
+      {
+        "team_name": "My digs don't lie",
+        "captain": "Karolina"
+      },
+      {
+        "team_name": "Maniacs",
+        "captain": "Claudia"
+      },
+      {
+        "team_name": "The Great White Wall",
+        "captain": "Jerry T"
+      }
+    ]
+  }
+]

@@ -55,6 +55,11 @@ export function NavBar() {
                     Mega Banana Cup
                 </a>
                 </li>
+                <li className="nav-item">
+                <a className="nav-link" href="/spring-league">
+                    Spring League
+                </a>
+                </li>
             </ul>
 
             {/* Search bar + theme toggle */}

@@ -531,3 +531,95 @@ body {
     width: 100%;
   }
 }
+
+.spring-league-page .nav-tabs {
+  border-bottom-color: color-mix(in srgb, var(--color-border-soft) 78%, transparent);
+}
+
+.spring-league-page .nav-tabs .nav-link {
+  color: var(--color-text-muted);
+}
+
+.spring-league-page .nav-tabs .nav-link.active {
+  color: var(--color-text-strong);
+  background-color: color-mix(in srgb, var(--color-accent-pale) 60%, var(--bs-card-bg));
+  border-color: color-mix(in srgb, var(--color-border-soft) 75%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-accent-pale) 80%, var(--bs-card-bg));
+}
+
+.spring-league-page .spring-league-schedule-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.spring-league-page .spring-league-special-block {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 70%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent-pale) 68%, var(--bs-card-bg));
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.85rem;
+}
+
+.spring-league-page .spring-league-match-card {
+  border: 1px solid color-mix(in srgb, var(--color-border-soft) 72%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bs-card-bg) 95%, var(--bs-body-bg)) 0%,
+      color-mix(in srgb, var(--bs-card-bg) 89%, var(--bs-body-bg)) 100%
+    );
+  border-radius: 0.85rem;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.spring-league-page .spring-league-match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.spring-league-page .spring-league-match-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.spring-league-page .spring-league-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.spring-league-page .spring-league-score-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.spring-league-page .spring-league-team-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+
+.spring-league-page .spring-league-score-input {
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+  .spring-league-page .spring-league-special-block,
+  .spring-league-page .spring-league-match-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
