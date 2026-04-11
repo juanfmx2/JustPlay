@@ -8,6 +8,20 @@
       "when": 1775427737722,
       "tag": "0000_odd_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775668608185,
+      "tag": "0001_tidy_starbolt",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775669808921,
+      "tag": "0002_fancy_elektra",
+      "breakpoints": true
     }
   ]
 }
