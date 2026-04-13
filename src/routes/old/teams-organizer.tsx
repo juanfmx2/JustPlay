@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react'
 import { Dropdown, SplitButton } from 'react-bootstrap'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import playersData from '../../data/players.json'
-import teamsData from '../../data/teams.json'
-import { PlayerCard } from '../components/PlayerCard.tsx'
+import playersData from '../../../data/players.json'
+import teamsData from '../../../data/teams.json'
+import { PlayerCard } from '../../components/PlayerCard.tsx'
 
 type PlayerInput = {
   id?: string
