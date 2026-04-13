@@ -122,7 +122,7 @@ const saveTeams = createServerFn({ method: 'POST' })
     }
   })
 
-export const Route = createFileRoute('/teams-organizer')({
+export const Route = createFileRoute('/old/teams-organizer')({
   component: TeamsOrganizer,
 })
 

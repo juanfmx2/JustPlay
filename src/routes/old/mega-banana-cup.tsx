@@ -345,7 +345,7 @@ function TeamBadge({
   )
 }
 
-export const Route = createFileRoute('/mega-banana-cup')({
+export const Route = createFileRoute('/old/mega-banana-cup')({
   loader: async () => await loadMegaBananaCupState(),
   component: MegaBananaCup,
 })

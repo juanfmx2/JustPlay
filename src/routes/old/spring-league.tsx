@@ -45,7 +45,7 @@ const loadSpringLeagueData = createServerFn({ method: 'GET' }).handler(async () 
   return JSON.parse(raw) as DivisionData[]
 })
 
-export const Route = createFileRoute('/spring-league')({
+export const Route = createFileRoute('/old/spring-league')({
   loader: async () => await loadSpringLeagueData(),
   component: SpringLeague,
 })
