@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '../../../../db/client'
@@ -78,6 +78,11 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
 
 function CompetitionDetailPage() {
   const data = Route.useLoaderData()
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
+
+  if (pathname.endsWith('/rules')) {
+    return <Outlet />
+  }
 
   if (!data) {
     return (
@@ -101,8 +106,20 @@ function CompetitionDetailPage() {
 
   return (
     <section className="container py-4">
-      <header className="mb-4">
+      <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <h1 className="h2 mb-1">{data.competition.name}</h1>
+        {data.competition.urlSlug ? (
+          <Link
+            className="btn btn-outline-secondary"
+            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/rules"
+            params={{
+              orgUrlSlug: data.organization.urlSlug,
+              competitionUrlSlug: data.competition.urlSlug,
+            }}
+          >
+            View Rules
+          </Link>
+        ) : null}
       </header>
 
       {data.divisions.length === 0 ? (
