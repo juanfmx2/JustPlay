@@ -15,7 +15,9 @@
     "db:logs": "docker compose logs -f postgres",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config drizzle.config.ts"
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "db:delete-data": "pnpm tsx src-util/deleteAllData.ts",
+    "db:generate-spring-league": "pnpm tsx src-util/generateSpringLeagueData.ts"
   },
   "keywords": [],
   "author": "",
