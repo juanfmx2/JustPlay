@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { db } from '../../db/client'
-import { organizations } from '../../schema'
+import { db } from '../../../db/client'
+import { organizations } from '../../../schema'
 
 const loadOrganizationBySlug = createServerFn({ method: 'GET' })
   .inputValidator((slug: string) => slug)
@@ -18,7 +18,7 @@ const loadOrganizationBySlug = createServerFn({ method: 'GET' })
     })
   })
 
-export const Route = createFileRoute('/org/$orgUrlSlug')({
+export const Route = createFileRoute('/org/$orgUrlSlug/')({
   loader: async ({ params }) => {
     return loadOrganizationBySlug({ data: params.orgUrlSlug })
   },
@@ -67,7 +67,21 @@ function OrganizationPage() {
                 <tbody>
                   {organization.competitions.map((competition) => (
                     <tr key={competition.id}>
-                      <td>{competition.name}</td>
+                      <td>
+                        {competition.urlSlug ? (
+                          <Link
+                            to="/org/$orgUrlSlug/competition/$competitionUrlSlug"
+                            params={{
+                              orgUrlSlug: organization.urlSlug,
+                              competitionUrlSlug: competition.urlSlug,
+                            }}
+                          >
+                            {competition.name}
+                          </Link>
+                        ) : (
+                          <span>{competition.name}</span>
+                        )}
+                      </td>
                       <td>{competition.urlSlug ?? '-'}</td>
                       <td>{competition.type}</td>
                       <td>{competition.format}</td>
