@@ -22,6 +22,13 @@
       "when": 1775669808921,
       "tag": "0002_fancy_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776082260846,
+      "tag": "0003_wakeful_gideon",
+      "breakpoints": true
     }
   ]
 }
