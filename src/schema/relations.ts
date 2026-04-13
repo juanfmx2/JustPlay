@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm'
 
 import { addresses } from './address'
-import { competitions, stages } from './competition'
+import { competitions, ruleGroups, rules, stages } from './competition'
 import { divisions } from './division'
 import { games, gameSets } from './game'
 import { organizations } from './organization'
@@ -22,7 +22,23 @@ export const competitionsRelations = relations(competitions, ({ one, many }) => 
     references: [organizations.id],
   }),
   stages: many(stages),
+  ruleGroups: many(ruleGroups),
   venueBookings: many(venueBookings),
+}))
+
+export const ruleGroupsRelations = relations(ruleGroups, ({ one, many }) => ({
+  competition: one(competitions, {
+    fields: [ruleGroups.competitionId],
+    references: [competitions.id],
+  }),
+  rules: many(rules),
+}))
+
+export const rulesRelations = relations(rules, ({ one }) => ({
+  ruleGroup: one(ruleGroups, {
+    fields: [rules.ruleGroupId],
+    references: [ruleGroups.id],
+  }),
 }))
 
 export const stagesRelations = relations(stages, ({ one, many }) => ({

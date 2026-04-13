@@ -50,3 +50,28 @@ export const stages = pgTable('stages', {
 
 export type Stage = typeof stages.$inferSelect
 export type NewStage = typeof stages.$inferInsert
+
+export const ruleGroups = pgTable('rule_groups', {
+  id: serial('id').primaryKey(),
+  competitionId: integer('competition_id')
+    .notNull()
+    .references(() => competitions.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+})
+
+export type RuleGroup = typeof ruleGroups.$inferSelect
+export type NewRuleGroup = typeof ruleGroups.$inferInsert
+
+export const rules = pgTable('rules', {
+  id: serial('id').primaryKey(),
+  ruleGroupId: integer('rule_group_id')
+    .notNull()
+    .references(() => ruleGroups.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  // HTML is stored as text so rich rules can be rendered later.
+  html: text('html').notNull(),
+})
+
+export type Rule = typeof rules.$inferSelect
+export type NewRule = typeof rules.$inferInsert
