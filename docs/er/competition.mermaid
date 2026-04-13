@@ -8,10 +8,28 @@ erDiagram
         string country
     }
 
+    ORGANIZATION {
+        int id PK
+        string name
+        string url_slug UK
+        string description
+        string contact_email
+    }
+
+    USER {
+        int id PK
+        string name
+        string lastname
+        string phone_number
+        string email
+    }
+
     COMPETITION {
         int id PK
         string name
         string description
+        competition_type type
+        string format
         date_time start_date
         date_time end_date
         string url_slug
@@ -49,6 +67,8 @@ erDiagram
         int id PK
         string name
         string description
+        string level
+        division_type type
         string url_slug
     }
 
@@ -56,6 +76,7 @@ erDiagram
         int id PK
         string name
         string description
+        string url_slug UK
     }
 
     GAME {
@@ -73,6 +94,10 @@ erDiagram
         int score_team_a
         int score_team_b
     }
+
+    ADDRESS ||--o{ VENUE : locates
+
+    ORGANIZATION ||--o{ COMPETITION : organizes
 
     COMPETITION ||--|{ VENUE_BOOKING : available
     VENUE_BOOKING ||--|| VENUE : venue
