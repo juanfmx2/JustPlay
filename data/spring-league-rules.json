@@ -1,0 +1,181 @@
+{
+  "rulesGroups": [
+    {
+      "heading": "General",
+      "description": "General conduct, officiating responsibilities, and score reporting rules.",
+      "rules": [
+        {
+          "html": "Everyone should encourage fair play and good sportsmanship."
+        },
+        {
+          "html": "Be respectful to other players, referees and officials."
+        },
+        {
+          "html": "Please vacate the sports hall promptly at the end of the session."
+        },
+        {
+          "html": "Please make sure to accomplish your officiating duties assigning at least: the principal referee, the scorer and two line judges."
+        },
+        {
+          "html": "The first team acting as a referee for the day should bring a copy of the scoresheet provided in the captains's whatsapp group."
+        },
+        {
+          "html": "The officiating team is responsible to write down the score in the scoresheet provided."
+        },
+        {
+          "html": "The winner team is responsible to submit the game score using the app once the game is finished."
+        },
+        {
+          "html": "The last team refereeing should take a picture of the scoresheet and send it to the captains group to get a record of the scores as a backup."
+        }
+      ]
+    },
+    {
+      "heading": "Teams & Players",
+      "description": "Rules about team composition, eligibility, and borrowing players.",
+      "rules": [
+        {
+          "html": "Each team must have 6 players on court all times."
+        },
+        {
+          "html": "Each team is required to have at least 2 women on court at all times, regardless of their playing position."
+        },
+        {
+          "html": "A team will forfeit their game should either they not have enough (female) players or they not have enough players on court (6 players), though they could still play for fun."
+        },
+        {
+          "html": "Teams can borrow a player from another team on game day under exceptional circumstances such as injuries or illnesses."
+        },
+        {
+          "html": "A player cannot play for more than one team, in case not following the rules, the teams where the player was playing will get 2 points deducted for each day."
+        }
+      ]
+    },
+    {
+      "heading": "Games",
+      "description": "Format and timing rules for matches and daily tiebreaks.",
+      "rules": [
+        {
+          "html": "6v6 timed games - please stick to the starting and ending times on the schedule."
+        },
+        {
+          "html": "Normal volleyball rules apply."
+        },
+        {
+          "html": "Teams can use different lineup for each set."
+        },
+        {
+          "html": "No limit of regular substitutions (A → B, B →A)."
+        },
+        {
+          "html": "Irregular substitutions (A → B, C →B) are not allowed."
+        },
+        {
+          "html": "Games will consist of:<br>04:00 min of warm-up<br>33:00 min of game (2 sets of 16:00 min each)<br>01:00 min to swap courts"
+        },
+        {
+          "html": "When the time is up, finish playing the point if a rally is in progress."
+        },
+        {
+          "html": "If the scores are level at the end of the game time, play ONE more point to decide the winner."
+        },
+        {
+          "html": "The tiebreaker in case teams having the same amount of points at the end of the day will be the best coefficient:<br><b>Coefficient = Points Scored / Points Against</b>"
+        }
+      ]
+    },
+    {
+      "heading": "Finals",
+      "description": "Qualification and tiebreak rules for finals week.",
+      "rules": [
+        {
+          "html": "The 4 teams with the best overall of Total Points at the end of the 4th week will play the Division 1 final."
+        },
+        {
+          "html": "The teams within the 5th to the 8th best overall of Total Points at the end of the 4th week will play the Division 2 final."
+        },
+        {
+          "html": "The teams within the 9th to the 12th best overall of Total Points at the end of the 4th week will play the Division 3 final."
+        },
+        {
+          "html": "The teams within the 13th to the 16th best overall of Total Points at the end of the 4th week will play the Division 4 final."
+        },
+        {
+          "html": "The tiebreaker for teams having the same amount of points at the end of the 4th week would be the times each team played Division 1, Division 2, Division 3 and Division 4."
+        },
+        {
+          "html": "If the tie persists after applying the previous criteria, then, the best coefficient will be applied:<br><b>Coefficient = Points Scored / Points Against</b>"
+        }
+      ]
+    },
+    {
+      "heading": "Scoring - Division 1",
+      "description": "Points, demotion, and bonus rules for Division 1.",
+      "rules": [
+        {
+          "html": "Wining teams will get 3 points."
+        },
+        {
+          "html": "Losing team will get 2 points if their final points score within 10 of the wining team, otherwise will get 0 points."
+        },
+        {
+          "html": "The team getting the lowest score on the day will get demoted to Division 2."
+        },
+        {
+          "html": "The teams in Division 1 will get 1 bonus point per week after 1st week."
+        }
+      ]
+    },
+    {
+      "heading": "Scoring - Division 2",
+      "description": "Points, promotion, and demotion rules for Division 2.",
+      "rules": [
+        {
+          "html": "Wining teams will get 2 points."
+        },
+        {
+          "html": "Losing team will get 1 point if their final points score within 12 of the wining team, otherwise will get 0 points."
+        },
+        {
+          "html": "The team getting the best score on the day will get promoted to Division 1."
+        },
+        {
+          "html": "The team getting the lowest score on the day will get demoted to Division 3."
+        }
+      ]
+    },
+    {
+      "heading": "Scoring - Division 3",
+      "description": "Points, promotion, and demotion rules for Division 3.",
+      "rules": [
+        {
+          "html": "Wining teams will get 2 points."
+        },
+        {
+          "html": "Losing team will get 1 point if their final points score within 14 of the wining team, otherwise will get 0 points."
+        },
+        {
+          "html": "The team getting the best score on the day will get promoted to Division 2."
+        },
+        {
+          "html": "The team getting the lowest score on the day will get demoted to Division 4."
+        }
+      ]
+    },
+    {
+      "heading": "Scoring - Division 4",
+      "description": "Points and promotion rules for Division 4.",
+      "rules": [
+        {
+          "html": "Wining teams will get 2 points."
+        },
+        {
+          "html": "Losing team will get 1 point if their final points score within 16 of the wining team, otherwise will get 0 points."
+        },
+        {
+          "html": "The team getting the best score on the day will get promoted to Division 3."
+        }
+      ]
+    }
+  ]
+}

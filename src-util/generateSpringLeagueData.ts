@@ -1,8 +1,9 @@
 import { and, eq } from 'drizzle-orm'
 
 import springLeagueData from '../data/spring-league.json'
+import springLeagueRulesData from '../data/spring-league-rules.json'
 import { db } from '../src/db/client'
-import { competitions, stages } from '../src/schema/competition'
+import { competitions, ruleGroups, rules, stages } from '../src/schema/competition'
 import { divisions } from '../src/schema/division'
 import { organizations } from '../src/schema/organization'
 import { teams } from '../src/schema/team'
@@ -14,6 +15,16 @@ type SpringLeagueDivision = {
 	teams: Array<{
 		team_name: string
 		captain: string
+	}>
+}
+
+type SpringLeagueRules = {
+	rulesGroups: Array<{
+		heading: string
+		description: string
+		rules: Array<{
+			html: string
+		}>
 	}>
 }
 
@@ -283,8 +294,61 @@ async function upsertSpringLeagueVenuesAndBookings(competitionId: number) {
 	}
 }
 
+async function upsertSpringLeagueRules(competitionId: number, rulesData: SpringLeagueRules) {
+	let loadedGroups = 0
+	let loadedRules = 0
+
+	for (const group of rulesData.rulesGroups) {
+		const existingGroup = await db
+			.select()
+			.from(ruleGroups)
+			.where(and(eq(ruleGroups.competitionId, competitionId), eq(ruleGroups.title, group.heading)))
+			.limit(1)
+
+		const savedGroup = existingGroup[0]
+			? (
+					await db
+						.update(ruleGroups)
+						.set({ description: group.description })
+						.where(eq(ruleGroups.id, existingGroup[0].id))
+						.returning()
+				)[0]
+			: (
+					await db
+						.insert(ruleGroups)
+						.values({
+							competitionId,
+							title: group.heading,
+							description: group.description,
+						})
+						.returning()
+				)[0]
+
+		await db.delete(rules).where(eq(rules.ruleGroupId, savedGroup.id))
+
+		if (group.rules.length > 0) {
+			await db.insert(rules).values(
+				group.rules.map((ruleEntry, index) => ({
+					ruleGroupId: savedGroup.id,
+					title: `${group.heading} Rule ${index + 1}`,
+					html: ruleEntry.html,
+				})),
+			)
+		}
+
+		loadedGroups += 1
+		loadedRules += group.rules.length
+	}
+
+	return {
+		loadedGroups,
+		loadedRules,
+	}
+}
+
 async function run() {
 	const data = springLeagueData as SpringLeagueDivision[]
+	const rulesData = springLeagueRulesData as SpringLeagueRules
 
 	const organization = await getOrCreateOrganization()
 	const competition = await getOrCreateCompetition(organization.id)
@@ -297,9 +361,10 @@ async function run() {
 
 	const loadedTeams = await upsertDivisionsAndTeams(registrationStage.id, data)
 	const bookingsResult = await upsertSpringLeagueVenuesAndBookings(competition.id)
+	const rulesResult = await upsertSpringLeagueRules(competition.id, rulesData)
 
 	console.log(
-		`Loaded Spring League data: org=${organization.urlSlug}, competition=${competition.urlSlug}, stage=${registrationStage.type}, teams=${loadedTeams}, bookings=${bookingsResult.totalExpected} (new ${bookingsResult.createdBookings})`,
+		`Loaded Spring League data: org=${organization.urlSlug}, competition=${competition.urlSlug}, stage=${registrationStage.type}, teams=${loadedTeams}, bookings=${bookingsResult.totalExpected} (new ${bookingsResult.createdBookings}), ruleGroups=${rulesResult.loadedGroups}, rules=${rulesResult.loadedRules}`,
 	)
 }
 
