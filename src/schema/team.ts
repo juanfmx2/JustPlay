@@ -11,3 +11,6 @@ export const teams = pgTable('teams', {
   description: text('description'),
   urlSlug: text('url_slug').notNull().unique(),
 })
+
+export type Team = typeof teams.$inferSelect
+export type NewTeam = typeof teams.$inferInsert

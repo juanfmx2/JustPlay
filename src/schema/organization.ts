@@ -7,3 +7,6 @@ export const organizations = pgTable('organizations', {
   description: text('description').notNull(),
   contactEmail: text('contact_email').notNull(),
 })
+
+export type Organization = typeof organizations.$inferSelect
+export type NewOrganization = typeof organizations.$inferInsert

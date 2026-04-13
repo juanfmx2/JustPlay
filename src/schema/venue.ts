@@ -26,6 +26,9 @@ export const venues = pgTable('venues', {
   location: jsonb('location').$type<GeoLocation>(),
 })
 
+export type Venue = typeof venues.$inferSelect
+export type NewVenue = typeof venues.$inferInsert
+
 export const venueBookings = pgTable('venue_bookings', {
   id: serial('id').primaryKey(),
   competitionId: integer('competition_id')
@@ -38,6 +41,9 @@ export const venueBookings = pgTable('venue_bookings', {
   endTime: timestamp('end_time', { withTimezone: true }).notNull(),
 })
 
+export type VenueBooking = typeof venueBookings.$inferSelect
+export type NewVenueBooking = typeof venueBookings.$inferInsert
+
 export const courts = pgTable('courts', {
   id: serial('id').primaryKey(),
   venueId: integer('venue_id')
@@ -46,3 +52,6 @@ export const courts = pgTable('courts', {
   name: text('name').notNull(),
   description: text('description'),
 })
+
+export type Court = typeof courts.$inferSelect
+export type NewCourt = typeof courts.$inferInsert

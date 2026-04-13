@@ -7,3 +7,6 @@ export const users = pgTable('users', {
   phoneNumber: text('phone_number').notNull(),
   email: text('email').notNull(),
 })
+
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert

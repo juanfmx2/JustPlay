@@ -8,3 +8,6 @@ export const addresses = pgTable('addresses', {
   postalCode: text('postal_code'),
   country: text('country'),
 })
+
+export type Address = typeof addresses.$inferSelect
+export type NewAddress = typeof addresses.$inferInsert

@@ -24,6 +24,9 @@ export const games = pgTable('games', {
   scoreTeamB: integer('score_team_b'),
 })
 
+export type Game = typeof games.$inferSelect
+export type NewGame = typeof games.$inferInsert
+
 export const gameSets = pgTable('game_sets', {
   id: serial('id').primaryKey(),
   gameId: integer('game_id')
@@ -37,3 +40,6 @@ export const gameSets = pgTable('game_sets', {
   scoreTeamA: integer('score_team_a'),
   scoreTeamB: integer('score_team_b'),
 })
+
+export type GameSet = typeof gameSets.$inferSelect
+export type NewGameSet = typeof gameSets.$inferInsert

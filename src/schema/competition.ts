@@ -34,6 +34,9 @@ export const competitions = pgTable('competitions', {
   registrationStageId: integer('registration_stage_id'),
 })
 
+export type Competition = typeof competitions.$inferSelect
+export type NewCompetition = typeof competitions.$inferInsert
+
 export const stages = pgTable('stages', {
   id: serial('id').primaryKey(),
   competitionId: integer('competition_id')
@@ -44,3 +47,6 @@ export const stages = pgTable('stages', {
   urlSlug: text('url_slug'),
   type: stageTypeEnum('type').notNull().default('PLAY'),
 })
+
+export type Stage = typeof stages.$inferSelect
+export type NewStage = typeof stages.$inferInsert

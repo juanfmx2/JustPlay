@@ -15,3 +15,6 @@ export const divisions = pgTable('divisions', {
   type: divisionTypeEnum('type').notNull(),
   urlSlug: text('url_slug'),
 })
+
+export type Division = typeof divisions.$inferSelect
+export type NewDivision = typeof divisions.$inferInsert
