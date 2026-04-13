@@ -17,7 +17,8 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "db:delete-data": "pnpm tsx src-util/deleteAllData.ts",
-    "db:generate-spring-league": "pnpm tsx src-util/generateSpringLeagueData.ts"
+    "db:generate-spring-league": "pnpm tsx src-util/generateSpringLeagueData.ts",
+    "db:generate-spring-league-w1": "pnpm tsx src-util/generateSpringLeague1stWeek.ts"
   },
   "keywords": [],
   "author": "",
