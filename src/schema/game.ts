@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
 import { divisions } from './division'
 import { teams } from './team'
@@ -22,6 +22,9 @@ export const games = pgTable('games', {
   description: text('description'),
   scoreTeamA: integer('score_team_a'),
   scoreTeamB: integer('score_team_b'),
+  // if this dates are null then this can be filled from the game set times
+  startTime: timestamp('start_time', { withTimezone: true }),
+  endTime: timestamp('end_time', { withTimezone: true }),
 })
 
 export type Game = typeof games.$inferSelect
@@ -39,7 +42,24 @@ export const gameSets = pgTable('game_sets', {
   description: text('description'),
   scoreTeamA: integer('score_team_a'),
   scoreTeamB: integer('score_team_b'),
+  startTime: timestamp('start_time', { withTimezone: true }),
+  endTime: timestamp('end_time', { withTimezone: true }),
 })
 
 export type GameSet = typeof gameSets.$inferSelect
 export type NewGameSet = typeof gameSets.$inferInsert
+
+export type GameWithComputedTimes = Game & {
+  effectiveStartTime: Date | null
+  effectiveEndTime: Date | null
+}
+
+export function withComputedGameFields(game: Game & { gameSets?: GameSet[] }): GameWithComputedTimes {
+  const fallbackStart = game.gameSets?.map((s) => s.startTime).filter((d): d is Date => d !== null).sort((a, b) => a.getTime() - b.getTime())[0] ?? null
+
+  return {
+    ...game,
+    effectiveStartTime: game.startTime ?? fallbackStart,
+    effectiveEndTime: game.endTime ?? fallbackStart,
+  }
+}
