@@ -56,11 +56,24 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
         })
       : []
 
+    const week1Stage = await db.query.stages.findFirst({
+      where: and(eq(stages.competitionId, competition.id), eq(stages.urlSlug, 'week-1')),
+    })
+
+    const week1Divisions = week1Stage
+      ? await db.query.divisions.findMany({
+          where: eq(divisions.stageId, week1Stage.id),
+          orderBy: (division, { asc }) => [asc(division.level)],
+        })
+      : []
+
     return {
       organization,
       competition,
       registrationStage,
       divisions: registrationDivisions,
+      week1Stage,
+      week1Divisions,
     }
   })
 
@@ -80,7 +93,7 @@ function CompetitionDetailPage() {
   const data = Route.useLoaderData()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
 
-  if (pathname.endsWith('/rules')) {
+  if (pathname.includes('/rules') || pathname.includes('/stg/')) {
     return <Outlet />
   }
 
@@ -108,19 +121,38 @@ function CompetitionDetailPage() {
     <section className="container py-4">
       <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <h1 className="h2 mb-1">{data.competition.name}</h1>
-        {data.competition.urlSlug ? (
-          <Link
-            className="btn btn-outline-secondary"
-            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/rules"
-            params={{
-              orgUrlSlug: data.organization.urlSlug,
-              competitionUrlSlug: data.competition.urlSlug,
-            }}
-          >
-            View Rules
-          </Link>
-        ) : null}
+        <div className="d-flex gap-2">
+          {data.competition.urlSlug ? (
+            <Link
+              className="btn btn-outline-secondary"
+              to="/org/$orgUrlSlug/competition/$competitionUrlSlug/rules"
+              params={{
+                orgUrlSlug: data.organization.urlSlug,
+                competitionUrlSlug: data.competition.urlSlug,
+              }}
+            >
+              View Rules
+            </Link>
+          ) : null}
+        </div>
       </header>
+
+      {data.week1Stage && data.week1Divisions.length > 0 ? (
+        <section className="mb-4">
+          <h2 className="h5 mb-3">Week 1 Schedules</h2>
+          <div className="d-flex flex-wrap gap-2">
+            {data.week1Divisions.map((division) => (
+              <a
+                key={division.id}
+                className="btn btn-banana"
+                href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug ?? ''}/stg/${data.week1Stage?.urlSlug ?? ''}/${division.urlSlug ?? ''}`}
+              >
+                {division.level}
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {data.divisions.length === 0 ? (
         <p className="text-body-secondary mb-0">No divisions found in registration.</p>
