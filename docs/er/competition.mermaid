@@ -1,0 +1,93 @@
+erDiagram
+    ADDRESS {
+        int id PK
+        string street
+        string city
+        string state
+        string postal_code
+        string country
+    }
+
+    COMPETITION {
+        int id PK
+        string name
+        string description
+        date_time start_date
+        date_time end_date
+        string url_slug
+    }
+
+    VENUE_BOOKING {
+        int id PK
+        date_time start_time
+        date_time end_time
+    }
+
+    VENUE {
+        int id PK
+        string name
+        string description
+        string invoice_num
+        geo_location location
+        ADDRESS address
+    }
+
+    COURT {
+        int id PK
+        string name
+        string description
+    }
+
+    STAGE {
+        int id PK
+        string name
+        string description
+        string url_slug
+    }
+
+    DIVISION {
+        int id PK
+        string name
+        string description
+        string url_slug
+    }
+
+    TEAM {
+        int id PK
+        string name
+        string description
+    }
+
+    GAME {
+        int id PK
+        string name
+        string description
+        int score_team_a
+        int score_team_b
+    }
+
+    GAME_SET {
+        int id PK
+        string name
+        string description
+        int score_team_a
+        int score_team_b
+    }
+
+    COMPETITION ||--|{ VENUE_BOOKING : available
+    VENUE_BOOKING ||--|| VENUE : venue
+    VENUE ||--|{ COURT : courts
+
+    COMPETITION ||--|{ STAGE : stages
+    COMPETITION ||--|| STAGE : registration
+    STAGE ||--|{ DIVISION : divisions
+
+    DIVISION ||--|{ TEAM : teams
+    DIVISION ||--|{ GAME : games
+
+    GAME }|--|| TEAM : team_a
+    GAME }|--|| TEAM : team_b
+    GAME }o--o| TEAM : reffing_team
+
+    GAME ||--|{ GAME_SET : game_sets
+    GAME_SET }|--|| COURT : played_on
