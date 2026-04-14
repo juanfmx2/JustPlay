@@ -1,0 +1,59 @@
+
+@page {
+    size: letter portrait;
+    margin: 0.5in;
+}
+
+@media print {
+    body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #fff !important;
+    }
+
+    .no-print {
+    display: none !important;
+    }
+
+    .schedule-print-root {
+    max-width: 100% !important;
+    padding: 0 !important;
+    }
+
+    .schedule-print-root .row {
+    row-gap: 0.5rem !important;
+    column-gap: 0 !important;
+    }
+
+    .schedule-print-root .col {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    }
+
+    .schedule-print-root .card {
+    border: 1px solid #c9c9c9 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    }
+
+    .schedule-print-root .card-body {
+    padding: 0.65rem !important;
+    gap: 0.55rem !important;
+    }
+
+    .schedule-print-root h1 {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.2rem !important;
+    }
+
+    .schedule-print-root p,
+    .schedule-print-root span,
+    .schedule-print-root footer,
+    .schedule-print-root .badge {
+    font-size: 0.86rem !important;
+    }
+}

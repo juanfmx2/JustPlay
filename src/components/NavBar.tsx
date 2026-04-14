@@ -4,7 +4,7 @@ export function NavBar() {
     const { theme, toggleTheme } = useTheme()
 
     return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top shadow-sm">
+    <nav className="navbar navbar-expand-lg bg-body-tertiary sticky-top shadow-sm no-print">
         <div className="container-fluid">
 
             {/* Logo */}
@@ -61,7 +61,7 @@ export function NavBar() {
                 >
                 {getThemeLabelComponent(theme)}
                 </button>
-
+{/* 
                 <form className="d-flex" role="search">
                 <input
                 className="form-control me-2"
@@ -72,7 +72,7 @@ export function NavBar() {
                 <button className="btn btn-banana" type="submit">
                 Search
                 </button>
-                </form>
+                </form> */}
             </div>
             </div>
         </div>

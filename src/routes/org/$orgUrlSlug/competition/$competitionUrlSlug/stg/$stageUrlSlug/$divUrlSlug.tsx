@@ -1,9 +1,10 @@
 import { and, eq } from 'drizzle-orm'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '../../../../../../../db/client'
-import { competitions, divisions, organizations, stages } from '../../../../../../../schema'
+import { competitions, divisions, organizations, stages, Court } from '../../../../../../../schema'
+import '../../../../../../../styles/print-schedules.css'
 
 type TeamPalette = {
   background: string
@@ -85,12 +86,35 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
         },
       },
     })
+    
+    let mostCommonDate: Date | null = null;
+    let mostCommonCourt: Court | null = null;
+    const dateCounts: Record<string, number> = {};
+    const courtCountsById: Record<number, number> = {};
+    division?.games.forEach((game) => {
+      const dateKey = game?.startTime?.toISOString().split('T')[0]
+      if (!dateKey) return
+      dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1
+      if (!mostCommonDate || dateCounts[dateKey] > dateCounts[mostCommonDate.toISOString().split('T')[0]]) {
+        mostCommonDate = new Date(dateKey)
+      }
+
+      game.gameSets.forEach((gameSet) => {
+        if (!gameSet.court) return
+        courtCountsById[gameSet.court.id] = (courtCountsById[gameSet.court.id] || 0) + 1
+        if (!mostCommonCourt || courtCountsById[gameSet.court.id] > courtCountsById[mostCommonCourt.id]) {
+          mostCommonCourt = gameSet.court
+        }
+      })
+    })
 
     return {
       organization,
       competition,
       stage,
       division,
+      mostCommonDate,
+      mostCommonCourt,
     }
   })
 
@@ -180,13 +204,20 @@ function DivisionSchedulePage() {
   })
 
   return (
-    <section className="container py-4">
-      <header className="mb-4">
-        <p className="text-body-secondary mb-1">{data.organization.name} / {data.competition.name}</p>
-        <h1 className="h2 mb-1">
-          {data.stage.name} - {data.division.name}
-        </h1>
-        <p className="mb-0 text-body-secondary">Game schedule</p>
+    <section className="container py-4 schedule-print-root">
+
+      <header className="mb-4 d-flex justify-content-between align-items-end gap-3">
+        <div>
+          <h1 className="h2 mb-1">
+            {data.stage.name} - {data.division.name}
+          </h1>
+          <h3 className="h3 mb-1">Game schedule for {formatDate(data.mostCommonDate)}</h3>
+          <h3 className="h3 mb-1">Court: {data.mostCommonCourt?.name ?? 'TBD'}</h3>
+
+        </div>
+        <button className="btn btn-banana btn-outline-secondary no-print" type="button" onClick={() => window.print()}>
+          Print PDF
+        </button>
       </header>
 
       {data.division.games.length === 0 ? (
