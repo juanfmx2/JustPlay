@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm'
 
 import {
 	type DivisionForScheduling,
+	type ScheduledGame,
 	generateRoundRobinSchedule,
 } from '../src/domain/scheduler'
 import { db } from '../src/db/client'
@@ -54,6 +55,57 @@ const WEEK_1_ASSIGNMENTS: DivisionCourtAssignment[] = [
 
 function toDateTime(date: string, time: string): Date {
 	return new Date(`${date}T${time}:00+01:00`)
+}
+
+function assignReffingTeams(
+	fixtures: ScheduledGame[],
+	teams: Array<{ id: number; name: string }>,
+): Array<number | null> {
+	if (teams.length < 3) {
+		return fixtures.map(() => null)
+	}
+
+	const orderedTeams = [...teams].sort((a, b) => a.id - b.id)
+	const assignedCounts = new Map<number, number>(
+		orderedTeams.map((team) => [team.id, 0]),
+	)
+	let rotationCursor = 0
+
+	return fixtures.map((fixture) => {
+		const eligibleTeams = orderedTeams.filter(
+			(team) => team.id !== fixture.teamA.id && team.id !== fixture.teamB.id,
+		)
+
+		if (eligibleTeams.length === 0) {
+			return null
+		}
+
+		const minAssigned = Math.min(
+			...eligibleTeams.map((team) => assignedCounts.get(team.id) ?? 0),
+		)
+		const balancedCandidates = eligibleTeams.filter(
+			(team) => (assignedCounts.get(team.id) ?? 0) === minAssigned,
+		)
+
+		let selectedTeam = balancedCandidates[0]
+
+		for (let step = 0; step < orderedTeams.length; step += 1) {
+			const candidateIndex = (rotationCursor + step) % orderedTeams.length
+			const candidate = orderedTeams[candidateIndex]
+			if (balancedCandidates.some((team) => team.id === candidate.id)) {
+				selectedTeam = candidate
+				rotationCursor = (candidateIndex + 1) % orderedTeams.length
+				break
+			}
+		}
+
+		assignedCounts.set(
+			selectedTeam.id,
+			(assignedCounts.get(selectedTeam.id) ?? 0) + 1,
+		)
+
+		return selectedTeam.id
+	})
 }
 
 async function getCompetitionOrThrow() {
@@ -147,7 +199,7 @@ async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { na
 			description: `Week 1 - ${sourceDivision.level}`,
 			level: sourceDivision.level,
 			type: sourceDivision.type,
-			urlSlug: `week-1-${sourceDivision.level.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+			urlSlug: `${sourceDivision.level.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
 		})
 		.returning()
 
@@ -207,15 +259,21 @@ async function run() {
 			CLOSEDOWN_MINUTES,
 		)
 
+		const reffingTeamIds = assignReffingTeams(
+			scheduledGames,
+			divisionForScheduling.teams,
+		)
+
 		const court = await getCourtOrThrow(assignment.venueName, assignment.courtName)
 
-		for (const fixture of scheduledGames) {
+		for (const [index, fixture] of scheduledGames.entries()) {
 			const [game] = await db
 				.insert(games)
 				.values({
 					divisionId: scheduledDivision.id,
 					teamAId: fixture.teamA.id,
 					teamBId: fixture.teamB.id,
+					reffingTeamId: reffingTeamIds[index],
 					name: `${scheduledDivision.level} - ${fixture.teamA.name} vs ${fixture.teamB.name}`,
 					description: `Week 1 fixture at ${assignment.venueName} / ${assignment.courtName}`,
 					startTime: toDateTime(fixture.date, fixture.startTime),

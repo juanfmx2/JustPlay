@@ -5,10 +5,46 @@
 }
 
 @media print {
+    :root {
+    --bs-body-bg: #fff !important;
+    --bs-body-color: #111 !important;
+    --bs-heading-color: #111 !important;
+    }
+
     body {
+    color-scheme: light !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background: #fff !important;
+    color: #111 !important;
+    }
+
+    html,
+    body,
+    .schedule-print-root,
+    .schedule-print-root .card,
+    .schedule-print-root .card-body {
+    background: #fff !important;
+    color: #111 !important;
+    }
+
+    .schedule-print-root .text-body-secondary {
+    color: #444 !important;
+    }
+
+    .schedule-print-root h1,
+    .schedule-print-root h2,
+    .schedule-print-root h3,
+    .schedule-print-root h4,
+    .schedule-print-root h5,
+    .schedule-print-root h6,
+    .schedule-print-root .h1,
+    .schedule-print-root .h2,
+    .schedule-print-root .h3,
+    .schedule-print-root .h4,
+    .schedule-print-root .h5,
+    .schedule-print-root .h6 {
+    color: #111 !important;
     }
 
     .no-print {
@@ -73,6 +109,14 @@
     line-height: 1.1 !important;
     padding-top: 0.2rem !important;
     padding-bottom: 0.2rem !important;
+    }
+
+    .schedule-print-root input[type='number']:disabled {
+    background: #fff !important;
+    color: #111 !important;
+    -webkit-text-fill-color: #111;
+    opacity: 1 !important;
+    border-color: #b8bec5 !important;
     }
 
     .schedule-print-root .btn {
