@@ -55,3 +55,13 @@ export const courts = pgTable('courts', {
 
 export type Court = typeof courts.$inferSelect
 export type NewCourt = typeof courts.$inferInsert
+
+export type CourtWithVenue = Court & {
+  venue?: Pick<Venue, 'name'> | null
+}
+
+export function getCourtAndVenue(court: CourtWithVenue | null | undefined): string {
+  if (!court) return 'TBD'
+  if (court.venue?.name) return `${court.venue.name} - ${court.name}`
+  return court.name
+}

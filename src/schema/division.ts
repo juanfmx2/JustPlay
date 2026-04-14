@@ -1,6 +1,8 @@
 import { integer, pgEnum, pgTable, serial, text } from 'drizzle-orm/pg-core'
 
 import { stages } from './competition'
+import type { Team } from './team'
+import type { GameWithTeamsAndSets } from './game'
 
 export const divisionTypeEnum = pgEnum('division_type', ['MEN', 'WOMEN', 'MIXED'])
 
@@ -18,3 +20,27 @@ export const divisions = pgTable('divisions', {
 
 export type Division = typeof divisions.$inferSelect
 export type NewDivision = typeof divisions.$inferInsert
+
+export type DivisionWithTeamsGamesAndSets = Division & {
+  teams: Team[]
+  games: GameWithTeamsAndSets[]
+}
+
+export const divisionWithTeamsGamesAndSets = {
+  teams: true,
+  games: {
+    with: {
+      teamA: true,
+      teamB: true,
+      gameSets: {
+        with: {
+          court: {
+            with: {
+              venue: true,
+            },
+          },
+        },
+      },
+    },
+  },
+} as const

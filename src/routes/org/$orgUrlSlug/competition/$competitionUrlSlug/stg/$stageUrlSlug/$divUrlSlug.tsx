@@ -1,14 +1,29 @@
 import { and, eq } from 'drizzle-orm'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '../../../../../../../db/client'
-import { competitions, divisions, organizations, stages, Court } from '../../../../../../../schema'
+import { competitions, organizations, 
+  stages,
+  CourtWithVenue, getCourtAndVenue, 
+  Organization, Stage, Competition,
+  DivisionWithTeamsGamesAndSets } from '../../../../../../../schema'
+import { getDivisionWithTeamsAndGames } from '../../../../../../../schema/queries/division'
 import '../../../../../../../styles/print-schedules.css'
 
 type TeamPalette = {
   background: string
   border: string
+}
+
+type LoaderData = {
+  organization: Organization | null
+  competition: Competition | null
+  stage: Stage | null
+  division: DivisionWithTeamsGamesAndSets | null
+  mostCommonDate: Date | null
+  mostCommonCourt: CourtWithVenue | null
+  mostCommonCourtName: string | null
 }
 
 const TEAM_PASTEL_PALETTE: TeamPalette[] = [
@@ -31,13 +46,21 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
       divUrlSlug: string
     }) => input,
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<LoaderData> => {
     const organization = await db.query.organizations.findFirst({
       where: eq(organizations.urlSlug, data.orgUrlSlug),
     })
 
     if (!organization) {
-      return { organization: null, competition: null, stage: null, division: null }
+      return {
+        organization: null,
+        competition: null,
+        stage: null,
+        division: null,
+        mostCommonDate: null,
+        mostCommonCourt: null,
+        mostCommonCourtName: null,
+      }
     }
 
     const competition = await db.query.competitions.findFirst({
@@ -48,7 +71,15 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
     })
 
     if (!competition) {
-      return { organization, competition: null, stage: null, division: null }
+      return {
+        organization,
+        competition: null,
+        stage: null,
+        division: null,
+        mostCommonDate: null,
+        mostCommonCourt: null,
+        mostCommonCourtName: null,
+      }
     }
 
     const stage = await db.query.stages.findFirst({
@@ -59,36 +90,24 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
     })
 
     if (!stage) {
-      return { organization, competition, stage: null, division: null }
+      return {
+        organization,
+        competition,
+        stage: null,
+        division: null,
+        mostCommonDate: null,
+        mostCommonCourt: null,
+        mostCommonCourtName: null,
+      }
     }
 
-    const division = await db.query.divisions.findFirst({
-      where: and(eq(divisions.stageId, stage.id), eq(divisions.urlSlug, data.divUrlSlug)),
-      with: {
-        teams: {
-          orderBy: (team, { asc }) => [asc(team.name)],
-        },
-        games: {
-          orderBy: (game, { asc }) => [asc(game.startTime), asc(game.id)],
-          with: {
-            teamA: true,
-            teamB: true,
-            gameSets: {
-              with: {
-                court: {
-                  with: {
-                    venue: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+    const division = await getDivisionWithTeamsAndGames({
+      stageUrlSlug: data.stageUrlSlug,
+      divUrlSlug: data.divUrlSlug,
     })
     
     let mostCommonDate: Date | null = null;
-    let mostCommonCourt: Court | null = null;
+    let mostCommonCourt: CourtWithVenue | null = null;
     const dateCounts: Record<string, number> = {};
     const courtCountsById: Record<number, number> = {};
     division?.games.forEach((game) => {
@@ -115,6 +134,7 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
       division,
       mostCommonDate,
       mostCommonCourt,
+      mostCommonCourtName: mostCommonCourt ? getCourtAndVenue(mostCommonCourt) : null
     }
   })
 
@@ -144,11 +164,18 @@ function formatTime(date: Date | null): string {
 function formatDate(date: Date | null): string {
   if (!date) return '--'
   return new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
+    weekday: 'long',
+    month: 'long',
     day: '2-digit',
-    month: 'short',
     timeZone: 'Europe/London',
   }).format(date)
+}
+
+function sameDay(date1: Date | null, date2: Date | null): boolean {
+  if (!date1 || !date2) return false
+  return date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
 }
 
 function DivisionSchedulePage() {
@@ -206,18 +233,24 @@ function DivisionSchedulePage() {
   return (
     <section className="container py-4 schedule-print-root">
 
-      <header className="mb-4 d-flex justify-content-between align-items-end gap-3">
-        <div>
+      <header>
+        <div className="mb-4 d-flex justify-content-between align-items-end gap-3">
           <h1 className="h2 mb-1">
             {data.stage.name} - {data.division.name}
           </h1>
-          <h3 className="h3 mb-1">Game schedule for {formatDate(data.mostCommonDate)}</h3>
-          <h3 className="h3 mb-1">Court: {data.mostCommonCourt?.name ?? 'TBD'}</h3>
-
+          <button className="btn btn-banana btn-outline-secondary no-print" type="button" onClick={() => window.print()}>
+            Print PDF
+          </button>
         </div>
-        <button className="btn btn-banana btn-outline-secondary no-print" type="button" onClick={() => window.print()}>
-          Print PDF
-        </button>
+        <div>
+          <h3 className="h3 mb-1">Game schedule</h3>
+          {data.mostCommonDate && (
+            <p><b>Date:</b> {formatDate(data.mostCommonDate)}</p>
+          )}
+          {data.mostCommonCourtName && (
+            <p><b>Place:</b> {data.mostCommonCourtName}</p>
+          )}
+        </div>
       </header>
 
       {data.division.games.length === 0 ? (
@@ -234,10 +267,12 @@ function DivisionSchedulePage() {
                 <article className="card h-100 shadow-sm">
                   <div className="card-body d-flex flex-column gap-3">
                     <header className="d-flex justify-content-between align-items-center">
-                      <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
                       <span className="small text-body-secondary">
                         {formatTime(game.startTime)} - {formatTime(game.endTime)}
                       </span>
+                      {data?.mostCommonDate && !sameDay(firstSet?.startTime, data.mostCommonDate) && (
+                        <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
+                      )}
                     </header>
 
                     <div className="d-flex flex-column gap-2">
@@ -252,7 +287,7 @@ function DivisionSchedulePage() {
                         {game.teamA.name}
                       </div>
                       <div
-                        className="badge text-start py-2"
+                        className="badge text-end py-2"
                         style={{
                           backgroundColor: teamBColor.background,
                           border: `1px solid ${teamBColor.border}`,
@@ -262,11 +297,11 @@ function DivisionSchedulePage() {
                         {game.teamB.name}
                       </div>
                     </div>
-
-                    <footer className="small text-body-secondary mt-auto">
-                      Court: {firstSet?.court?.name ?? 'TBD'}
-                      {firstSet?.court?.venue?.name ? ` (${firstSet.court.venue.name})` : ''}
-                    </footer>
+                    { data?.mostCommonCourt?.id && firstSet?.courtId !== data?.mostCommonCourt?.id && (
+                      <footer className="small text-body-secondary mt-auto">
+                        Court: {getCourtAndVenue(firstSet?.court)}
+                      </footer>
+                    )}
                   </div>
                 </article>
               </div>

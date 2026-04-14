@@ -3,6 +3,8 @@ import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 import { divisions } from './division'
 import { teams } from './team'
 import { courts } from './venue'
+import type { Team } from './team'
+import type { CourtWithVenue } from './venue'
 
 export const games = pgTable('games', {
   id: serial('id').primaryKey(),
@@ -48,6 +50,16 @@ export const gameSets = pgTable('game_sets', {
 
 export type GameSet = typeof gameSets.$inferSelect
 export type NewGameSet = typeof gameSets.$inferInsert
+
+export type GameSetWithCourt = GameSet & {
+  court: CourtWithVenue | null
+}
+
+export type GameWithTeamsAndSets = Game & {
+  teamA: Team
+  teamB: Team
+  gameSets: GameSetWithCourt[]
+}
 
 export type GameWithComputedTimes = Game & {
   effectiveStartTime: Date | null
