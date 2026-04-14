@@ -238,9 +238,17 @@ function DivisionSchedulePage() {
           <h1 className="h2 mb-1">
             {data.stage.name} - {data.division.name}
           </h1>
-          <button className="btn btn-banana btn-outline-secondary no-print" type="button" onClick={() => window.print()}>
-            Print PDF
-          </button>
+          <div className="d-flex align-items-center gap-2 no-print">
+            <a
+              className="btn btn-outline-secondary"
+              href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}`}
+            >
+              Back to Competition
+            </a>
+            <button className="btn btn-banana btn-outline-secondary" type="button" onClick={() => window.print()}>
+              Print PDF
+            </button>
+          </div>
         </div>
         <div>
           <h3 className="h3 mb-1">Game schedule</h3>
@@ -261,6 +269,9 @@ function DivisionSchedulePage() {
             const firstSet = game.gameSets[0]
             const teamAColor = colorByTeamId.get(game.teamA.id) ?? TEAM_PASTEL_PALETTE[0]
             const teamBColor = colorByTeamId.get(game.teamB.id) ?? TEAM_PASTEL_PALETTE[1]
+            const refTeamColor = game.reffingTeam
+              ? (colorByTeamId.get(game.reffingTeam.id) ?? TEAM_PASTEL_PALETTE[2])
+              : null
 
             return (
               <div className="col" key={game.id}>
@@ -334,8 +345,8 @@ function DivisionSchedulePage() {
                     <div
                       className="badge text-start py-2"
                       style={{
-                        backgroundColor: '#e9ecef',
-                        border: '1px solid #cfd4da',
+                        backgroundColor: refTeamColor?.background ?? '#e9ecef',
+                        border: `1px solid ${refTeamColor?.border ?? '#cfd4da'}`,
                         color: '#2b2b2b',
                       }}
                     >
