@@ -1,7 +1,7 @@
 
 @page {
     size: letter portrait;
-    margin: 0.5in;
+    margin: 0.22in;
 }
 
 @media print {
@@ -18,17 +18,31 @@
     .schedule-print-root {
     max-width: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
+    }
+
+    .schedule-print-root header {
+    margin-bottom: 0.35rem !important;
+    }
+
+    .schedule-print-root h1,
+    .schedule-print-root h2,
+    .schedule-print-root h3,
+    .schedule-print-root p {
+    margin-bottom: 0.2rem !important;
     }
 
     .schedule-print-root .row {
-    row-gap: 0.5rem !important;
+    --bs-gutter-x: 0.35rem !important;
+    --bs-gutter-y: 0.35rem !important;
+    row-gap: 0.35rem !important;
     column-gap: 0 !important;
     }
 
     .schedule-print-root .col {
-    width: 100% !important;
-    flex: 0 0 100% !important;
-    max-width: 100% !important;
+    width: 50% !important;
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
     page-break-inside: avoid;
     break-inside: avoid;
     }
@@ -41,19 +55,27 @@
     }
 
     .schedule-print-root .card-body {
-    padding: 0.65rem !important;
-    gap: 0.55rem !important;
+    padding: 0.35rem !important;
+    gap: 0.3rem !important;
     }
 
     .schedule-print-root h1 {
-    font-size: 1.25rem !important;
-    margin-bottom: 0.2rem !important;
+    font-size: 1.02rem !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.1rem !important;
     }
 
     .schedule-print-root p,
     .schedule-print-root span,
     .schedule-print-root footer,
     .schedule-print-root .badge {
-    font-size: 0.86rem !important;
+    font-size: 0.7rem !important;
+    line-height: 1.1 !important;
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+    }
+
+    .schedule-print-root .btn {
+    display: none !important;
     }
 }

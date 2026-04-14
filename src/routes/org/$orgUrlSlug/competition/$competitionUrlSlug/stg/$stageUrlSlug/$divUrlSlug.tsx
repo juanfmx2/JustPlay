@@ -275,27 +275,71 @@ function DivisionSchedulePage() {
                       )}
                     </header>
 
-                    <div className="d-flex flex-column gap-2">
+                    <div className="d-flex align-items-stretch justify-content-between gap-2">
                       <div
-                        className="badge text-start py-2"
+                        className="badge text-center py-2 d-flex flex-column h-100"
                         style={{
                           backgroundColor: teamAColor.background,
                           border: `1px solid ${teamAColor.border}`,
                           color: '#2b2b2b',
+                          flex: '1 1 0',
+                          minWidth: 0,
+                          minHeight: '6.75rem',
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere',
+                          wordBreak: 'break-word',
                         }}
                       >
-                        {game.teamA.name}
+                        <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          defaultValue={game.scoreTeamA ?? undefined}
+                          className="form-control form-control-sm mt-2"
+                          style={{ height: '3.35rem' }}
+                          aria-label={`Score for ${game.teamA.name}`}
+                          disabled
+                        />
                       </div>
+                      <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
                       <div
-                        className="badge text-end py-2"
+                        className="badge text-center py-2 d-flex flex-column h-100"
                         style={{
                           backgroundColor: teamBColor.background,
                           border: `1px solid ${teamBColor.border}`,
                           color: '#2b2b2b',
+                          flex: '1 1 0',
+                          minWidth: 0,
+                          minHeight: '6.75rem',
+                          whiteSpace: 'normal',
+                          overflowWrap: 'anywhere',
+                          wordBreak: 'break-word',
                         }}
                       >
-                        {game.teamB.name}
+                        <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          defaultValue={game.scoreTeamB ?? undefined}
+                          className="form-control form-control-sm mt-2"
+                          style={{ height: '3.35rem' }}
+                          aria-label={`Score for ${game.teamB.name}`}
+                          disabled
+                        />
                       </div>
+                    </div>
+
+                    <div
+                      className="badge text-start py-2"
+                      style={{
+                        backgroundColor: '#e9ecef',
+                        border: '1px solid #cfd4da',
+                        color: '#2b2b2b',
+                      }}
+                    >
+                      Ref: {game.reffingTeam?.name ?? 'TBD'}
                     </div>
                     { data?.mostCommonCourt?.id && firstSet?.courtId !== data?.mostCommonCourt?.id && (
                       <footer className="small text-body-secondary mt-auto">

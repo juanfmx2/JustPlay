@@ -58,6 +58,7 @@ export type GameSetWithCourt = GameSet & {
 export type GameWithTeamsAndSets = Game & {
   teamA: Team
   teamB: Team
+  reffingTeam: Team | null
   gameSets: GameSetWithCourt[]
 }
 

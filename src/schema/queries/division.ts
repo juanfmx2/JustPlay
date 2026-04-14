@@ -27,6 +27,7 @@ export async function getDivisionWithTeamsAndGames(input: {
         with: {
           teamA: true,
           teamB: true,
+          reffingTeam: true,
           gameSets: {
             with: {
               court: {
