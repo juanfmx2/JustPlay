@@ -17,7 +17,7 @@
           "html": "Please make sure to accomplish your officiating duties assigning at least: the principal referee, the scorer and two line judges."
         },
         {
-          "html": "The first team acting as a referee for the day should bring a copy of the scoresheet provided in the captains's whatsapp group."
+          "html": "The first team acting as a referee for the day should bring a copy of the scoresheet provided on the website."
         },
         {
           "html": "The officiating team is responsible to write down the score in the scoresheet provided."
@@ -27,6 +27,12 @@
         },
         {
           "html": "The last team refereeing should take a picture of the scoresheet and send it to the captains group to get a record of the scores as a backup."
+        },
+        {
+          "html": "All the scores of the day should be recorded and submitted as per the rules before 10:30pm at the latest."
+        },
+        {
+          "html": "<b>IMPORTANT:</b> Teams that fail to comply with refereeing duties, scorekeeping responsibilities, or the submission of match scores will be penalized by the deduction of <b>1 league point</b> per offence."
         }
       ]
     },
@@ -48,6 +54,9 @@
         },
         {
           "html": "A player cannot play for more than one team, in case not following the rules, the teams where the player was playing will get 2 points deducted for each day."
+        },
+        {
+          "html": "Libero players will be allowed to serve if it is within the regular service rotation and it is needed to comply with the other rules."
         }
       ]
     },
