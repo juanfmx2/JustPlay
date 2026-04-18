@@ -178,6 +178,15 @@ function sameDay(date1: Date | null, date2: Date | null): boolean {
     date1.getDate() === date2.getDate()
 }
 
+function getHalfTime(startTime: Date | null, endTime: Date | null): Date | null {
+  if (!startTime || !endTime) return null
+
+  const diffMs = endTime.getTime() - startTime.getTime()
+  if (diffMs <= 15 * 60 * 1000) return null
+
+  return new Date(startTime.getTime() + Math.floor(diffMs / 2))
+}
+
 function DivisionSchedulePage() {
   const data = Route.useLoaderData()
 
@@ -220,7 +229,7 @@ function DivisionSchedulePage() {
   const uniqueTeamsFromGames = Array.from(
     new Map(
       data.division.games
-        .flatMap((game) => [game.teamA, game.teamB])
+        .flatMap((game) => [game.teamA, game.teamB, game.reffingTeam].filter((team) => team !== null))
         .map((team) => [team.id, team] as const),
     ).values(),
   ).sort((a, b) => a.name.localeCompare(b.name))
@@ -229,6 +238,11 @@ function DivisionSchedulePage() {
   uniqueTeamsFromGames.forEach((team, index) => {
     colorByTeamId.set(team.id, TEAM_PASTEL_PALETTE[index % TEAM_PASTEL_PALETTE.length])
   })
+
+  const firstReffingTeam = data.division.games.find((game) => Boolean(game.reffingTeam))?.reffingTeam ?? null
+  const firstReffingTeamColor = firstReffingTeam
+    ? (colorByTeamId.get(firstReffingTeam.id) ?? TEAM_PASTEL_PALETTE[2])
+    : null
 
   return (
     <section className="container py-4 schedule-print-root">
@@ -261,12 +275,31 @@ function DivisionSchedulePage() {
         </div>
       </header>
 
+      <div className="alert alert-warning d-flex align-items-center gap-2 no-print" role="alert">
+        <span className="fw-semibold">Warning:</span>
+        <span>
+          The first team reffing
+          <span
+            className="badge ms-2"
+            style={{
+              backgroundColor: firstReffingTeamColor?.background ?? '#e9ecef',
+              border: `1px solid ${firstReffingTeamColor?.border ?? '#cfd4da'}`,
+              color: '#2b2b2b',
+            }}
+          >
+            {firstReffingTeam?.name ?? 'TBD'}
+          </span>
+          {' '}needs to bring a printed copy of this scoresheet.
+        </span>
+      </div>
+
       {data.division.games.length === 0 ? (
         <p className="text-body-secondary mb-0">No games scheduled for this division yet.</p>
       ) : (
-        <div className="row g-3 g-lg-4 row-cols-1 row-cols-lg-2">
+        <div className="d-flex flex-column gap-3">
           {data.division.games.map((game) => {
             const firstSet = game.gameSets[0]
+            const halfTime = getHalfTime(game.startTime, game.endTime)
             const teamAColor = colorByTeamId.get(game.teamA.id) ?? TEAM_PASTEL_PALETTE[0]
             const teamBColor = colorByTeamId.get(game.teamB.id) ?? TEAM_PASTEL_PALETTE[1]
             const refTeamColor = game.reffingTeam
@@ -274,13 +307,30 @@ function DivisionSchedulePage() {
               : null
 
             return (
-              <div className="col" key={game.id}>
-                <article className="card h-100 shadow-sm">
-                  <div className="card-body d-flex flex-column gap-3">
-                    <header className="d-flex justify-content-between align-items-center">
-                      <span className="small text-body-secondary">
-                        {formatTime(game.startTime)} - {formatTime(game.endTime)}
-                      </span>
+              <article className="card shadow-sm" key={game.id}>
+                <div className="card-body d-flex gap-3 align-items-stretch">
+                  <aside
+                    className="d-flex flex-column justify-content-center text-center border-end pe-3 flex-shrink-0"
+                    style={{ width: '5.5rem' }}
+                  >
+                    <div className={`py-2 ${halfTime ? 'border-bottom' : ''}`}>
+                      <div className="small text-body-secondary text-uppercase">Start</div>
+                      <div className="fw-semibold">{formatTime(game.startTime)}</div>
+                    </div>
+                    {halfTime && (
+                      <div className="py-2 border-bottom">
+                        <div className="small text-body-secondary text-uppercase">Half</div>
+                        <div className="fw-semibold">{formatTime(halfTime)}</div>
+                      </div>
+                    )}
+                    <div className="py-2">
+                      <div className="small text-body-secondary text-uppercase">End</div>
+                      <div className="fw-semibold">{formatTime(game.endTime)}</div>
+                    </div>
+                  </aside>
+
+                  <div className="d-flex flex-column gap-3 flex-grow-1" style={{ minWidth: 0 }}>
+                    <header className="d-flex justify-content-end align-items-center">
                       {data?.mostCommonDate && !sameDay(firstSet?.startTime, data.mostCommonDate) && (
                         <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
                       )}
@@ -358,8 +408,8 @@ function DivisionSchedulePage() {
                       </footer>
                     )}
                   </div>
-                </article>
-              </div>
+                </div>
+              </article>
             )
           })}
         </div>
