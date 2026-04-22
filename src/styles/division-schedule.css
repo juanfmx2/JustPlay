@@ -1,0 +1,119 @@
+.division-schedule-warning-team,
+.division-schedule-team-badge,
+.division-schedule-ref-badge {
+  color: #2b2b2b;
+  background-color: var(--team-bg, #e9ecef);
+  border: 1px solid var(--team-border, #cfd4da);
+}
+
+.division-schedule-game-time-column {
+  width: 100%;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  padding-bottom: 0.75rem;
+}
+
+.division-schedule-time-slot {
+  flex: 1 1 0;
+  padding: 0.45rem 0.3rem;
+}
+
+.division-schedule-time-slot-with-half {
+  border-right: 1px solid var(--bs-border-color);
+}
+
+.division-schedule-time-half {
+  border-right: 1px solid var(--bs-border-color);
+}
+
+.division-schedule-time-half {
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.35rem !important;
+}
+
+.division-schedule-time-half .division-schedule-time-label {
+  font-size: 0.65rem;
+}
+
+.division-schedule-time-half .division-schedule-time-value {
+  font-size: 0.9rem;
+}
+
+@media (min-width: 992px) {
+  .division-schedule-game-time-column {
+    width: 5.5rem;
+    gap: 0;
+    border-bottom: 0;
+    border-right: 1px solid var(--bs-border-color);
+    padding-bottom: 0;
+    padding-right: 0.75rem;
+  }
+
+  .division-schedule-time-slot {
+    flex: 0 0 auto;
+    padding: 0.5rem 0;
+  }
+
+  .division-schedule-time-slot-with-half,
+  .division-schedule-time-half {
+    border-right: 0;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+}
+
+.division-schedule-game-content {
+  min-width: 0;
+}
+
+.division-schedule-team-badge {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 6.75rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.division-schedule-score-input {
+  height: 3.35rem;
+}
+
+.division-schedule-palette-0 {
+  --team-bg: #ffe9bf;
+  --team-border: #d9b16d;
+}
+
+.division-schedule-palette-1 {
+  --team-bg: #ffd6dd;
+  --team-border: #df97a7;
+}
+
+.division-schedule-palette-2 {
+  --team-bg: #d2f0d8;
+  --team-border: #86bc90;
+}
+
+.division-schedule-palette-3 {
+  --team-bg: #d3ebff;
+  --team-border: #82b3db;
+}
+
+.division-schedule-palette-4 {
+  --team-bg: #dfd6ff;
+  --team-border: #a698d9;
+}
+
+.division-schedule-palette-5 {
+  --team-bg: #ffd7ed;
+  --team-border: #d396b8;
+}
+
+.division-schedule-palette-6 {
+  --team-bg: #d7f7f4;
+  --team-border: #90c7c1;
+}
+
+.division-schedule-palette-7 {
+  --team-bg: #f3e7d6;
+  --team-border: #c8aa86;
+}

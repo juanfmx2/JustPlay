@@ -10,6 +10,7 @@ import { competitions, organizations,
   DivisionWithTeamsGamesAndSets } from '../../../../../../../schema'
 import { getDivisionWithTeamsAndGames } from '../../../../../../../schema/queries/division'
 import '../../../../../../../styles/print-schedules.css'
+import '../../../../../../../styles/division-schedule.css'
 
 type TeamPalette = {
   background: string
@@ -27,8 +28,8 @@ type LoaderData = {
 }
 
 const TEAM_PASTEL_PALETTE: TeamPalette[] = [
-  { background: '#ffd6dd', border: '#df97a7' },
   { background: '#ffe9bf', border: '#d9b16d' },
+  { background: '#ffd6dd', border: '#df97a7' },
   { background: '#d2f0d8', border: '#86bc90' },
   { background: '#d3ebff', border: '#82b3db' },
   { background: '#dfd6ff', border: '#a698d9' },
@@ -36,6 +37,8 @@ const TEAM_PASTEL_PALETTE: TeamPalette[] = [
   { background: '#d7f7f4', border: '#90c7c1' },
   { background: '#f3e7d6', border: '#c8aa86' },
 ]
+
+const PALETTE_CLASS_BY_INDEX = TEAM_PASTEL_PALETTE.map((_, index) => `division-schedule-palette-${index}`)
 
 const loadDivisionSchedule = createServerFn({ method: 'GET' })
   .inputValidator(
@@ -226,35 +229,53 @@ function DivisionSchedulePage() {
     )
   }
 
+  let bananaTeam = null
   const uniqueTeamsFromGames = Array.from(
     new Map(
       data.division.games
         .flatMap((game) => [game.teamA, game.teamB, game.reffingTeam].filter((team) => team !== null))
         .map((team) => [team.id, team] as const),
     ).values(),
-  ).sort((a, b) => a.name.localeCompare(b.name))
+  ).sort((a, b) => {
+    if(a.name.toLowerCase().startsWith('banana')) 
+      bananaTeam = a
+    return a.name.localeCompare(b.name)
+  })
 
-  const colorByTeamId = new Map<number, TeamPalette>()
+  console.log('Banana Team:', bananaTeam)
+  if (bananaTeam ){
+    const indexOfBananaTeam = uniqueTeamsFromGames.indexOf(bananaTeam);
+    if (indexOfBananaTeam > 0) {
+      uniqueTeamsFromGames.splice(indexOfBananaTeam, 1)
+      uniqueTeamsFromGames.unshift
+    }
+  }
+  console.log('Unique Teams from Games:', uniqueTeamsFromGames)
+
+
+  const paletteClassByTeamId = new Map<number, string>()
   uniqueTeamsFromGames.forEach((team, index) => {
-    colorByTeamId.set(team.id, TEAM_PASTEL_PALETTE[index % TEAM_PASTEL_PALETTE.length])
+    console.log(`Assigning palette to team ${team.name} (ID: ${team.id}) COLOR: ${PALETTE_CLASS_BY_INDEX[index % PALETTE_CLASS_BY_INDEX.length]}`)
+    paletteClassByTeamId.set(team.id, PALETTE_CLASS_BY_INDEX[index % PALETTE_CLASS_BY_INDEX.length])
   })
 
   const firstReffingTeam = data.division.games.find((game) => Boolean(game.reffingTeam))?.reffingTeam ?? null
-  const firstReffingTeamColor = firstReffingTeam
-    ? (colorByTeamId.get(firstReffingTeam.id) ?? TEAM_PASTEL_PALETTE[2])
-    : null
+  const firstReffingTeamPaletteClass = firstReffingTeam
+    ? (paletteClassByTeamId.get(firstReffingTeam.id) ?? 'division-schedule-palette-2')
+    : ''
 
   return (
     <section className="container py-4 schedule-print-root">
 
       <header>
-        <div className="mb-4 d-flex justify-content-between align-items-end gap-3">
-          <div>
-            <h2 className="h2 mb-1">
-              {data.stage.name} - {data.division.name} - Game schedule
+        <div className="mb-4 d-flex flex-column flex-lg-row align-items-start gap-3">
+          <div className="flex-grow-1">
+            <h2>
+              {data.stage.name} - {data.division.name}
             </h2>
-            {/* <h3 className="h3 mb-1"></h3> */}
-            
+            <h2>
+              Game schedule
+            </h2>
             {data.mostCommonDate && (
               <p><b>Date:</b> {formatDate(data.mostCommonDate)}</p>
             )}
@@ -262,7 +283,7 @@ function DivisionSchedulePage() {
               <p><b>Place:</b> {data.mostCommonCourtName}</p>
             )}
           </div>
-          <div className="d-flex align-items-center gap-2 no-print">
+          <div className="d-flex flex-wrap align-items-center gap-2 no-print align-self-stretch align-self-lg-auto justify-content-start justify-content-lg-end ms-lg-auto flex-shrink-0">
             <a
               className="btn btn-outline-secondary"
               href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}`}
@@ -281,12 +302,7 @@ function DivisionSchedulePage() {
         <span>
           The first team reffing
           <span
-            className="badge ms-2"
-            style={{
-              backgroundColor: firstReffingTeamColor?.background ?? '#e9ecef',
-              border: `1px solid ${firstReffingTeamColor?.border ?? '#cfd4da'}`,
-              color: '#2b2b2b',
-            }}
+            className={`badge ms-2 division-schedule-warning-team ${firstReffingTeamPaletteClass}`}
           >
             {firstReffingTeam?.name ?? 'TBD'}
           </span>
@@ -301,36 +317,35 @@ function DivisionSchedulePage() {
           {data.division.games.map((game) => {
             const firstSet = game.gameSets[0]
             const halfTime = getHalfTime(game.startTime, game.endTime)
-            const teamAColor = colorByTeamId.get(game.teamA.id) ?? TEAM_PASTEL_PALETTE[0]
-            const teamBColor = colorByTeamId.get(game.teamB.id) ?? TEAM_PASTEL_PALETTE[1]
-            const refTeamColor = game.reffingTeam
-              ? (colorByTeamId.get(game.reffingTeam.id) ?? TEAM_PASTEL_PALETTE[2])
-              : null
+            const teamAPaletteClass = paletteClassByTeamId.get(game.teamA.id) ?? 'division-schedule-palette-0'
+            const teamBPaletteClass = paletteClassByTeamId.get(game.teamB.id) ?? 'division-schedule-palette-1'
+            const refTeamPaletteClass = game.reffingTeam
+              ? (paletteClassByTeamId.get(game.reffingTeam.id) ?? 'division-schedule-palette-2')
+              : ''
 
             return (
               <article className="card shadow-sm" key={game.id}>
-                <div className="card-body d-flex gap-3 align-items-stretch">
+                <div className="card-body d-flex flex-column flex-lg-row gap-3 align-items-stretch">
                   <aside
-                    className="d-flex flex-column justify-content-center text-center border-end pe-3 flex-shrink-0"
-                    style={{ width: '5.5rem' }}
+                    className="d-flex flex-row flex-lg-column text-center flex-shrink-0 division-schedule-game-time-column"
                   >
-                    <div className={`py-2 ${halfTime ? 'border-bottom' : ''}`}>
-                      <div className="small text-body-secondary text-uppercase">Start</div>
-                      <div className="fw-semibold">{formatTime(game.startTime)}</div>
+                    <div className={`division-schedule-time-slot ${halfTime ? 'division-schedule-time-slot-with-half' : ''}`}>
+                      <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>
+                      <div className="fw-semibold division-schedule-time-value">{formatTime(game.startTime)}</div>
                     </div>
                     {halfTime && (
-                      <div className="py-2 border-bottom">
-                        <div className="small text-body-secondary text-uppercase">Half</div>
-                        <div className="fw-semibold">{formatTime(halfTime)}</div>
+                      <div className="division-schedule-time-slot division-schedule-time-half">
+                        <div className="small text-body-secondary text-uppercase division-schedule-time-label">Half</div>
+                        <div className="fw-semibold division-schedule-time-value">{formatTime(halfTime)}</div>
                       </div>
                     )}
-                    <div className="py-2">
-                      <div className="small text-body-secondary text-uppercase">End</div>
-                      <div className="fw-semibold">{formatTime(game.endTime)}</div>
+                    <div className="division-schedule-time-slot">
+                      <div className="small text-body-secondary text-uppercase division-schedule-time-label">End</div>
+                      <div className="fw-semibold division-schedule-time-value">{formatTime(game.endTime)}</div>
                     </div>
                   </aside>
 
-                  <div className="d-flex flex-column gap-3 flex-grow-1" style={{ minWidth: 0 }}>
+                  <div className="d-flex flex-column gap-3 flex-grow-1 division-schedule-game-content">
                     <header className="d-flex justify-content-end align-items-center">
                       {data?.mostCommonDate && !sameDay(firstSet?.startTime, data.mostCommonDate) && (
                         <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
@@ -339,18 +354,7 @@ function DivisionSchedulePage() {
 
                     <div className="d-flex align-items-stretch justify-content-between gap-2">
                       <div
-                        className="badge text-center py-2 d-flex flex-column h-100"
-                        style={{
-                          backgroundColor: teamAColor.background,
-                          border: `1px solid ${teamAColor.border}`,
-                          color: '#2b2b2b',
-                          flex: '1 1 0',
-                          minWidth: 0,
-                          minHeight: '6.75rem',
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere',
-                          wordBreak: 'break-word',
-                        }}
+                        className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamAPaletteClass}`}
                       >
                         <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
                         <input
@@ -358,26 +362,14 @@ function DivisionSchedulePage() {
                           min={0}
                           step={1}
                           defaultValue={game.scoreTeamA ?? undefined}
-                          className="form-control form-control-sm mt-2"
-                          style={{ height: '3.35rem' }}
+                          className="form-control form-control-sm mt-2 division-schedule-score-input"
                           aria-label={`Score for ${game.teamA.name}`}
                           disabled
                         />
                       </div>
                       <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
                       <div
-                        className="badge text-center py-2 d-flex flex-column h-100"
-                        style={{
-                          backgroundColor: teamBColor.background,
-                          border: `1px solid ${teamBColor.border}`,
-                          color: '#2b2b2b',
-                          flex: '1 1 0',
-                          minWidth: 0,
-                          minHeight: '6.75rem',
-                          whiteSpace: 'normal',
-                          overflowWrap: 'anywhere',
-                          wordBreak: 'break-word',
-                        }}
+                        className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamBPaletteClass}`}
                       >
                         <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
                         <input
@@ -385,8 +377,7 @@ function DivisionSchedulePage() {
                           min={0}
                           step={1}
                           defaultValue={game.scoreTeamB ?? undefined}
-                          className="form-control form-control-sm mt-2"
-                          style={{ height: '3.35rem' }}
+                          className="form-control form-control-sm mt-2 division-schedule-score-input"
                           aria-label={`Score for ${game.teamB.name}`}
                           disabled
                         />
@@ -394,12 +385,7 @@ function DivisionSchedulePage() {
                     </div>
 
                     <div
-                      className="badge text-start py-2"
-                      style={{
-                        backgroundColor: refTeamColor?.background ?? '#e9ecef',
-                        border: `1px solid ${refTeamColor?.border ?? '#cfd4da'}`,
-                        color: '#2b2b2b',
-                      }}
+                      className={`badge text-start py-2 division-schedule-ref-badge ${refTeamPaletteClass}`}
                     >
                       Ref: {game.reffingTeam?.name ?? 'TBD'}
                     </div>
