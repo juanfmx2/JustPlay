@@ -2,8 +2,8 @@ import { and, eq } from 'drizzle-orm'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { db } from '../../../../../db/client'
-import { competitions, divisions, stages } from '../../../../../schema'
+import { db } from '@/db/client'
+import { competitions, divisions, stages } from '@/schema'
 
 const TEAM_COLOR_CLASSES = ['team-a', 'team-b', 'team-c', 'team-d'] as const
 

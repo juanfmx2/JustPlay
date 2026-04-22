@@ -2,8 +2,8 @@ import { eq } from 'drizzle-orm'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { db } from '../../../db/client'
-import { organizations } from '../../../schema'
+import { db } from '@/db/client'
+import { organizations } from '@/schema'
 
 const loadOrganizationBySlug = createServerFn({ method: 'GET' })
   .inputValidator((slug: string) => slug)

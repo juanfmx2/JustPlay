@@ -2,15 +2,15 @@ import { and, eq } from 'drizzle-orm'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { db } from '../../../../../../../db/client'
+import { db } from '@/db/client'
 import { competitions, organizations, 
   stages,
   CourtWithVenue, getCourtAndVenue, 
   Organization, Stage, Competition,
-  DivisionWithTeamsGamesAndSets } from '../../../../../../../schema'
-import { getDivisionWithTeamsAndGames } from '../../../../../../../schema/queries/division'
-import '../../../../../../../styles/print-schedules.css'
-import '../../../../../../../styles/division-schedule.css'
+  DivisionWithTeamsGamesAndSets } from '@/schema'
+import { getDivisionWithTeamsAndGames } from '@/schema/queries/division'
+import '@/styles/print-schedules.css'
+import '@/styles/division-schedule.css'
 
 type TeamPalette = {
   background: string

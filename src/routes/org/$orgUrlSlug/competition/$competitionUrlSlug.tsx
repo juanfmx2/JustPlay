@@ -2,8 +2,8 @@ import { and, eq } from 'drizzle-orm'
 import { createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { db } from '../../../../db/client'
-import { competitions, divisions, organizations, stages } from '../../../../schema'
+import { db } from '@/db/client'
+import { competitions, divisions, organizations, stages } from '@/schema'
 
 const loadCompetitionRegistration = createServerFn({ method: 'GET' })
   .inputValidator((input: { orgUrlSlug: string; competitionUrlSlug: string }) => input)
