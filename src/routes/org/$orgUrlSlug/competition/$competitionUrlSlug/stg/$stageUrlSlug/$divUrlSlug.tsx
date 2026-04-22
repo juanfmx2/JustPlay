@@ -249,9 +249,19 @@ function DivisionSchedulePage() {
 
       <header>
         <div className="mb-4 d-flex justify-content-between align-items-end gap-3">
-          <h1 className="h2 mb-1">
-            {data.stage.name} - {data.division.name}
-          </h1>
+          <div>
+            <h2 className="h2 mb-1">
+              {data.stage.name} - {data.division.name} - Game schedule
+            </h2>
+            {/* <h3 className="h3 mb-1"></h3> */}
+            
+            {data.mostCommonDate && (
+              <p><b>Date:</b> {formatDate(data.mostCommonDate)}</p>
+            )}
+            {data.mostCommonCourtName && (
+              <p><b>Place:</b> {data.mostCommonCourtName}</p>
+            )}
+          </div>
           <div className="d-flex align-items-center gap-2 no-print">
             <a
               className="btn btn-outline-secondary"
@@ -263,15 +273,6 @@ function DivisionSchedulePage() {
               Print PDF
             </button>
           </div>
-        </div>
-        <div>
-          <h3 className="h3 mb-1">Game schedule</h3>
-          {data.mostCommonDate && (
-            <p><b>Date:</b> {formatDate(data.mostCommonDate)}</p>
-          )}
-          {data.mostCommonCourtName && (
-            <p><b>Place:</b> {data.mostCommonCourtName}</p>
-          )}
         </div>
       </header>
 
