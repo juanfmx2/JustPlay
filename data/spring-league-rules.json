@@ -122,10 +122,10 @@
       "description": "Points, demotion, and bonus rules for Division 1.",
       "rules": [
         {
-          "html": "Wining teams will get 3 points."
+          "html": "Winning teams will get 3 points."
         },
         {
-          "html": "Losing team will get 2 points if their final points score within 10 of the wining team, otherwise will get 0 points."
+          "html": "Losing team will get 2 points if their final points score within 10 of the winning team, otherwise will get 0 points."
         },
         {
           "html": "The team getting the lowest score on the day will get demoted to Division 2."
@@ -140,10 +140,10 @@
       "description": "Points, promotion, and demotion rules for Division 2.",
       "rules": [
         {
-          "html": "Wining teams will get 2 points."
+          "html": "Winning teams will get 2 points."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 12 of the wining team, otherwise will get 0 points."
+          "html": "Losing team will get 1 point if their final points score within 12 of the winning team, otherwise will get 0 points."
         },
         {
           "html": "The team getting the best score on the day will get promoted to Division 1."
@@ -158,10 +158,10 @@
       "description": "Points, promotion, and demotion rules for Division 3.",
       "rules": [
         {
-          "html": "Wining teams will get 2 points."
+          "html": "Winning teams will get 2 points."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 14 of the wining team, otherwise will get 0 points."
+          "html": "Losing team will get 1 point if their final points score within 14 of the winning team, otherwise will get 0 points."
         },
         {
           "html": "The team getting the best score on the day will get promoted to Division 2."
@@ -176,10 +176,10 @@
       "description": "Points and promotion rules for Division 4.",
       "rules": [
         {
-          "html": "Wining teams will get 2 points."
+          "html": "Winning teams will get 2 points."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 16 of the wining team, otherwise will get 0 points."
+          "html": "Losing team will get 1 point if their final points score within 16 of the winning team, otherwise will get 0 points."
         },
         {
           "html": "The team getting the best score on the day will get promoted to Division 3."
