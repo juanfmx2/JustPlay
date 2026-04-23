@@ -247,7 +247,7 @@ function DivisionSchedulePage() {
     const indexOfBananaTeam = uniqueTeamsFromGames.indexOf(bananaTeam);
     if (indexOfBananaTeam > 0) {
       uniqueTeamsFromGames.splice(indexOfBananaTeam, 1)
-      uniqueTeamsFromGames.unshift
+      uniqueTeamsFromGames.unshift(bananaTeam)
     }
   }
   console.log('Unique Teams from Games:', uniqueTeamsFromGames)
