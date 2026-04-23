@@ -209,7 +209,7 @@ async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { na
 
 async function regenerateStandingsForCompetition(competitionId: number) {
 	const competitionStages = await db.query.stages.findMany({
-		where: eq(stages.competitionId, competitionId),
+		where: and(eq(stages.competitionId, competitionId), eq(stages.type, 'PLAY')),
 		with: {
 			divisions: {
 				with: {
