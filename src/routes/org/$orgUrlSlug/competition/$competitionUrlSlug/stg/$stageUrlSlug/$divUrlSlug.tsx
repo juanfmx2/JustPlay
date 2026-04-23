@@ -286,6 +286,12 @@ function DivisionSchedulePage() {
           <div className="d-flex flex-wrap align-items-center gap-2 no-print align-self-stretch align-self-lg-auto justify-content-start justify-content-lg-end ms-lg-auto flex-shrink-0">
             <a
               className="btn btn-outline-secondary"
+              href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}/stg/${data.stage.urlSlug}/standings/${data.division.urlSlug ?? ''}`}
+            >
+              Standings
+            </a>
+            <a
+              className="btn btn-outline-secondary"
               href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}`}
             >
               Back to Competition

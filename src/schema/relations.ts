@@ -5,6 +5,7 @@ import { competitions, ruleGroups, rules, stages } from './competition'
 import { divisions } from './division'
 import { games, gameSets } from './game'
 import { organizations } from './organization'
+import { standings } from './standings'
 import { teams } from './team'
 import { courts, venueBookings, venues } from './venue'
 
@@ -47,6 +48,7 @@ export const stagesRelations = relations(stages, ({ one, many }) => ({
     references: [competitions.id],
   }),
   divisions: many(divisions),
+  standings: many(standings),
 }))
 
 export const divisionsRelations = relations(divisions, ({ one, many }) => ({
@@ -56,6 +58,7 @@ export const divisionsRelations = relations(divisions, ({ one, many }) => ({
   }),
   teams: many(teams),
   games: many(games),
+  standings: many(standings),
 }))
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -66,6 +69,22 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
   gamesAsTeamA: many(games, { relationName: 'team_a' }),
   gamesAsTeamB: many(games, { relationName: 'team_b' }),
   gamesAsReffing: many(games, { relationName: 'reffing_team' }),
+  standings: many(standings),
+}))
+
+export const standingsRelations = relations(standings, ({ one }) => ({
+  stage: one(stages, {
+    fields: [standings.stageId],
+    references: [stages.id],
+  }),
+  division: one(divisions, {
+    fields: [standings.divisionId],
+    references: [divisions.id],
+  }),
+  team: one(teams, {
+    fields: [standings.teamId],
+    references: [teams.id],
+  }),
 }))
 
 export const gamesRelations = relations(games, ({ one, many }) => ({

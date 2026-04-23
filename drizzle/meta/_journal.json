@@ -15,6 +15,20 @@
       "when": 1776112738669,
       "tag": "0001_fast_the_professor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776200000000,
+      "tag": "0002_standings_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776946577592,
+      "tag": "0003_oval_miracleman",
+      "breakpoints": true
     }
   ]
 }

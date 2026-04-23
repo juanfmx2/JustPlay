@@ -9,6 +9,7 @@ import { db } from '../src/db/client'
 import { competitions, stages } from '../src/schema/competition'
 import { divisions } from '../src/schema/division'
 import { games, gameSets } from '../src/schema/game'
+import { standings } from '../src/schema/standings'
 import { courts, venues } from '../src/schema/venue'
 
 const COMPETITION_SLUG = 'spring-league-2026'
@@ -206,6 +207,61 @@ async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { na
 	return created
 }
 
+async function regenerateStandingsForCompetition(competitionId: number) {
+	const competitionStages = await db.query.stages.findMany({
+		where: eq(stages.competitionId, competitionId),
+		with: {
+			divisions: {
+				with: {
+					teams: {
+						columns: { id: true },
+					},
+					games: {
+						columns: {
+							teamAId: true,
+							teamBId: true,
+						},
+					},
+				},
+			},
+		},
+	})
+
+	let standingsRows = 0
+
+	for (const stage of competitionStages) {
+		for (const division of stage.divisions) {
+			await db
+				.delete(standings)
+				.where(and(eq(standings.stageId, stage.id), eq(standings.divisionId, division.id)))
+
+			const competingTeamIds = new Set<number>()
+
+			for (const team of division.teams) {
+				competingTeamIds.add(team.id)
+			}
+
+			for (const game of division.games) {
+				competingTeamIds.add(game.teamAId)
+				competingTeamIds.add(game.teamBId)
+			}
+
+			const records = Array.from(competingTeamIds).map((teamId) => ({
+				stageId: stage.id,
+				divisionId: division.id,
+				teamId,
+			}))
+
+			if (records.length > 0) {
+				await db.insert(standings).values(records)
+				standingsRows += records.length
+			}
+		}
+	}
+
+	return standingsRows
+}
+
 async function run() {
 	const competition = await getCompetitionOrThrow()
 	const registrationStage = await getRegistrationStageOrThrow(
@@ -295,8 +351,10 @@ async function run() {
 		}
 	}
 
+	const totalStandings = await regenerateStandingsForCompetition(competition.id)
+
 	console.log(
-		`Generated Week 1 stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}`,
+		`Generated Week 1 stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}, standings=${totalStandings}`,
 	)
 }
 

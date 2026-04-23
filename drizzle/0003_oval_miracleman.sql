@@ -1,0 +1,2 @@
+-- Intentionally left as no-op.
+-- 0002_standings_schema already creates this table and its constraints/indexes.
