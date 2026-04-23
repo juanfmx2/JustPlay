@@ -1,4 +1,5 @@
 import { and, eq } from 'drizzle-orm'
+import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -9,6 +10,7 @@ import { competitions, organizations,
   Organization, Stage, Competition,
   DivisionWithTeamsGamesAndSets } from '@/schema'
 import { getDivisionWithTeamsAndGames } from '@/schema/queries/division'
+import { applyGameSetScoreAndUpdateStandings } from '@/domain/scorer'
 import '@/styles/print-schedules.css'
 import '@/styles/division-schedule.css'
 
@@ -141,6 +143,23 @@ const loadDivisionSchedule = createServerFn({ method: 'GET' })
     }
   })
 
+const submitScore = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (input: {
+      gameSetId: number
+      scoreTeamA: number
+      scoreTeamB: number
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    await applyGameSetScoreAndUpdateStandings({
+      gameSetId: data.gameSetId,
+      scoreTeamA: data.scoreTeamA,
+      scoreTeamB: data.scoreTeamB,
+    })
+    return { success: true }
+  })
+
 export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug')({
   loader: async ({ params }) =>
     loadDivisionSchedule({
@@ -190,8 +209,173 @@ function getHalfTime(startTime: Date | null, endTime: Date | null): Date | null 
   return new Date(startTime.getTime() + Math.floor(diffMs / 2))
 }
 
+interface GameSetScoreSubmitFormProps {
+  gameSet: any
+  scoreA: number
+  scoreB: number
+  submittingSetId: number | null
+  onSubmit: () => void
+}
+
+function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSubmit }: GameSetScoreSubmitFormProps) {
+  const [loading, setLoading] = React.useState(false)
+
+  const now = new Date()
+  const gameEnded = gameSet?.endTime && new Date(gameSet.endTime) < now
+  const isActive = gameEnded && submittingSetId !== gameSet?.id
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!gameSet?.id || !isActive) return
+
+    setLoading(true)
+    try {
+      onSubmit()
+      await submitScore({
+        data: {
+          gameSetId: gameSet.id,
+          scoreTeamA: scoreA,
+          scoreTeamB: scoreB,
+        },
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!gameEnded) {
+    return (
+      <button type="button" className="btn btn-sm btn-secondary" disabled>
+        Please Wait
+      </button>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <button
+        type="submit"
+        className="btn btn-sm btn-banana"
+        disabled={loading}
+      >
+        {loading ? 'Saving...' : 'Save'}
+      </button>
+    </form>
+  )
+}
+
+interface GameCardProps {
+  game: any
+  teamAPaletteClass: string
+  teamBPaletteClass: string
+  refTeamPaletteClass: string
+  mostCommonDate: Date | null
+  mostCommonCourt: CourtWithVenue | null
+  submittingSetId: number | null
+  onSubmitSetId: (id: number | null) => void
+}
+
+function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingSetId, onSubmitSetId }: GameCardProps) {
+  const firstSet = game.gameSets[0]
+  const halfTime = getHalfTime(game.startTime, game.endTime)
+
+  const now = new Date()
+  const gameEnded = Boolean(firstSet?.endTime && new Date(firstSet.endTime) < now)
+
+  const [scoreA, setScoreA] = React.useState<number>(firstSet?.scoreTeamA ?? 0)
+  const [scoreB, setScoreB] = React.useState<number>(firstSet?.scoreTeamB ?? 0)
+
+  return (
+    <article className="card shadow-sm" key={game.id}>
+      <div className="card-body d-flex flex-column flex-md-row gap-3 align-items-stretch">
+        <aside
+          className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
+        >
+          <div className={`division-schedule-time-slot ${halfTime ? 'division-schedule-time-slot-with-half' : ''}`}>
+            <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>
+            <div className="fw-semibold division-schedule-time-value">{formatTime(game.startTime)}</div>
+          </div>
+          {halfTime && (
+            <div className="division-schedule-time-slot division-schedule-time-half">
+              <div className="small text-body-secondary text-uppercase division-schedule-time-label">Half</div>
+              <div className="fw-semibold division-schedule-time-value">{formatTime(halfTime)}</div>
+            </div>
+          )}
+          <div className="division-schedule-time-slot">
+            <div className="small text-body-secondary text-uppercase division-schedule-time-label">End</div>
+            <div className="fw-semibold division-schedule-time-value">{formatTime(game.endTime)}</div>
+          </div>
+        </aside>
+
+        <div className="d-flex flex-column gap-3 flex-grow-1 division-schedule-game-content">
+          <header className="d-flex justify-content-end align-items-center">
+            {mostCommonDate && !sameDay(firstSet?.startTime, mostCommonDate) && (
+              <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
+            )}
+          </header>
+
+          <div className="d-flex align-items-stretch justify-content-between gap-2">
+            <div
+              className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamAPaletteClass}`}
+            >
+              <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={gameEnded ? scoreA : (game.scoreTeamA ?? '')}
+                onChange={(e) => setScoreA(Number(e.target.value))}
+                className="form-control form-control-sm mt-2 division-schedule-score-input"
+                aria-label={`Score for ${game.teamA.name}`}
+                disabled={!gameEnded}
+              />
+            </div>
+            <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
+            <div
+              className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamBPaletteClass}`}
+            >
+              <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
+              <input
+                type="number"
+                min={0}
+                step={1}
+                value={gameEnded ? scoreB : (game.scoreTeamB ?? '')}
+                onChange={(e) => setScoreB(Number(e.target.value))}
+                className="form-control form-control-sm mt-2 division-schedule-score-input"
+                aria-label={`Score for ${game.teamB.name}`}
+                disabled={!gameEnded}
+              />
+            </div>
+          </div>
+
+          <div className="d-flex gap-2">
+            <div
+              className={`badge text-start py-2 flex-grow-1 division-schedule-ref-badge ${refTeamPaletteClass}`}
+            >
+              Ref: {game.reffingTeam?.name ?? 'TBD'}
+            </div>
+            <GameSetScoreSubmitForm
+              gameSet={firstSet}
+              scoreA={scoreA}
+              scoreB={scoreB}
+              submittingSetId={submittingSetId}
+              onSubmit={() => onSubmitSetId(firstSet?.id ?? null)}
+            />
+          </div>
+          {mostCommonCourt?.id && firstSet?.courtId !== mostCommonCourt?.id && (
+            <footer className="small text-body-secondary mt-auto">
+              Court: {getCourtAndVenue(firstSet?.court)}
+            </footer>
+          )}
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function DivisionSchedulePage() {
   const data = Route.useLoaderData()
+  const [submittingSetId, setSubmittingSetId] = React.useState<number | null>(null)
 
   if (!data.organization) {
     return (
@@ -320,91 +504,19 @@ function DivisionSchedulePage() {
         <p className="text-body-secondary mb-0">No games scheduled for this division yet.</p>
       ) : (
         <div className="d-flex flex-column gap-3">
-          {data.division.games.map((game) => {
-            const firstSet = game.gameSets[0]
-            const halfTime = getHalfTime(game.startTime, game.endTime)
-            const teamAPaletteClass = paletteClassByTeamId.get(game.teamA.id) ?? 'division-schedule-palette-0'
-            const teamBPaletteClass = paletteClassByTeamId.get(game.teamB.id) ?? 'division-schedule-palette-1'
-            const refTeamPaletteClass = game.reffingTeam
-              ? (paletteClassByTeamId.get(game.reffingTeam.id) ?? 'division-schedule-palette-2')
-              : ''
-
-            return (
-              <article className="card shadow-sm" key={game.id}>
-                <div className="card-body d-flex flex-column flex-md-row gap-3 align-items-stretch">
-                  <aside
-                    className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
-                  >
-                    <div className={`division-schedule-time-slot ${halfTime ? 'division-schedule-time-slot-with-half' : ''}`}>
-                      <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>
-                      <div className="fw-semibold division-schedule-time-value">{formatTime(game.startTime)}</div>
-                    </div>
-                    {halfTime && (
-                      <div className="division-schedule-time-slot division-schedule-time-half">
-                        <div className="small text-body-secondary text-uppercase division-schedule-time-label">Half</div>
-                        <div className="fw-semibold division-schedule-time-value">{formatTime(halfTime)}</div>
-                      </div>
-                    )}
-                    <div className="division-schedule-time-slot">
-                      <div className="small text-body-secondary text-uppercase division-schedule-time-label">End</div>
-                      <div className="fw-semibold division-schedule-time-value">{formatTime(game.endTime)}</div>
-                    </div>
-                  </aside>
-
-                  <div className="d-flex flex-column gap-3 flex-grow-1 division-schedule-game-content">
-                    <header className="d-flex justify-content-end align-items-center">
-                      {data?.mostCommonDate && !sameDay(firstSet?.startTime, data.mostCommonDate) && (
-                        <span className="badge badge-banana-subtle">{formatDate(game.startTime)}</span>
-                      )}
-                    </header>
-
-                    <div className="d-flex align-items-stretch justify-content-between gap-2">
-                      <div
-                        className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamAPaletteClass}`}
-                      >
-                        <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          defaultValue={game.scoreTeamA ?? undefined}
-                          className="form-control form-control-sm mt-2 division-schedule-score-input"
-                          aria-label={`Score for ${game.teamA.name}`}
-                          disabled
-                        />
-                      </div>
-                      <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
-                      <div
-                        className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamBPaletteClass}`}
-                      >
-                        <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          defaultValue={game.scoreTeamB ?? undefined}
-                          className="form-control form-control-sm mt-2 division-schedule-score-input"
-                          aria-label={`Score for ${game.teamB.name}`}
-                          disabled
-                        />
-                      </div>
-                    </div>
-
-                    <div
-                      className={`badge text-start py-2 division-schedule-ref-badge ${refTeamPaletteClass}`}
-                    >
-                      Ref: {game.reffingTeam?.name ?? 'TBD'}
-                    </div>
-                    { data?.mostCommonCourt?.id && firstSet?.courtId !== data?.mostCommonCourt?.id && (
-                      <footer className="small text-body-secondary mt-auto">
-                        Court: {getCourtAndVenue(firstSet?.court)}
-                      </footer>
-                    )}
-                  </div>
-                </div>
-              </article>
-            )
-          })}
+          {data.division.games.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              teamAPaletteClass={paletteClassByTeamId.get(game.teamA.id) ?? 'division-schedule-palette-0'}
+              teamBPaletteClass={paletteClassByTeamId.get(game.teamB.id) ?? 'division-schedule-palette-1'}
+              refTeamPaletteClass={game.reffingTeam ? (paletteClassByTeamId.get(game.reffingTeam.id) ?? 'division-schedule-palette-2') : ''}
+              mostCommonDate={data.mostCommonDate}
+              mostCommonCourt={data.mostCommonCourt}
+              submittingSetId={submittingSetId}
+              onSubmitSetId={setSubmittingSetId}
+            />
+          ))}
         </div>
       )}
     </section>

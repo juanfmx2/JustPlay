@@ -23,6 +23,20 @@ CREATE TABLE "competitions" (
 	"registration_stage_id" integer
 );
 --> statement-breakpoint
+CREATE TABLE "rule_groups" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"competition_id" integer NOT NULL,
+	"title" text NOT NULL,
+	"description" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "rules" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"rule_group_id" integer NOT NULL,
+	"title" text NOT NULL,
+	"html" text NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "stages" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"competition_id" integer NOT NULL,
@@ -51,7 +65,8 @@ CREATE TABLE "game_sets" (
 	"score_team_a" integer,
 	"score_team_b" integer,
 	"start_time" timestamp with time zone,
-	"end_time" timestamp with time zone
+	"end_time" timestamp with time zone,
+	"last_updated" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE TABLE "games" (
@@ -75,6 +90,21 @@ CREATE TABLE "organizations" (
 	"description" text NOT NULL,
 	"contact_email" text NOT NULL,
 	CONSTRAINT "organizations_url_slug_unique" UNIQUE("url_slug")
+);
+--> statement-breakpoint
+CREATE TABLE "standings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"stage_id" integer NOT NULL,
+	"division_id" integer NOT NULL,
+	"team_id" integer NOT NULL,
+	"games_won" integer,
+	"games_lost" integer,
+	"points_for" integer,
+	"points_against" integer,
+	"coefficient" numeric(10, 4),
+	"penalties" integer,
+	"league_points" integer,
+	"league_points_minus_penalties" integer
 );
 --> statement-breakpoint
 CREATE TABLE "teams" (
@@ -119,6 +149,8 @@ CREATE TABLE "venues" (
 );
 --> statement-breakpoint
 ALTER TABLE "competitions" ADD CONSTRAINT "competitions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "rule_groups" ADD CONSTRAINT "rule_groups_competition_id_competitions_id_fk" FOREIGN KEY ("competition_id") REFERENCES "public"."competitions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "rules" ADD CONSTRAINT "rules_rule_group_id_rule_groups_id_fk" FOREIGN KEY ("rule_group_id") REFERENCES "public"."rule_groups"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "stages" ADD CONSTRAINT "stages_competition_id_competitions_id_fk" FOREIGN KEY ("competition_id") REFERENCES "public"."competitions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "divisions" ADD CONSTRAINT "divisions_stage_id_stages_id_fk" FOREIGN KEY ("stage_id") REFERENCES "public"."stages"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_sets" ADD CONSTRAINT "game_sets_game_id_games_id_fk" FOREIGN KEY ("game_id") REFERENCES "public"."games"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -127,8 +159,12 @@ ALTER TABLE "games" ADD CONSTRAINT "games_division_id_divisions_id_fk" FOREIGN K
 ALTER TABLE "games" ADD CONSTRAINT "games_team_a_id_teams_id_fk" FOREIGN KEY ("team_a_id") REFERENCES "public"."teams"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "games" ADD CONSTRAINT "games_team_b_id_teams_id_fk" FOREIGN KEY ("team_b_id") REFERENCES "public"."teams"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "games" ADD CONSTRAINT "games_reffing_team_id_teams_id_fk" FOREIGN KEY ("reffing_team_id") REFERENCES "public"."teams"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "standings" ADD CONSTRAINT "standings_stage_id_stages_id_fk" FOREIGN KEY ("stage_id") REFERENCES "public"."stages"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "standings" ADD CONSTRAINT "standings_division_id_divisions_id_fk" FOREIGN KEY ("division_id") REFERENCES "public"."divisions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "standings" ADD CONSTRAINT "standings_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "teams" ADD CONSTRAINT "teams_division_id_divisions_id_fk" FOREIGN KEY ("division_id") REFERENCES "public"."divisions"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "courts" ADD CONSTRAINT "courts_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_competition_id_competitions_id_fk" FOREIGN KEY ("competition_id") REFERENCES "public"."competitions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "venues" ADD CONSTRAINT "venues_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE set null ON UPDATE no action;
+ALTER TABLE "venues" ADD CONSTRAINT "venues_address_id_addresses_id_fk" FOREIGN KEY ("address_id") REFERENCES "public"."addresses"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "standings_stage_division_team_uidx" ON "standings" USING btree ("stage_id","division_id","team_id");

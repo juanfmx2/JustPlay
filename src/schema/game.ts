@@ -46,6 +46,7 @@ export const gameSets = pgTable('game_sets', {
   scoreTeamB: integer('score_team_b'),
   startTime: timestamp('start_time', { withTimezone: true }),
   endTime: timestamp('end_time', { withTimezone: true }),
+  lastUpdated: timestamp('last_updated', { withTimezone: true }),
 })
 
 export type GameSet = typeof gameSets.$inferSelect

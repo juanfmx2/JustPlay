@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, or } from 'drizzle-orm'
+import { and, eq, isNotNull } from 'drizzle-orm'
 
 import { db } from '@/db/client'
 import { divisions, games, gameSets, standings } from '@/schema'
@@ -29,27 +29,18 @@ function isDivisionOne(level: string): boolean {
   return normalized === '1' || normalized === 'div 1' || normalized === 'division 1'
 }
 
-async function computeTeamStandingSummary(
-  divisionId: number,
+function computeTeamStandingSummaryFromGames(
+  allGames: Array<{ teamAId: number; teamBId: number; scoreTeamA: number | null; scoreTeamB: number | null }>,
   teamId: number,
   winnerLeaguePoints: number,
-): Promise<TeamStandingSummary> {
-  const teamGames = await db.query.games.findMany({
-    where: and(
-      eq(games.divisionId, divisionId),
-      or(eq(games.teamAId, teamId), eq(games.teamBId, teamId)),
-      isNotNull(games.scoreTeamA),
-      isNotNull(games.scoreTeamB),
-    ),
-  })
-
+): TeamStandingSummary {
   let gamesWon = 0
   let gamesLost = 0
   let pointsFor = 0
   let pointsAgainst = 0
   let leaguePoints = 0
 
-  for (const game of teamGames) {
+  for (const game of allGames) {
     const scoreA = game.scoreTeamA ?? 0
     const scoreB = game.scoreTeamB ?? 0
     const teamIsA = game.teamAId === teamId
@@ -76,14 +67,7 @@ async function computeTeamStandingSummary(
 
   const coefficient = pointsAgainst === 0 ? null : (pointsFor / pointsAgainst).toFixed(4)
 
-  return {
-    gamesWon,
-    gamesLost,
-    pointsFor,
-    pointsAgainst,
-    coefficient,
-    leaguePoints,
-  }
+  return { gamesWon, gamesLost, pointsFor, pointsAgainst, coefficient, leaguePoints }
 }
 
 export async function applyGameSetScoreAndUpdateStandings(
@@ -93,83 +77,84 @@ export async function applyGameSetScoreAndUpdateStandings(
   assertValidScore(input.scoreTeamB, 'scoreTeamB')
 
   await db.transaction(async (tx) => {
+    // 1. Resolve game set → game → division → stage
     const gameSet = await tx.query.gameSets.findFirst({
       where: eq(gameSets.id, input.gameSetId),
     })
-
-    if (!gameSet) {
-      throw new Error(`Game set #${input.gameSetId} was not found.`)
-    }
+    if (!gameSet) throw new Error(`Game set #${input.gameSetId} was not found.`)
 
     const game = await tx.query.games.findFirst({
       where: eq(games.id, gameSet.gameId),
     })
-
-    if (!game) {
-      throw new Error(`Game #${gameSet.gameId} was not found for game set #${input.gameSetId}.`)
-    }
+    if (!game) throw new Error(`Game #${gameSet.gameId} was not found for game set #${input.gameSetId}.`)
 
     const division = await tx.query.divisions.findFirst({
       where: eq(divisions.id, game.divisionId),
     })
-
     if (!division?.stageId) {
       throw new Error(`Division #${game.divisionId} was not found or has no stage assigned.`)
     }
 
+    const stageId = division.stageId
+
+    // 2. Persist the new score on the game set and parent game
     await tx
       .update(gameSets)
-      .set({
-        scoreTeamA: input.scoreTeamA,
-        scoreTeamB: input.scoreTeamB,
-      })
+      .set({ scoreTeamA: input.scoreTeamA, scoreTeamB: input.scoreTeamB, lastUpdated: new Date() })
       .where(eq(gameSets.id, input.gameSetId))
 
-    // Keep the parent game score in sync with this submitted game-set score.
     await tx
       .update(games)
-      .set({
-        scoreTeamA: input.scoreTeamA,
-        scoreTeamB: input.scoreTeamB,
-      })
+      .set({ scoreTeamA: input.scoreTeamA, scoreTeamB: input.scoreTeamB })
       .where(eq(games.id, game.id))
 
-    const winnerLeaguePoints = isDivisionOne(division.level) ? 3 : 2
-    const affectedTeamIds = [game.teamAId, game.teamBId]
+    // 3. Load every division in this stage
+    const stageDivisions = await tx.query.divisions.findMany({
+      where: eq(divisions.stageId, stageId),
+    })
 
-    for (const teamId of affectedTeamIds) {
-      const summary = await computeTeamStandingSummary(division.id, teamId, winnerLeaguePoints)
-
-      const standing = await tx.query.standings.findFirst({
+    // 4. For each division, reload all scored games and recalculate every standing row
+    for (const div of stageDivisions) {
+      const divGames = await tx.query.games.findMany({
         where: and(
-          eq(standings.stageId, division.stageId),
-          eq(standings.divisionId, division.id),
-          eq(standings.teamId, teamId),
+          eq(games.divisionId, div.id),
+          isNotNull(games.scoreTeamA),
+          isNotNull(games.scoreTeamB),
         ),
       })
 
-      if (!standing) {
-        throw new Error(
-          `Standing row not found for team #${teamId} in stage #${division.stageId} and division #${division.id}.`,
+      const divStandings = await tx.query.standings.findMany({
+        where: and(
+          eq(standings.stageId, stageId),
+          eq(standings.divisionId, div.id),
+        ),
+      })
+
+      const winnerLeaguePoints = isDivisionOne(div.level) ? 3 : 2
+
+      for (const row of divStandings) {
+        const teamGames = divGames.filter(
+          (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
         )
+
+        const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, winnerLeaguePoints)
+        const penalties = row.penalties ?? 0
+        const leaguePointsMinusPenalties =
+          penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties
+
+        await tx
+          .update(standings)
+          .set({
+            gamesWon: summary.gamesWon,
+            gamesLost: summary.gamesLost,
+            pointsFor: summary.pointsFor,
+            pointsAgainst: summary.pointsAgainst,
+            coefficient: summary.coefficient,
+            leaguePoints: summary.leaguePoints,
+            leaguePointsMinusPenalties,
+          })
+          .where(eq(standings.id, row.id))
       }
-
-      const penalties = standing.penalties ?? 0
-      const leaguePointsMinusPenalties =
-        penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties
-
-      await tx
-        .update(standings)
-        .set({
-          gamesWon: summary.gamesWon,
-          gamesLost: summary.gamesLost,
-          pointsFor: summary.pointsFor,
-          pointsAgainst: summary.pointsAgainst,
-          coefficient: summary.coefficient,
-          leaguePoints: summary.leaguePoints,
-          leaguePointsMinusPenalties,
-        })
-        .where(eq(standings.id, standing.id))
     }
   })
 }

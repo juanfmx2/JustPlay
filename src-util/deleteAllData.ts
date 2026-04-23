@@ -15,11 +15,13 @@ const pool = new Pool({
 
 const db = drizzle(pool, { schema })
 
-async function deleteAllData() {
+async function dropAllTables() {
+	// First, truncate all data
 	await db.execute(sql`
 		TRUNCATE TABLE
 			game_sets,
 			games,
+			standings,
 			teams,
 			divisions,
 			stages,
@@ -33,13 +35,34 @@ async function deleteAllData() {
 		RESTART IDENTITY CASCADE;
 	`)
 
-	console.log('All database data deleted successfully.')
+	console.log('All data truncated.')
+
+	// Then, drop all tables
+	await db.execute(sql`
+		DROP TABLE IF EXISTS
+			game_sets,
+			games,
+			standings,
+			teams,
+			divisions,
+			stages,
+			competitions,
+			courts,
+			venue_bookings,
+			venues,
+			addresses,
+			organizations,
+			users
+		CASCADE;
+	`)
+
+	console.log('All tables dropped successfully.')
 }
 
 try {
-	await deleteAllData()
+	await dropAllTables()
 } catch (error) {
-	console.error('Failed to delete database data:', error)
+	console.error('Failed to drop tables:', error)
 	process.exitCode = 1
 } finally {
 	await pool.end()
