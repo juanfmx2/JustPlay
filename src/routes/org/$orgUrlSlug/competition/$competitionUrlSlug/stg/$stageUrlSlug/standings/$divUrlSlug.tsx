@@ -132,13 +132,9 @@ const loadDivisionStandings = createServerFn({ method: 'GET' })
         leaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
       }))
       .sort((a, b) => {
-        const lpMinusPenA = a.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
-        const lpMinusPenB = b.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
-        if (lpMinusPenB !== lpMinusPenA) return lpMinusPenB - lpMinusPenA
-
-        const lpA = a.leaguePoints ?? Number.NEGATIVE_INFINITY
-        const lpB = b.leaguePoints ?? Number.NEGATIVE_INFINITY
-        if (lpB !== lpA) return lpB - lpA
+        const gwA = a.gamesWon ?? Number.NEGATIVE_INFINITY
+        const gwB = b.gamesWon ?? Number.NEGATIVE_INFINITY
+        if (gwB !== gwA) return gwB - gwA
 
         const coefA = a.coefficient === null ? Number.NEGATIVE_INFINITY : Number(a.coefficient)
         const coefB = b.coefficient === null ? Number.NEGATIVE_INFINITY : Number(b.coefficient)
@@ -221,7 +217,7 @@ function DivisionStandingsPage() {
       <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <div>
           <h1 className="h2 mb-1">{data.stage.name} - {data.division.name} Standings</h1>
-          <p className="text-body-secondary mb-0">Sorted by LP-P, LP, and coefficient.</p>
+          <p className="text-body-secondary mb-0">Sorted by GW, then coefficient.</p>
         </div>
 
         <Link
@@ -244,31 +240,31 @@ function DivisionStandingsPage() {
             <table className="table table-striped table-hover align-middle">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
+                  <th scope="col" className="text-center">#</th>
                   <th scope="col">Team</th>
-                  <th scope="col">GW</th>
-                  <th scope="col">GL</th>
-                  <th scope="col">PF</th>
-                  <th scope="col">PA</th>
-                  <th scope="col">Coef.</th>
-                  <th scope="col">P</th>
-                  <th scope="col">LP</th>
-                  <th scope="col">LP-P</th>
+                  <th scope="col" className="text-center">GW</th>
+                  <th scope="col" className="text-center">GL</th>
+                  <th scope="col" className="text-center">PF</th>
+                  <th scope="col" className="text-center">PA</th>
+                  <th scope="col" className="text-center">Coef.</th>
+                  <th scope="col" className="text-center">P</th>
+                  <th scope="col" className="text-center">LP</th>
+                  <th scope="col" className="text-center">LP-P</th>
                 </tr>
               </thead>
               <tbody>
                 {data.standingsRows.map((row, index) => (
                   <tr key={row.id}>
-                    <th scope="row">{index + 1}</th>
-                    <td>{row.teamName}</td>
-                    <td>{asDisplayNumber(row.gamesWon)}</td>
-                    <td>{asDisplayNumber(row.gamesLost)}</td>
-                    <td>{asDisplayNumber(row.pointsFor)}</td>
-                    <td>{asDisplayNumber(row.pointsAgainst)}</td>
-                    <td>{asDisplayCoefficient(row.coefficient)}</td>
-                    <td>{asDisplayNumber(row.penalties)}</td>
-                    <td>{asDisplayNumber(row.leaguePoints)}</td>
-                    <td>{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
+                    <th scope="row" className="text-center">{index + 1}</th>
+                    <td style={{ minWidth: '8rem', maxWidth: '16rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>{row.teamName}</td>
+                    <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
+                    <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
+                    <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
+                    <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
+                    <td className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
+                    <td className="text-center">{asDisplayNumber(row.penalties)}</td>
+                    <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
+                    <td className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -279,11 +275,11 @@ function DivisionStandingsPage() {
             <table className="table table-sm table-bordered align-middle mb-0">
               <thead>
                 <tr>
-                  <th scope="col">Team</th>
-                  <th scope="col">GW</th>
-                  <th scope="col">GL</th>
-                  <th scope="col">PF</th>
-                  <th scope="col">PA</th>
+                  <th scope="col" className="text-center">Team</th>
+                  <th scope="col" className="text-center">GW</th>
+                  <th scope="col" className="text-center">GL</th>
+                  <th scope="col" className="text-center">PF</th>
+                  <th scope="col" className="text-center">PA</th>
                 </tr>
               </thead>
               <tbody>
@@ -291,36 +287,36 @@ function DivisionStandingsPage() {
                   <Fragment key={row.id}>
                     <tr>
                       <th scope="row" rowSpan={4} className="align-middle text-nowrap">
-                        <div className="fw-semibold"><b>#{index + 1}</b> - {row.teamName}</div>
+                        <div className="fw-semibold" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}><b>#{index + 1}</b> - {row.teamName}</div>
                       </th>
-                      <td>{asDisplayNumber(row.gamesWon)}</td>
-                      <td>{asDisplayNumber(row.gamesLost)}</td>
-                      <td>{asDisplayNumber(row.pointsFor)}</td>
-                      <td>{asDisplayNumber(row.pointsAgainst)}</td>
+                      <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
+                      <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
+                      <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
+                      <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
                     </tr>
                     <tr>
-                      <td colSpan={2}><b>Coef.</b></td>
-                      <td colSpan={2}>{asDisplayCoefficient(row.coefficient)}</td>
+                      <td colSpan={2} className="text-center"><b>Coef.</b></td>
+                      <td colSpan={2} className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
                     </tr>
                     <tr>
-                      <td>
+                      <td className="text-center">
                         <b>P</b>
                       </td>
-                      <td>
+                      <td className="text-center">
                         {asDisplayNumber(row.penalties)}
                       </td>
-                      <td>
+                      <td className="text-center">
                         <b>LP</b>
                       </td>
-                      <td>
+                      <td className="text-center">
                         {asDisplayNumber(row.leaguePoints)}
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={2}>
+                      <td colSpan={2} className="text-center">
                         <b>LP-P</b>
                       </td>
-                      <td colSpan={2}>
+                      <td colSpan={2} className="text-center">
                         {asDisplayNumber(row.leaguePointsMinusPenalties)}
                       </td>
                     </tr>
@@ -328,6 +324,19 @@ function DivisionStandingsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-3 p-3 border rounded bg-body-secondary small">
+            <p className="fw-semibold mb-1">Conventions</p>
+            <ul className="mb-0 ps-3">
+              <li><b>GW</b> — Games Won</li>
+              <li><b>GL</b> — Games Lost</li>
+              <li><b>PF</b> — Points For</li>
+              <li><b>PA</b> — Points Against</li>
+              <li><b>Coef.</b> — Coefficient (PF / PA)</li>
+              <li><b>P</b> — Penalties</li>
+              <li><b>LP</b> — League Points</li>
+              <li><b>LP-P</b> — League Points minus Penalties</li>
+            </ul>
           </div>
         </>
       )}
