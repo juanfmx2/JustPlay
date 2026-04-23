@@ -25,36 +25,10 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
       return {
         organization,
         competition: null,
-        registrationStage: null,
-        divisions: [],
+        week1Stage: null,
+        week1Divisions: [],
       }
     }
-
-    const registrationStage = competition.registrationStageId
-      ? await db.query.stages.findFirst({
-          where: and(
-            eq(stages.id, competition.registrationStageId),
-            eq(stages.competitionId, competition.id),
-          ),
-        })
-      : await db.query.stages.findFirst({
-          where: and(
-            eq(stages.competitionId, competition.id),
-            eq(stages.type, 'REGISTRATION'),
-          ),
-        })
-
-    const registrationDivisions = registrationStage
-      ? await db.query.divisions.findMany({
-          where: eq(divisions.stageId, registrationStage.id),
-          orderBy: (division, { asc }) => [asc(division.id)],
-          with: {
-            teams: {
-              orderBy: (team, { asc }) => [asc(team.id)],
-            },
-          },
-        })
-      : []
 
     const week1Stage = await db.query.stages.findFirst({
       where: and(eq(stages.competitionId, competition.id), eq(stages.urlSlug, 'week-1')),
@@ -70,8 +44,6 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
     return {
       organization,
       competition,
-      registrationStage,
-      divisions: registrationDivisions,
       week1Stage,
       week1Divisions,
     }
@@ -93,7 +65,11 @@ function CompetitionDetailPage() {
   const data = Route.useLoaderData()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
 
-  if (pathname.includes('/rules') || pathname.includes('/stg/')) {
+  if (
+    pathname.includes('/rules') ||
+    pathname.includes('/stg/') ||
+    pathname.includes('/registered-teams')
+  ) {
     return <Outlet />
   }
 
@@ -134,59 +110,58 @@ function CompetitionDetailPage() {
               View Rules
             </Link>
           ) : null}
+          <Link
+            className="btn btn-banana"
+            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/registered-teams"
+            params={{
+              orgUrlSlug: data.organization.urlSlug,
+              competitionUrlSlug: data.competition.urlSlug ?? '',
+            }}
+          >
+            Registered Teams
+          </Link>
         </div>
       </header>
 
       {data.week1Stage && data.week1Divisions.length > 0 ? (
-        <section className="mb-4">
-          <h2 className="h5 mb-3">Week 1 Schedules</h2>
-          <div className="d-flex flex-wrap gap-2">
+        <article className="mb-4 border rounded p-3 text-center">
+          <h2 className="h4 mb-3">Week 1</h2>
+          <div className="d-flex flex-column gap-3">
             {data.week1Divisions.map((division) => (
-              <a
-                key={division.id}
-                className="btn btn-banana"
-                href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug ?? ''}/stg/${data.week1Stage?.urlSlug ?? ''}/${division.urlSlug ?? ''}`}
-              >
-                {division.level}
-              </a>
+              <div key={division.id}>
+                <h3 className="h6 mb-2">{division.name}</h3>
+                <div className="d-flex w-100 gap-2 justify-content-center">
+                  <Link
+                    className="btn btn-banana w-50"
+                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
+                    params={{
+                      orgUrlSlug: data.organization.urlSlug,
+                      competitionUrlSlug: data.competition.urlSlug ?? '',
+                      stageUrlSlug: data.week1Stage?.urlSlug ?? '',
+                      divUrlSlug: division.urlSlug ?? '',
+                    }}
+                  >
+                    Schedule
+                  </Link>
+                  <Link
+                    className="btn btn-outline-secondary w-50"
+                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/$divUrlSlug"
+                    params={{
+                      orgUrlSlug: data.organization.urlSlug,
+                      competitionUrlSlug: data.competition.urlSlug ?? '',
+                      stageUrlSlug: data.week1Stage?.urlSlug ?? '',
+                      divUrlSlug: division.urlSlug ?? '',
+                    }}
+                  >
+                    Standings
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
-        </section>
+        </article>
       ) : null}
 
-      {data.divisions.length === 0 ? (
-        <p className="text-body-secondary mb-0">No divisions found in registration.</p>
-      ) : (
-        <div className="row g-3 g-lg-4 row-cols-1 row-cols-md-2">
-          {data.divisions.map((division) => (
-            <div className="col" key={division.id}>
-              <article className="card h-100 shadow-sm">
-                <div className="card-body d-flex flex-column">
-                  <header className="mb-3">
-                    <h2 className="h5 mb-1">{division.name}</h2>
-                  </header>
-
-                  {division.teams.length === 0 ? (
-                    <p className="text-body-secondary mb-0">No teams in this division yet.</p>
-                  ) : (
-                    <ul className="list-group list-group-flush mt-auto">
-                      {division.teams.map((team) => (
-                        <li
-                          key={team.id}
-                          className="list-group-item d-flex justify-content-between align-items-center px-0"
-                        >
-                          <span>{team.name}</span>
-                          <span className="small text-body-secondary">{team.description}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </article>
-            </div>
-          ))}
-        </div>
-      )}
     </section>
   )
 }
