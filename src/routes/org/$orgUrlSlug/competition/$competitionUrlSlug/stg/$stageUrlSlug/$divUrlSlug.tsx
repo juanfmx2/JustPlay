@@ -298,8 +298,8 @@ function DivisionSchedulePage() {
       </header>
 
       <div className="alert alert-warning d-flex align-items-center gap-2 no-print" role="alert">
-        <span className="fw-semibold">Warning:</span>
         <span>
+          <span className="fw-semibold">Warning: </span>
           The first team reffing
           <span
             className={`badge ms-2 division-schedule-warning-team ${firstReffingTeamPaletteClass}`}
