@@ -220,16 +220,30 @@ function DivisionStandingsPage() {
           <p className="text-body-secondary mb-0">Sorted by GW, then coefficient.</p>
         </div>
 
-        <Link
-          className="btn btn-outline-secondary"
-          to="/org/$orgUrlSlug/competition/$competitionUrlSlug"
-          params={{
-            orgUrlSlug: data.organization.urlSlug,
-            competitionUrlSlug: data.competition.urlSlug ?? '',
-          }}
-        >
-          Back to Competition
-        </Link>
+        <div className="d-flex gap-2">
+          <Link
+            className="btn btn-banana"
+            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
+            params={{
+              orgUrlSlug: data.organization.urlSlug,
+              competitionUrlSlug: data.competition.urlSlug ?? '',
+              stageUrlSlug: data.stage.urlSlug ?? '',
+              divUrlSlug: data.division.urlSlug ?? '',
+            }}
+          >
+            Back to Schedule
+          </Link>
+          <Link
+            className="btn btn-outline-secondary"
+            to="/org/$orgUrlSlug/competition/$competitionUrlSlug"
+            params={{
+              orgUrlSlug: data.organization.urlSlug,
+              competitionUrlSlug: data.competition.urlSlug ?? '',
+            }}
+          >
+            Back to Competition
+          </Link>
+        </div>
       </header>
 
       {data.standingsRows.length === 0 ? (
