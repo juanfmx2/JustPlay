@@ -325,9 +325,9 @@ function DivisionSchedulePage() {
 
             return (
               <article className="card shadow-sm" key={game.id}>
-                <div className="card-body d-flex flex-column flex-lg-row gap-3 align-items-stretch">
+                <div className="card-body d-flex flex-column flex-md-row gap-3 align-items-stretch">
                   <aside
-                    className="d-flex flex-row flex-lg-column text-center flex-shrink-0 division-schedule-game-time-column"
+                    className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
                   >
                     <div className={`division-schedule-time-slot ${halfTime ? 'division-schedule-time-slot-with-half' : ''}`}>
                       <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>

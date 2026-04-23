@@ -39,7 +39,7 @@
   font-size: 0.9rem;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 768px) {
   .division-schedule-game-time-column {
     width: 5.5rem;
     gap: 0;
