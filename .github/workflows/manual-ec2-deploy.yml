@@ -1,0 +1,33 @@
+name: Manual Deploy To EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to deploy (branch, tag, or commit SHA)
+        required: true
+        default: main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Run EC2 deploy script
+        env:
+          SSH_HOST: ${{ vars.EC2_SSH_HOST }}
+          SSH_USER: ${{ vars.EC2_SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}
+          ID_ED25519_CONTENT: ${{ secrets.EC2_ID_ED25519_CONTENT }}
+          DATABASE_URL: ${{ secrets.EC2_DATABASE_URL }}
+        run: bash ./scripts/deploy-ec2.sh
