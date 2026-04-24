@@ -273,7 +273,7 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
         className="btn btn-sm btn-banana"
         disabled={loading || isInCooldown || !gameEnded}
       >
-        {!gameEnded? 'Please Wait': (isInCooldown ? 'Just Updated. Please Wait . . .' : (loading ? 'Saving...' : 'Save'))}
+        {!gameEnded? 'Please Wait': (isInCooldown ? 'Updated Successfully' : (loading ? 'Saving...' : 'Save'))}
       </button>
     </form>
   )
