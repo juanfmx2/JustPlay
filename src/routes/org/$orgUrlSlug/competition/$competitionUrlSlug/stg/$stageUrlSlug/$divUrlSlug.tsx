@@ -233,6 +233,7 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
 
   const now = new Date()
   const gameEnded = gameSet?.endTime && new Date(gameSet.endTime) < now
+  const dayEnded = gameSet?.endTime && new Date(gameSet.endTime).setHours(23, 0, 0, 0) < now.getTime()
   const isActive = gameEnded && submittingSetId !== gameSet?.id && !isInCooldown
 
   React.useEffect(() => {
@@ -263,12 +264,14 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
     }
   }
 
+  if(dayEnded) return <div className="text-body-secondary small">Score updates locked after 23:00</div>
+
   return (
     <form onSubmit={handleSubmit}>
       <button
         type="submit"
         className="btn btn-sm btn-banana"
-        disabled={loading || isInCooldown}
+        disabled={loading || isInCooldown || !gameEnded}
       >
         {!gameEnded? 'Please Wait': (isInCooldown ? 'Just Updated. Please Wait . . .' : (loading ? 'Saving...' : 'Save'))}
       </button>
@@ -293,6 +296,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
 
   const now = new Date()
   const gameEnded = Boolean(firstSet?.endTime && new Date(firstSet.endTime) < now)
+  const dayEnded = firstSet?.endTime && new Date(firstSet.endTime).setHours(23, 0, 0, 0) < now.getTime()
 
   const [scoreA, setScoreA] = React.useState<number>(firstSet?.scoreTeamA ?? 0)
   const [scoreB, setScoreB] = React.useState<number>(firstSet?.scoreTeamB ?? 0)
@@ -339,7 +343,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
                 onChange={(e) => setScoreA(Number(e.target.value))}
                 className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
                 aria-label={`Score for ${game.teamA.name}`}
-                disabled={!gameEnded}
+                disabled={!gameEnded || dayEnded}
               />
             </div>
             <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
@@ -355,7 +359,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
                 onChange={(e) => setScoreB(Number(e.target.value))}
                 className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
                 aria-label={`Score for ${game.teamB.name}`}
-                disabled={!gameEnded}
+                disabled={!gameEnded || dayEnded}
               />
             </div>
           </div>
