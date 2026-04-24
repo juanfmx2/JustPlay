@@ -8,7 +8,8 @@ import { competitions, organizations,
   stages,
   CourtWithVenue, getCourtAndVenue, 
   Organization, Stage, Competition,
-  DivisionWithTeamsGamesAndSets } from '@/schema'
+  DivisionWithTeamsGamesAndSets, 
+  GameSet} from '@/schema'
 import { getDivisionWithTeamsAndGames } from '@/schema/queries/division'
 import { applyGameSetScoreAndUpdateStandings } from '@/domain/scorer'
 import '@/styles/print-schedules.css'
@@ -217,12 +218,30 @@ interface GameSetScoreSubmitFormProps {
   onSubmit: () => void
 }
 
+const SCORE_UPDATE_COOLDOWN_MS = 5 * 60 * 1000
+
+
+const calculateIsInCooldown = (lastUpdatedMs:number|null, nowMs: number): boolean => {
+  return lastUpdatedMs !== null && Number.isFinite(lastUpdatedMs) && nowMs - lastUpdatedMs < SCORE_UPDATE_COOLDOWN_MS
+}
+
 function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSubmit }: GameSetScoreSubmitFormProps) {
   const [loading, setLoading] = React.useState(false)
+  const [nowMs, setNowMs] = React.useState(() => Date.now())
+  const [isInCooldown, setIsInCooldown] = React.useState(calculateIsInCooldown(gameSet?.lastUpdated ? new Date(gameSet.lastUpdated).getTime() : null, nowMs))
+
 
   const now = new Date()
   const gameEnded = gameSet?.endTime && new Date(gameSet.endTime) < now
-  const isActive = gameEnded && submittingSetId !== gameSet?.id
+  const isActive = gameEnded && submittingSetId !== gameSet?.id && !isInCooldown
+
+  React.useEffect(() => {
+    if (!isInCooldown) return
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now())
+    }, 10000) // Check every 10 seconds
+    return () => window.clearInterval(interval)
+  }, [isInCooldown])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -238,17 +257,10 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
           scoreTeamB: scoreB,
         },
       })
+      setIsInCooldown(true)
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!gameEnded) {
-    return (
-      <button type="button" className="btn btn-sm btn-secondary" disabled>
-        Please Wait
-      </button>
-    )
   }
 
   return (
@@ -256,9 +268,9 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
       <button
         type="submit"
         className="btn btn-sm btn-banana"
-        disabled={loading}
+        disabled={loading || isInCooldown}
       >
-        {loading ? 'Saving...' : 'Save'}
+        {!gameEnded? 'Please Wait': (isInCooldown ? 'Just Updated. Please Wait . . .' : (loading ? 'Saving...' : 'Save'))}
       </button>
     </form>
   )
