@@ -8,8 +8,8 @@ import { competitions, organizations,
   stages,
   CourtWithVenue, getCourtAndVenue, 
   Organization, Stage, Competition,
-  DivisionWithTeamsGamesAndSets, 
-  GameSet} from '@/schema'
+  DivisionWithTeamsGamesAndSets
+} from '@/schema'
 import { getDivisionWithTeamsAndGames } from '@/schema/queries/division'
 import { applyGameSetScoreAndUpdateStandings } from '@/domain/scorer'
 import '@/styles/print-schedules.css'
