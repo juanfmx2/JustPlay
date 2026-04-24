@@ -16,12 +16,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.inputs.ref }}
-
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
 
       - name: Run EC2 deploy script
         env:
