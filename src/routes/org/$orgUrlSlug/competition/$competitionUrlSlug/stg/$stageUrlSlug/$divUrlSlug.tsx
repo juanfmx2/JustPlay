@@ -337,7 +337,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
                 step={1}
                 value={gameEnded ? scoreA : (game.scoreTeamA ?? '')}
                 onChange={(e) => setScoreA(Number(e.target.value))}
-                className="form-control form-control-sm mt-2 division-schedule-score-input"
+                className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
                 aria-label={`Score for ${game.teamA.name}`}
                 disabled={!gameEnded}
               />
@@ -353,7 +353,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
                 step={1}
                 value={gameEnded ? scoreB : (game.scoreTeamB ?? '')}
                 onChange={(e) => setScoreB(Number(e.target.value))}
-                className="form-control form-control-sm mt-2 division-schedule-score-input"
+                className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
                 aria-label={`Score for ${game.teamB.name}`}
                 disabled={!gameEnded}
               />
