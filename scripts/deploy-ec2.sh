@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+ehco "Starting EC2 deployment..."
 set -euo pipefail
 
 required_vars=(
