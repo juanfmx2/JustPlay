@@ -22,9 +22,9 @@ jobs:
 
       - name: Run EC2 deploy script
         env:
-          SSH_HOST: ${{ secrets.EC2_SSH_HOST }}
-          SSH_USER: ${{ secrets.EC2_SSH_USER }}
-          SSH_PASSWORD: ${{ secrets.EC2_SSH_PASSWORD }}
-          ID_ED25519_CONTENT: ${{ secrets.EC2_ID_ED25519_CONTENT }}
-          DATABASE_URL: ${{ secrets.EC2_DATABASE_URL }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          ID_ED25519_CONTENT: ${{ secrets.ID_ED25519_CONTENT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: bash ./scripts/deploy-ec2.sh
