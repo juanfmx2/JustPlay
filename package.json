@@ -16,10 +16,8 @@
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
-    "db:delete-data": "pnpm tsx src-util/deleteAllData.ts",
-    "db:generate-spring-league": "pnpm tsx src-util/generateSpringLeagueData.ts",
-    "db:generate-spring-league-w1": "pnpm tsx src-util/generateSpringLeague1stWeek.ts",
-    "db:generate-spring-league-w2": "pnpm tsx src-util/generateSpringLeague2ndWeek.ts"
+    "db:drop-tables": "pnpm tsx src-util/dropTables.ts",
+    "db:gen-sl2026": "pnpm tsx src-util/sl-2026/generateAll.ts"
   },
   "keywords": [],
   "author": "",
@@ -55,5 +53,10 @@
     "typescript": "^5.9.3",
     "vite": "^8.0.0",
     "vite-tsconfig-paths": "^6.1.1"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": ["@types/pg"]
+    }
   }
 }

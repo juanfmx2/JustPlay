@@ -1,13 +1,13 @@
 import { and, eq } from 'drizzle-orm'
 
-import springLeagueData from '../data/spring-league.json'
-import springLeagueRulesData from '../data/spring-league-rules.json'
-import { db } from '../src/db/client'
-import { competitions, ruleGroups, rules, stages } from '../src/schema/competition'
-import { divisions } from '../src/schema/division'
-import { organizations } from '../src/schema/organization'
-import { teams } from '../src/schema/team'
-import { courts, venueBookings, venues } from '../src/schema/venue'
+import springLeagueData from '../../data/spring-league.json'
+import springLeagueRulesData from '../../data/spring-league-rules.json'
+import { db } from '../../src/db/client'
+import { competitions, ruleGroups, rules, stages } from '../../src/schema/competition'
+import { divisions } from '../../src/schema/division'
+import { organizations } from '../../src/schema/organization'
+import { teams } from '../../src/schema/team'
+import { courts, venueBookings, venues } from '../../src/schema/venue'
 
 type SpringLeagueDivision = {
 	division_name: string

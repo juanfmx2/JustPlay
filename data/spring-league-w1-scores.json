@@ -1,0 +1,32 @@
+{
+  "weekStageSlug": "week-1",
+  "matches": [
+    { "division": 1, "teamA": "Cambridge Blues", "teamB": "Kiss My Ace", "scoreTeamA": 26, "scoreTeamB": 44 },
+    { "division": 1, "teamA": "Arepas & Feta", "teamB": "Team salsa", "scoreTeamA": 37, "scoreTeamB": 38 },
+    { "division": 1, "teamA": "Cambridge Blues", "teamB": "Team salsa", "scoreTeamA": 37, "scoreTeamB": 42 },
+    { "division": 1, "teamA": "Kiss My Ace", "teamB": "Arepas & Feta", "scoreTeamA": 35, "scoreTeamB": 39 },
+    { "division": 1, "teamA": "Cambridge Blues", "teamB": "Arepas & Feta", "scoreTeamA": 32, "scoreTeamB": 51 },
+    { "division": 1, "teamA": "Team salsa", "teamB": "Kiss My Ace", "scoreTeamA": 42, "scoreTeamB": 43 },
+
+    { "division": 2, "teamA": "Hit and Miss", "teamB": "Net Ninjas", "scoreTeamA": 30, "scoreTeamB": 55 },
+    { "division": 2, "teamA": "Mikasa es su casa", "teamB": "Big Guys", "scoreTeamA": 52, "scoreTeamB": 34 },
+    { "division": 2, "teamA": "Hit and Miss", "teamB": "Big Guys", "scoreTeamA": 34, "scoreTeamB": 40 },
+    { "division": 2, "teamA": "Net Ninjas", "teamB": "Mikasa es su casa", "scoreTeamA": 39, "scoreTeamB": 33 },
+    { "division": 2, "teamA": "Hit and Miss", "teamB": "Mikasa es su casa", "scoreTeamA": 36, "scoreTeamB": 48 },
+    { "division": 2, "teamA": "Big Guys", "teamB": "Net Ninjas", "scoreTeamA": 38, "scoreTeamB": 47 },
+
+    { "division": 3, "teamA": "United Cambridge Colleges", "teamB": "Banana Split", "scoreTeamA": 45, "scoreTeamB": 38 },
+    { "division": 3, "teamA": "MSG", "teamB": "Andrew's Minions", "scoreTeamA": 54, "scoreTeamB": 32 },
+    { "division": 3, "teamA": "United Cambridge Colleges", "teamB": "Andrew's Minions", "scoreTeamA": 57, "scoreTeamB": 36 },
+    { "division": 3, "teamA": "Banana Split", "teamB": "MSG", "scoreTeamA": 28, "scoreTeamB": 62 },
+    { "division": 3, "teamA": "United Cambridge Colleges", "teamB": "MSG", "scoreTeamA": 31, "scoreTeamB": 52 },
+    { "division": 3, "teamA": "Andrew's Minions", "teamB": "Banana Split", "scoreTeamA": 44, "scoreTeamB": 47 },
+
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "The Great White Wall", "scoreTeamA": 30, "scoreTeamB": 64 },
+    { "division": 4, "teamA": "My digs don't lie", "teamB": "Maniacs", "scoreTeamA": 46, "scoreTeamB": 40 },
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "Maniacs", "scoreTeamA": 30, "scoreTeamB": 56 },
+    { "division": 4, "teamA": "The Great White Wall", "teamB": "My digs don't lie", "scoreTeamA": 41, "scoreTeamB": 42 },
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "My digs don't lie", "scoreTeamA": 35, "scoreTeamB": 57 },
+    { "division": 4, "teamA": "Maniacs", "teamB": "The Great White Wall", "scoreTeamA": 39, "scoreTeamB": 43 }
+  ]
+}

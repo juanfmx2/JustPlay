@@ -1,16 +1,17 @@
+
 import { and, eq } from 'drizzle-orm'
 
 import {
 	type DivisionForScheduling,
 	type ScheduledGame,
 	generateRoundRobinSchedule,
-} from '../src/domain/scheduler'
-import { db } from '../src/db/client'
-import { competitions, stages } from '../src/schema/competition'
-import { divisions } from '../src/schema/division'
-import { games, gameSets } from '../src/schema/game'
-import { standings } from '../src/schema/standings'
-import { courts, venues } from '../src/schema/venue'
+} from '../../src/domain/scheduler'
+import { db } from '../../src/db/client'
+import { competitions, stages } from '../../src/schema/competition'
+import { divisions } from '../../src/schema/division'
+import { games, gameSets } from '../../src/schema/game'
+import { standings } from '../../src/schema/standings'
+import { courts, venues } from '../../src/schema/venue'
 
 const COMPETITION_SLUG = 'spring-league-2026'
 
@@ -27,28 +28,37 @@ type DivisionCourtAssignment = {
 	courtName: string
 }
 
-const WEEK_1_ASSIGNMENTS: DivisionCourtAssignment[] = [
+const TEAM_DIVISION_OVERRIDES = [
+	{ teamName: 'Cambridge Blues', targetDivisionLevel: 'Div 2' },
+	{ teamName: 'Net Ninjas', targetDivisionLevel: 'Div 1' },
+	{ teamName: 'Hit and Miss', targetDivisionLevel: 'Div 3' },
+	{ teamName: 'MSG', targetDivisionLevel: 'Div 2' },
+	{ teamName: "Andrew's Minions", targetDivisionLevel: 'Div 4' },
+	{ teamName: "My digs don't lie", targetDivisionLevel: 'Div 3' },
+] as const
+
+const WEEK_2_ASSIGNMENTS: DivisionCourtAssignment[] = [
 	{
 		divisionLevel: 'Div 1',
-		date: '2026-04-23',
+		date: '2026-04-30',
 		venueName: 'North Cambridge Academy (NCA)',
 		courtName: 'Sports Hall',
 	},
 	{
 		divisionLevel: 'Div 2',
-		date: '2026-04-24',
+		date: '2026-05-01',
 		venueName: 'North Cambridge Academy (NCA)',
 		courtName: 'Sports Hall',
 	},
 	{
 		divisionLevel: 'Div 3',
-		date: '2026-04-24',
+		date: '2026-05-01',
 		venueName: 'The Perse',
 		courtName: 'Sports Hall A',
 	},
 	{
 		divisionLevel: 'Div 4',
-		date: '2026-04-24',
+		date: '2026-05-01',
 		venueName: 'The Perse',
 		courtName: 'Sports Hall B',
 	},
@@ -121,7 +131,10 @@ async function getCompetitionOrThrow() {
 	return competition
 }
 
-async function getRegistrationStageOrThrow(competitionId: number, registrationStageId: number | null) {
+async function getRegistrationStageOrThrow(
+	competitionId: number,
+	registrationStageId: number | null,
+) {
 	const stage = registrationStageId
 		? await db.query.stages.findFirst({
 				where: and(
@@ -130,7 +143,10 @@ async function getRegistrationStageOrThrow(competitionId: number, registrationSt
 				),
 			})
 		: await db.query.stages.findFirst({
-				where: and(eq(stages.competitionId, competitionId), eq(stages.type, 'REGISTRATION')),
+				where: and(
+					eq(stages.competitionId, competitionId),
+					eq(stages.type, 'REGISTRATION'),
+				),
 			})
 
 	if (!stage) {
@@ -140,9 +156,9 @@ async function getRegistrationStageOrThrow(competitionId: number, registrationSt
 	return stage
 }
 
-async function getOrCreateWeek1Stage(competitionId: number) {
+async function getOrCreateWeek2Stage(competitionId: number) {
 	const existing = await db.query.stages.findFirst({
-		where: and(eq(stages.competitionId, competitionId), eq(stages.urlSlug, 'week-1')),
+		where: and(eq(stages.competitionId, competitionId), eq(stages.urlSlug, 'week-2')),
 	})
 
 	if (existing) {
@@ -153,9 +169,9 @@ async function getOrCreateWeek1Stage(competitionId: number) {
 		.insert(stages)
 		.values({
 			competitionId,
-			name: 'Week 1',
-			description: 'Spring League 2026 - Week 1 fixtures',
-			urlSlug: 'week-1',
+			name: 'Week 2',
+			description: 'Spring League 2026 - Week 2 fixtures',
+			urlSlug: 'week-2',
 			type: 'PLAY',
 		})
 		.returning()
@@ -183,7 +199,10 @@ async function getCourtOrThrow(venueName: string, courtName: string) {
 	return court
 }
 
-async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { name: string; level: string; type: 'MEN' | 'WOMEN' | 'MIXED' }) {
+async function getOrCreateWeekDivision(
+	weekStageId: number,
+	sourceDivision: { name: string; level: string; type: 'MEN' | 'WOMEN' | 'MIXED' },
+) {
 	const existing = await db.query.divisions.findFirst({
 		where: and(eq(divisions.stageId, weekStageId), eq(divisions.level, sourceDivision.level)),
 	})
@@ -197,7 +216,7 @@ async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { na
 		.values({
 			stageId: weekStageId,
 			name: sourceDivision.name,
-			description: `Week 1 - ${sourceDivision.level}`,
+			description: `Week 2 - ${sourceDivision.level}`,
 			level: sourceDivision.level,
 			type: sourceDivision.type,
 			urlSlug: `${sourceDivision.level.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
@@ -205,6 +224,66 @@ async function getOrCreateWeekDivision(weekStageId: number, sourceDivision: { na
 		.returning()
 
 	return created
+}
+
+function buildWeek2TeamsByDivision(
+	registrationDivisions: Array<{
+		id: number
+		level: string
+		teams: Array<{ id: number; name: string }>
+	}>,
+) {
+	const teamsByDivision = new Map<string, Array<{ id: number; name: string }>>(
+		registrationDivisions.map((division) => [
+			division.level,
+			division.teams.map((team) => ({ id: team.id, name: team.name })),
+		]),
+	)
+
+	for (const move of TEAM_DIVISION_OVERRIDES) {
+		let sourceDivisionLevel: string | null = null
+
+		for (const [divisionLevel, teams] of teamsByDivision.entries()) {
+			if (teams.some((team) => team.name === move.teamName)) {
+				sourceDivisionLevel = divisionLevel
+				break
+			}
+		}
+
+		if (!sourceDivisionLevel) {
+			throw new Error(`Team not found in current divisions: ${move.teamName}`)
+		}
+
+		if (sourceDivisionLevel === move.targetDivisionLevel) {
+			continue
+		}
+
+		const sourceTeams = teamsByDivision.get(sourceDivisionLevel)
+		const targetTeams = teamsByDivision.get(move.targetDivisionLevel)
+
+		if (!sourceTeams || !targetTeams) {
+			throw new Error(
+				`Invalid division move for ${move.teamName}: ${sourceDivisionLevel} -> ${move.targetDivisionLevel}`,
+			)
+		}
+
+		const teamIndex = sourceTeams.findIndex((team) => team.name === move.teamName)
+		if (teamIndex < 0) {
+			throw new Error(`Team not found in source division: ${move.teamName}`)
+		}
+
+		const [team] = sourceTeams.splice(teamIndex, 1)
+		targetTeams.push(team)
+	}
+
+	for (const [divisionLevel, teams] of teamsByDivision.entries()) {
+		const uniqueIds = new Set(teams.map((team) => team.id))
+		if (uniqueIds.size !== teams.length) {
+			throw new Error(`Duplicate team assignment detected in ${divisionLevel}`)
+		}
+	}
+
+	return teamsByDivision
 }
 
 async function regenerateStandingsForCompetition(competitionId: number) {
@@ -269,7 +348,7 @@ async function run() {
 		competition.registrationStageId,
 	)
 
-	const week1Stage = await getOrCreateWeek1Stage(competition.id)
+	const week2Stage = await getOrCreateWeek2Stage(competition.id)
 
 	const registrationDivisions = await db.query.divisions.findMany({
 		where: eq(divisions.stageId, registrationStage.id),
@@ -280,17 +359,26 @@ async function run() {
 		},
 	})
 
+	const week2TeamsByDivision = buildWeek2TeamsByDivision(registrationDivisions)
+
 	let totalGames = 0
 	let totalGameSets = 0
 
-	for (const assignment of WEEK_1_ASSIGNMENTS) {
-		const sourceDivision = registrationDivisions.find((d) => d.level === assignment.divisionLevel)
+	for (const assignment of WEEK_2_ASSIGNMENTS) {
+		const sourceDivision = registrationDivisions.find(
+			(d) => d.level === assignment.divisionLevel,
+		)
 
 		if (!sourceDivision) {
 			throw new Error(`Registration division not found: ${assignment.divisionLevel}`)
 		}
 
-		const scheduledDivision = await getOrCreateWeekDivision(week1Stage.id, {
+		const divisionTeams = week2TeamsByDivision.get(assignment.divisionLevel)
+		if (!divisionTeams || divisionTeams.length < 2) {
+			throw new Error(`Not enough teams in ${assignment.divisionLevel} for Week 2 scheduling.`)
+		}
+
+		const scheduledDivision = await getOrCreateWeekDivision(week2Stage.id, {
 			name: sourceDivision.name,
 			level: sourceDivision.level,
 			type: sourceDivision.type,
@@ -302,7 +390,7 @@ async function run() {
 		const divisionForScheduling: DivisionForScheduling = {
 			id: scheduledDivision.id,
 			name: scheduledDivision.name,
-			teams: sourceDivision.teams.map((team) => ({ id: team.id, name: team.name })),
+			teams: divisionTeams.map((team) => ({ id: team.id, name: team.name })),
 		}
 
 		const scheduledGames = generateRoundRobinSchedule(
@@ -331,7 +419,7 @@ async function run() {
 					teamBId: fixture.teamB.id,
 					reffingTeamId: reffingTeamIds[index],
 					name: `${scheduledDivision.level} - ${fixture.teamA.name} vs ${fixture.teamB.name}`,
-					description: `Week 1 fixture at ${assignment.venueName} / ${assignment.courtName}`,
+					description: `Week 2 fixture at ${assignment.venueName} / ${assignment.courtName}`,
 					startTime: toDateTime(fixture.date, fixture.startTime),
 					endTime: toDateTime(fixture.date, fixture.endTime),
 				})
@@ -341,7 +429,7 @@ async function run() {
 				gameId: game.id,
 				courtId: court.id,
 				name: 'Set 1',
-				description: 'Week 1 scheduled match slot',
+				description: 'Week 2 scheduled match slot',
 				startTime: toDateTime(fixture.date, fixture.startTime),
 				endTime: toDateTime(fixture.date, fixture.endTime),
 			})
@@ -354,7 +442,7 @@ async function run() {
 	const totalStandings = await regenerateStandingsForCompetition(competition.id)
 
 	console.log(
-		`Generated Week 1 stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}, standings=${totalStandings}`,
+		`Generated Week 2 stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}, standings=${totalStandings}`,
 	)
 }
 

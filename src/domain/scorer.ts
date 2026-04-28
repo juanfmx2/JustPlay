@@ -70,6 +70,64 @@ function computeTeamStandingSummaryFromGames(
   return { gamesWon, gamesLost, pointsFor, pointsAgainst, coefficient, leaguePoints }
 }
 
+async function recalculateStandingsForStageInTx(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  stageId: number,
+): Promise<void> {
+  const stageDivisions = await tx.query.divisions.findMany({
+    where: eq(divisions.stageId, stageId),
+  })
+
+  for (const div of stageDivisions) {
+    const divGames = await tx.query.games.findMany({
+      where: and(
+        eq(games.divisionId, div.id),
+        isNotNull(games.scoreTeamA),
+        isNotNull(games.scoreTeamB),
+      ),
+    })
+
+    const divStandings = await tx.query.standings.findMany({
+      where: and(
+        eq(standings.stageId, stageId),
+        eq(standings.divisionId, div.id),
+      ),
+    })
+
+    const winnerLeaguePoints = isDivisionOne(div.level) ? 3 : 2
+
+    for (const row of divStandings) {
+      const teamGames = divGames.filter(
+        (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
+      )
+
+      const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, winnerLeaguePoints)
+      const penalties = row.penalties ?? 0
+      const leaguePointsMinusPenalties =
+        penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties
+
+      await tx
+        .update(standings)
+        .set({
+          gamesWon: summary.gamesWon,
+          gamesLost: summary.gamesLost,
+          pointsFor: summary.pointsFor,
+          pointsAgainst: summary.pointsAgainst,
+          coefficient: summary.coefficient,
+          leaguePoints: summary.leaguePoints,
+          leaguePointsMinusPenalties,
+        })
+        .where(eq(standings.id, row.id))
+    }
+  }
+}
+
+export async function recalculateStandingsForStage(stageId: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await recalculateStandingsForStageInTx(tx, stageId)
+  })
+}
+
 export async function applyGameSetScoreAndUpdateStandings(
   input: ApplyGameSetScoreInput,
 ): Promise<void> {
@@ -108,53 +166,6 @@ export async function applyGameSetScoreAndUpdateStandings(
       .set({ scoreTeamA: input.scoreTeamA, scoreTeamB: input.scoreTeamB })
       .where(eq(games.id, game.id))
 
-    // 3. Load every division in this stage
-    const stageDivisions = await tx.query.divisions.findMany({
-      where: eq(divisions.stageId, stageId),
-    })
-
-    // 4. For each division, reload all scored games and recalculate every standing row
-    for (const div of stageDivisions) {
-      const divGames = await tx.query.games.findMany({
-        where: and(
-          eq(games.divisionId, div.id),
-          isNotNull(games.scoreTeamA),
-          isNotNull(games.scoreTeamB),
-        ),
-      })
-
-      const divStandings = await tx.query.standings.findMany({
-        where: and(
-          eq(standings.stageId, stageId),
-          eq(standings.divisionId, div.id),
-        ),
-      })
-
-      const winnerLeaguePoints = isDivisionOne(div.level) ? 3 : 2
-
-      for (const row of divStandings) {
-        const teamGames = divGames.filter(
-          (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
-        )
-
-        const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, winnerLeaguePoints)
-        const penalties = row.penalties ?? 0
-        const leaguePointsMinusPenalties =
-          penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties
-
-        await tx
-          .update(standings)
-          .set({
-            gamesWon: summary.gamesWon,
-            gamesLost: summary.gamesLost,
-            pointsFor: summary.pointsFor,
-            pointsAgainst: summary.pointsAgainst,
-            coefficient: summary.coefficient,
-            leaguePoints: summary.leaguePoints,
-            leaguePointsMinusPenalties,
-          })
-          .where(eq(standings.id, row.id))
-      }
-    }
+    await recalculateStandingsForStageInTx(tx, stageId)
   })
 }
