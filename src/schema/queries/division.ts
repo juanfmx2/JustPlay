@@ -1,8 +1,10 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, desc} from 'drizzle-orm'
 
 import { db } from '../../db/client'
 import { stages } from '../competition'
 import { divisions, type DivisionWithTeamsGamesAndSets } from '../division'
+import { teams } from '../team'
+import { standings } from '../standings'
 
 export async function getDivisionWithTeamsAndGames(input: {
   stageUrlSlug: string
@@ -44,3 +46,14 @@ export async function getDivisionWithTeamsAndGames(input: {
 
   return (division as DivisionWithTeamsGamesAndSets | undefined) ?? null
 }
+
+export async function getDivisionTeamsAndStandingsSortedByStandings(divId: number) {
+  const teamsInDivSorted = await db
+    .select()
+    .from(teams)
+    .innerJoin(standings, eq(standings.teamId, teams.id))
+    .where(eq(standings.divisionId, divId))
+    .orderBy(desc(standings.gamesWon), desc(standings.coefficient))
+  console.log(teamsInDivSorted)
+  return teamsInDivSorted
+} 
