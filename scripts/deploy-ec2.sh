@@ -68,5 +68,6 @@ pm2 stop justplay || true
 pm2 delete justplay || true
 git pull --ff-only
 DATABASE_URL="${database_url}" pnpm build
+DATABASE_URL="${database_url}" pnpm db:generate-spring-league-w2
 DATABASE_URL="${database_url}" pm2 start "pnpm dev" --name justplay --update-env
 REMOTE_SCRIPT
