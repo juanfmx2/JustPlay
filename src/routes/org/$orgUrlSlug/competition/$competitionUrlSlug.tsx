@@ -27,6 +27,8 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
         competition: null,
         week1Stage: null,
         week1Divisions: [],
+        week2Stage: null,
+        week2Divisions: [],
       }
     }
 
@@ -41,11 +43,24 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
         })
       : []
 
+    const week2Stage = await db.query.stages.findFirst({
+      where: and(eq(stages.competitionId, competition.id), eq(stages.urlSlug, 'week-2')),
+    })
+
+    const week2Divisions = week2Stage
+      ? await db.query.divisions.findMany({
+          where: eq(divisions.stageId, week2Stage.id),
+          orderBy: (division, { asc }) => [asc(division.level)],
+        })
+      : []
+
     return {
       organization,
       competition,
       week1Stage,
       week1Divisions,
+      week2Stage,
+      week2Divisions,
     }
   })
 
@@ -123,10 +138,51 @@ function CompetitionDetailPage() {
         </div>
       </header>
 
-      {data.week1Stage && data.week1Divisions.length > 0 ? (
+      {data.week2Stage && data.week2Divisions.length > 0 ? (
         <article className="mb-4 border rounded p-3 text-center">
-          <h2 className="h4 mb-3">Week 1</h2>
+          <h2 className="h4 mb-3">Week 2</h2>
           <div className="d-flex flex-column gap-3">
+            {data.week2Divisions.map((division) => (
+              <div key={division.id}>
+                <h3 className="h6 mb-2">{division.name}</h3>
+                <div className="d-flex w-100 gap-2 justify-content-center">
+                  <Link
+                    className="btn btn-banana w-50"
+                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
+                    params={{
+                      orgUrlSlug: data.organization.urlSlug,
+                      competitionUrlSlug: data.competition.urlSlug ?? '',
+                      stageUrlSlug: data.week2Stage?.urlSlug ?? '',
+                      divUrlSlug: division.urlSlug ?? '',
+                    }}
+                  >
+                    Schedule
+                  </Link>
+                  <Link
+                    className="btn btn-outline-secondary w-50"
+                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/$divUrlSlug"
+                    params={{
+                      orgUrlSlug: data.organization.urlSlug,
+                      competitionUrlSlug: data.competition.urlSlug ?? '',
+                      stageUrlSlug: data.week2Stage?.urlSlug ?? '',
+                      divUrlSlug: division.urlSlug ?? '',
+                    }}
+                  >
+                    Standings
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      ) : null}
+
+      {data.week1Stage && data.week1Divisions.length > 0 ? (
+        <details className="mb-4 border rounded p-3 text-center">
+          <summary className="h4 mb-0" style={{ cursor: 'pointer', listStyle: 'none' }}>
+            <span className="me-2">&#9654;</span>Week 1
+          </summary>
+          <div className="d-flex flex-column gap-3 mt-3">
             {data.week1Divisions.map((division) => (
               <div key={division.id}>
                 <h3 className="h6 mb-2">{division.name}</h3>
@@ -159,7 +215,7 @@ function CompetitionDetailPage() {
               </div>
             ))}
           </div>
-        </article>
+        </details>
       ) : null}
 
     </section>
