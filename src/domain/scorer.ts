@@ -1,7 +1,7 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
 
 import { db } from '@/db/client'
-import { divisions, games, gameSets, standings } from '@/schema'
+import { divisions, games, gameSets, stages, standings } from '@/schema'
 
 type ApplyGameSetScoreInput = {
   gameSetId: number
@@ -18,6 +18,13 @@ type TeamStandingSummary = {
   leaguePoints: number
 }
 
+type DivisionScoringRules = {
+  winnerLeaguePoints: number
+  closeLossLeaguePoints: number
+  closeLossThreshold: number
+  weeklyBonusPoints: number
+}
+
 function assertValidScore(value: number, label: string): void {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${label} must be a non-negative integer.`)
@@ -29,16 +36,60 @@ function isDivisionOne(level: string): boolean {
   return normalized === '1' || normalized === 'div 1' || normalized === 'division 1'
 }
 
+function normalizeDivisionLevel(level: string): string {
+  return level.trim().toLowerCase()
+}
+
+function getDivisionScoringRules(level: string, stageUrlSlug: string | null): DivisionScoringRules {
+  const normalizedLevel = normalizeDivisionLevel(level)
+  const normalizedStageUrlSlug = stageUrlSlug?.trim().toLowerCase() ?? ''
+  const divisionOneBonus = isDivisionOne(level) && normalizedStageUrlSlug !== 'week-1' ? 1 : 0
+
+  if (normalizedLevel === '2' || normalizedLevel === 'div 2' || normalizedLevel === 'division 2') {
+    return {
+      winnerLeaguePoints: 2,
+      closeLossLeaguePoints: 1,
+      closeLossThreshold: 12,
+      weeklyBonusPoints: 0,
+    }
+  }
+
+  if (normalizedLevel === '3' || normalizedLevel === 'div 3' || normalizedLevel === 'division 3') {
+    return {
+      winnerLeaguePoints: 2,
+      closeLossLeaguePoints: 1,
+      closeLossThreshold: 14,
+      weeklyBonusPoints: 0,
+    }
+  }
+
+  if (normalizedLevel === '4' || normalizedLevel === 'div 4' || normalizedLevel === 'division 4') {
+    return {
+      winnerLeaguePoints: 2,
+      closeLossLeaguePoints: 1,
+      closeLossThreshold: 16,
+      weeklyBonusPoints: 0,
+    }
+  }
+
+  return {
+    winnerLeaguePoints: 3,
+    closeLossLeaguePoints: 2,
+    closeLossThreshold: 10,
+    weeklyBonusPoints: divisionOneBonus,
+  }
+}
+
 function computeTeamStandingSummaryFromGames(
   allGames: Array<{ teamAId: number; teamBId: number; scoreTeamA: number | null; scoreTeamB: number | null }>,
   teamId: number,
-  winnerLeaguePoints: number,
+  scoringRules: DivisionScoringRules,
 ): TeamStandingSummary {
   let gamesWon = 0
   let gamesLost = 0
   let pointsFor = 0
   let pointsAgainst = 0
-  let leaguePoints = 0
+  let leaguePoints = scoringRules.weeklyBonusPoints
 
   for (const game of allGames) {
     const scoreA = game.scoreTeamA ?? 0
@@ -53,14 +104,14 @@ function computeTeamStandingSummaryFromGames(
 
     if (teamScore > opponentScore) {
       gamesWon += 1
-      leaguePoints += winnerLeaguePoints
+      leaguePoints += scoringRules.winnerLeaguePoints
       continue
     }
 
     if (teamScore < opponentScore) {
       gamesLost += 1
-      if (opponentScore - teamScore <= 10) {
-        leaguePoints += 1
+      if (opponentScore - teamScore <= scoringRules.closeLossThreshold) {
+        leaguePoints += scoringRules.closeLossLeaguePoints
       }
     }
   }
@@ -74,6 +125,10 @@ async function recalculateStandingsForStageInTx(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
   stageId: number,
 ): Promise<void> {
+  const stage = await tx.query.stages.findFirst({
+    where: eq(stages.id, stageId),
+  })
+
   const stageDivisions = await tx.query.divisions.findMany({
     where: eq(divisions.stageId, stageId),
   })
@@ -94,14 +149,14 @@ async function recalculateStandingsForStageInTx(
       ),
     })
 
-    const winnerLeaguePoints = isDivisionOne(div.level) ? 3 : 2
+    const scoringRules = getDivisionScoringRules(div.level, stage?.urlSlug ?? null)
 
     for (const row of divStandings) {
       const teamGames = divGames.filter(
         (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
       )
 
-      const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, winnerLeaguePoints)
+      const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, scoringRules)
       const penalties = row.penalties ?? 0
       const leaguePointsMinusPenalties =
         penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties

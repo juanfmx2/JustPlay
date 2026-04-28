@@ -286,9 +286,9 @@ function buildWeek2TeamsByDivision(
 	return teamsByDivision
 }
 
-async function regenerateStandingsForCompetition(competitionId: number) {
-	const competitionStages = await db.query.stages.findMany({
-		where: and(eq(stages.competitionId, competitionId), eq(stages.type, 'PLAY')),
+async function regenerateStandingsForStage(stageId: number) {
+	const stage = await db.query.stages.findFirst({
+		where: eq(stages.id, stageId),
 		with: {
 			divisions: {
 				with: {
@@ -306,35 +306,37 @@ async function regenerateStandingsForCompetition(competitionId: number) {
 		},
 	})
 
+	if (!stage) {
+		throw new Error(`Stage not found for standings regeneration: ${stageId}`)
+	}
+
 	let standingsRows = 0
 
-	for (const stage of competitionStages) {
-		for (const division of stage.divisions) {
-			await db
-				.delete(standings)
-				.where(and(eq(standings.stageId, stage.id), eq(standings.divisionId, division.id)))
+	for (const division of stage.divisions) {
+		await db
+			.delete(standings)
+			.where(and(eq(standings.stageId, stage.id), eq(standings.divisionId, division.id)))
 
-			const competingTeamIds = new Set<number>()
+		const competingTeamIds = new Set<number>()
 
-			for (const team of division.teams) {
-				competingTeamIds.add(team.id)
-			}
+		for (const team of division.teams) {
+			competingTeamIds.add(team.id)
+		}
 
-			for (const game of division.games) {
-				competingTeamIds.add(game.teamAId)
-				competingTeamIds.add(game.teamBId)
-			}
+		for (const game of division.games) {
+			competingTeamIds.add(game.teamAId)
+			competingTeamIds.add(game.teamBId)
+		}
 
-			const records = Array.from(competingTeamIds).map((teamId) => ({
-				stageId: stage.id,
-				divisionId: division.id,
-				teamId,
-			}))
+		const records = Array.from(competingTeamIds).map((teamId) => ({
+			stageId: stage.id,
+			divisionId: division.id,
+			teamId,
+		}))
 
-			if (records.length > 0) {
-				await db.insert(standings).values(records)
-				standingsRows += records.length
-			}
+		if (records.length > 0) {
+			await db.insert(standings).values(records)
+			standingsRows += records.length
 		}
 	}
 
@@ -439,7 +441,7 @@ async function run() {
 		}
 	}
 
-	const totalStandings = await regenerateStandingsForCompetition(competition.id)
+	const totalStandings = await regenerateStandingsForStage(week2Stage.id)
 
 	console.log(
 		`Generated Week 2 stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}, standings=${totalStandings}`,
