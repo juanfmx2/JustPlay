@@ -1,9 +1,9 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '@/db/client'
-import { competitions, divisions, organizations, stages } from '@/schema'
+import { competitions, organizations, stages } from '@/schema'
 
 const loadCompetitionRegistration = createServerFn({ method: 'GET' })
   .inputValidator((input: { orgUrlSlug: string; competitionUrlSlug: string }) => input)
@@ -25,42 +25,64 @@ const loadCompetitionRegistration = createServerFn({ method: 'GET' })
       return {
         organization,
         competition: null,
-        week1Stage: null,
-        week1Divisions: [],
-        week2Stage: null,
-        week2Divisions: [],
+        playStages: [],
       }
     }
 
-    const week1Stage = await db.query.stages.findFirst({
-      where: and(eq(stages.competitionId, competition.id), eq(stages.urlSlug, 'week-1')),
+    const playStagesRaw = await db.query.stages.findMany({
+      where: and(
+        eq(stages.competitionId, competition.id),
+        ne(stages.type, 'REGISTRATION'),
+      ),
+      with: {
+        divisions: {
+          orderBy: (division, { asc }) => [asc(division.level)],
+          with: {
+            games: {
+              columns: {
+                startTime: true,
+              },
+            },
+          },
+        },
+      },
     })
 
-    const week1Divisions = week1Stage
-      ? await db.query.divisions.findMany({
-          where: eq(divisions.stageId, week1Stage.id),
-          orderBy: (division, { asc }) => [asc(division.level)],
-        })
-      : []
+    const playStages = playStagesRaw
+      .map((stage) => {
+        const stageStartTimes = stage.divisions.flatMap((division) =>
+          division.games
+            .map((game) => game.startTime)
+            .filter((startTime): startTime is Date => startTime !== null),
+        )
 
-    const week2Stage = await db.query.stages.findFirst({
-      where: and(eq(stages.competitionId, competition.id), eq(stages.urlSlug, 'week-2')),
-    })
+        const stageDate =
+          stageStartTimes.length > 0
+            ? new Date(
+                Math.max(...stageStartTimes.map((startTime) => startTime.getTime())),
+              )
+            : null
 
-    const week2Divisions = week2Stage
-      ? await db.query.divisions.findMany({
-          where: eq(divisions.stageId, week2Stage.id),
-          orderBy: (division, { asc }) => [asc(division.level)],
-        })
-      : []
+        return {
+          ...stage,
+          divisions: stage.divisions.map(({ games, ...division }) => division),
+          stageDate,
+        }
+      })
+      .sort((a, b) => {
+        const aTime = a.stageDate?.getTime() ?? Number.NEGATIVE_INFINITY
+        const bTime = b.stageDate?.getTime() ?? Number.NEGATIVE_INFINITY
+        if (bTime !== aTime) {
+          return bTime - aTime
+        }
+
+        return b.id - a.id
+      })
 
     return {
       organization,
       competition,
-      week1Stage,
-      week1Divisions,
-      week2Stage,
-      week2Divisions,
+      playStages,
     }
   })
 
@@ -138,83 +160,10 @@ function CompetitionDetailPage() {
         </div>
       </header>
 
-      {data.week2Stage && data.week2Divisions.length > 0 ? (
-        <article className="mb-4 border rounded p-3 text-center">
-          <div className="position-relative mb-3">
-            <h2 className="h4 mb-0">Week 2</h2>
-            <Link
-              className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
-              to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
-              params={{
-                orgUrlSlug: data.organization.urlSlug,
-                competitionUrlSlug: data.competition.urlSlug ?? '',
-                stageUrlSlug: data.week2Stage.urlSlug ?? '',
-              }}
-            >
-              All Standings
-            </Link>
-          </div>
-          <div className="d-flex flex-column gap-3">
-            {data.week2Divisions.map((division) => (
-              <div key={division.id}>
-                <h3 className="h6 mb-2">{division.name}</h3>
-                <div className="d-flex w-100 gap-2 justify-content-center">
-                  <Link
-                    className="btn btn-banana w-50"
-                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
-                    params={{
-                      orgUrlSlug: data.organization.urlSlug,
-                      competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: data.week2Stage?.urlSlug ?? '',
-                      divUrlSlug: division.urlSlug ?? '',
-                    }}
-                  >
-                    Schedule
-                  </Link>
-                  <Link
-                    className="btn btn-outline-secondary w-50"
-                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/$divUrlSlug"
-                    params={{
-                      orgUrlSlug: data.organization.urlSlug,
-                      competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: data.week2Stage?.urlSlug ?? '',
-                      divUrlSlug: division.urlSlug ?? '',
-                    }}
-                  >
-                    Standings
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-      ) : null}
-
-      {data.week1Stage && data.week1Divisions.length > 0 ? (
-        <details className="mb-4 border rounded p-3 text-center">
-          <summary
-            className="h4 mb-0 position-relative text-center"
-            style={{ cursor: 'pointer', listStyle: 'none' }}
-          >
-            <span className="position-absolute start-0 top-50 translate-middle-y" aria-hidden="true">
-              &#9654;
-            </span>
-            <span>Week 1</span>
-            <Link
-              className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
-              to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
-              params={{
-                orgUrlSlug: data.organization.urlSlug,
-                competitionUrlSlug: data.competition.urlSlug ?? '',
-                stageUrlSlug: data.week1Stage.urlSlug ?? '',
-              }}
-              onClick={(event) => event.stopPropagation()}
-            >
-              All Standings
-            </Link>
-          </summary>
+      {data.playStages.map((stage, index) => {
+        const stageContent = (
           <div className="d-flex flex-column gap-3 mt-3">
-            {data.week1Divisions.map((division) => (
+            {stage.divisions.map((division) => (
               <div key={division.id}>
                 <h3 className="h6 mb-2">{division.name}</h3>
                 <div className="d-flex w-100 gap-2 justify-content-center">
@@ -224,7 +173,7 @@ function CompetitionDetailPage() {
                     params={{
                       orgUrlSlug: data.organization.urlSlug,
                       competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: data.week1Stage?.urlSlug ?? '',
+                      stageUrlSlug: stage.urlSlug ?? '',
                       divUrlSlug: division.urlSlug ?? '',
                     }}
                   >
@@ -236,7 +185,7 @@ function CompetitionDetailPage() {
                     params={{
                       orgUrlSlug: data.organization.urlSlug,
                       competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: data.week1Stage?.urlSlug ?? '',
+                      stageUrlSlug: stage.urlSlug ?? '',
                       divUrlSlug: division.urlSlug ?? '',
                     }}
                   >
@@ -246,8 +195,57 @@ function CompetitionDetailPage() {
               </div>
             ))}
           </div>
-        </details>
-      ) : null}
+        )
+
+        if (index === 0) {
+          return (
+            <article key={stage.id} className="mb-4 border rounded p-3 text-center">
+              <div className="position-relative mb-3">
+                <h2 className="h4 mb-0">{stage.name}</h2>
+                <Link
+                  className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
+                  to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+                  params={{
+                    orgUrlSlug: data.organization.urlSlug,
+                    competitionUrlSlug: data.competition.urlSlug ?? '',
+                    stageUrlSlug: stage.urlSlug ?? '',
+                  }}
+                >
+                  All Standings
+                </Link>
+              </div>
+              {stageContent}
+            </article>
+          )
+        }
+
+        return (
+          <details key={stage.id} className="mb-4 border rounded p-3 text-center">
+            <summary
+              className="h4 mb-0 position-relative text-center"
+              style={{ cursor: 'pointer', listStyle: 'none' }}
+            >
+              <span className="position-absolute start-0 top-50 translate-middle-y" aria-hidden="true">
+                &#9654;
+              </span>
+              <span>{stage.name}</span>
+              <Link
+                className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
+                to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+                params={{
+                  orgUrlSlug: data.organization.urlSlug,
+                  competitionUrlSlug: data.competition.urlSlug ?? '',
+                  stageUrlSlug: stage.urlSlug ?? '',
+                }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                All Standings
+              </Link>
+            </summary>
+            {stageContent}
+          </details>
+        )
+      })}
 
     </section>
   )
