@@ -192,6 +192,7 @@ function AllStandingsPage() {
               orgUrlSlug: data.organization.urlSlug,
               competitionUrlSlug: data.competition.urlSlug ?? '',
             }}
+            hash={data.stage.urlSlug ?? ''}
           >
             Back to Competition
           </Link>

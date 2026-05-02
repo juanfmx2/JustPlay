@@ -1,4 +1,5 @@
 import { and, eq, ne } from 'drizzle-orm'
+import { useEffect } from 'react'
 import { createFileRoute, Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -100,7 +101,52 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
 
 function CompetitionDetailPage() {
   const data = Route.useLoaderData()
-  const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const { pathname, hash } = useRouterState({
+    select: (state) => ({
+      pathname: state.location.pathname,
+      hash: state.location.hash,
+    }),
+  })
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(() => {
+      const stageDetails = Array.from(
+        document.querySelectorAll('details[name="competition-stages"]'),
+      ) as HTMLDetailsElement[]
+
+      const selectedStageSlug = hash.replace(/^#/, '')
+
+      if (!selectedStageSlug) {
+        stageDetails.forEach((details, index) => {
+          details.open = index === 0
+        })
+        return
+      }
+
+      stageDetails.forEach((details) => {
+        details.open = false
+      })
+
+      const wrapper = document.getElementById(selectedStageSlug)
+      const target = wrapper?.querySelector(
+        'details[name="competition-stages"]',
+      ) as HTMLDetailsElement | null
+
+      if (!target) {
+        stageDetails.forEach((details, index) => {
+          details.open = index === 0
+        })
+        return
+      }
+
+      target.open = true
+      if (wrapper) {
+        wrapper.scrollIntoView({ block: 'start' })
+      }
+    })
+
+    return () => cancelAnimationFrame(frameId)
+  }, [hash, data?.playStages.length])
 
   if (
     pathname.includes('/rules') ||
@@ -161,6 +207,8 @@ function CompetitionDetailPage() {
       </header>
 
       {data.playStages.map((stage, index) => {
+        const stageSectionId = stage.urlSlug ?? `stage-${stage.id}`
+
         const stageContent = (
           <div className="d-flex flex-column gap-3 mt-3">
             {stage.divisions.map((division) => (
@@ -197,30 +245,13 @@ function CompetitionDetailPage() {
           </div>
         )
 
-        if (index === 0) {
-          return (
-            <article key={stage.id} className="mb-4 border rounded p-3 text-center">
-              <div className="position-relative mb-3">
-                <h2 className="h4 mb-0">{stage.name}</h2>
-                <Link
-                  className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
-                  to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
-                  params={{
-                    orgUrlSlug: data.organization.urlSlug,
-                    competitionUrlSlug: data.competition.urlSlug ?? '',
-                    stageUrlSlug: stage.urlSlug ?? '',
-                  }}
-                >
-                  All Standings
-                </Link>
-              </div>
-              {stageContent}
-            </article>
-          )
-        }
-
         return (
-          <details key={stage.id} className="mb-4 border rounded p-3 text-center">
+          <div key={stage.id} id={stageSectionId} className="mb-4">
+          <details
+            name="competition-stages"
+            open={index === 0}
+            className="border rounded p-3 text-center"
+          >
             <summary
               className="h4 mb-0 position-relative text-center"
               style={{ cursor: 'pointer', listStyle: 'none' }}
@@ -244,6 +275,7 @@ function CompetitionDetailPage() {
             </summary>
             {stageContent}
           </details>
+          </div>
         )
       })}
 

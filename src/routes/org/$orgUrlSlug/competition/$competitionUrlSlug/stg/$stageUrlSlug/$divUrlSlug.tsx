@@ -492,7 +492,7 @@ function DivisionSchedulePage() {
             </a>
             <a
               className="btn btn-outline-secondary"
-              href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}`}
+              href={`/org/${data.organization.urlSlug}/competition/${data.competition.urlSlug}#${data.stage.urlSlug ?? ''}`}
             >
               Back to Competition
             </a>
