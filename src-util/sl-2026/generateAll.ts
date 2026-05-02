@@ -6,5 +6,6 @@ await import('./generateRegistration')
 await import('./generateWeek1')
 await import('./generateWeek1Scores')
 await import('./generateWeek2')
+await import('./generateWeek2Scores')
 
 console.log('Spring League 2026: all generation steps completed.')
