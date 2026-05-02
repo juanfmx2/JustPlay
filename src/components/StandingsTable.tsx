@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import type React from 'react'
 
 export type StandingRow = {
   id: number
@@ -18,6 +19,9 @@ type Props = {
   rows: StandingRow[]
   /** Numeric division level (1, 2, 3, 4 …). Used to determine promotion/relegation rows. */
   divNum: number
+  highlightMovementRows?: boolean
+  /** If set, renders a thicker border-bottom after every Nth row (1-based). */
+  groupEveryNRows?: number
 }
 
 function asDisplayNumber(value: number | null): string {
@@ -27,14 +31,20 @@ function asDisplayNumber(value: number | null): string {
 function asDisplayCoefficient(value: string | null): string {
   return value === null ? '--' : value
 }
-export function StandingsTable({ rows, divNum }: Props) {
+export function StandingsTable({ rows, divNum, highlightMovementRows = true, groupEveryNRows }: Props) {
   const lastIndex = rows.length - 1
-  const showPromotion = divNum >= 2
-  const showRelegation = divNum <= 3
+  const showPromotion = highlightMovementRows && divNum >= 2
+  const showRelegation = highlightMovementRows && divNum <= 3
 
   function rowClass(index: number): string | undefined {
     if (index === 0 && showPromotion) return 'table-success'
     if (index === lastIndex && showRelegation) return 'table-danger'
+    return undefined
+  }
+
+  function groupBorderStyle(index: number): React.CSSProperties | undefined {
+    if (groupEveryNRows && (index + 1) % groupEveryNRows === 0 && index !== lastIndex)
+      return { borderBottom: '2px solid var(--bs-secondary)' }
     return undefined
   }
 
@@ -63,7 +73,7 @@ export function StandingsTable({ rows, divNum }: Props) {
           </thead>
           <tbody>
             {rows.map((row, index) => (
-              <tr key={row.id} className={rowClass(index)}>
+              <tr key={row.id} className={rowClass(index)} style={groupBorderStyle(index)}>
                 <th scope="row" className="text-center">{index + 1}</th>
                 <td style={{ minWidth: '8rem', maxWidth: '16rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>{row.teamName}</td>
                 <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
@@ -114,7 +124,7 @@ export function StandingsTable({ rows, divNum }: Props) {
                   <td className="text-center"><b>LP</b></td>
                   <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
                 </tr>
-                <tr className={rowClass(index)}>
+                <tr className={rowClass(index)} style={groupBorderStyle(index)}>
                   <td colSpan={2} className="text-center"><b>LP-P</b></td>
                   <td colSpan={2} className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
                 </tr>
