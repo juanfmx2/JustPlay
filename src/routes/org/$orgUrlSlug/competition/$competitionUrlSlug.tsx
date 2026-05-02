@@ -140,7 +140,20 @@ function CompetitionDetailPage() {
 
       {data.week2Stage && data.week2Divisions.length > 0 ? (
         <article className="mb-4 border rounded p-3 text-center">
-          <h2 className="h4 mb-3">Week 2</h2>
+          <div className="position-relative mb-3">
+            <h2 className="h4 mb-0">Week 2</h2>
+            <Link
+              className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
+              to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+              params={{
+                orgUrlSlug: data.organization.urlSlug,
+                competitionUrlSlug: data.competition.urlSlug ?? '',
+                stageUrlSlug: data.week2Stage.urlSlug ?? '',
+              }}
+            >
+              All Standings
+            </Link>
+          </div>
           <div className="d-flex flex-column gap-3">
             {data.week2Divisions.map((division) => (
               <div key={division.id}>
@@ -179,8 +192,26 @@ function CompetitionDetailPage() {
 
       {data.week1Stage && data.week1Divisions.length > 0 ? (
         <details className="mb-4 border rounded p-3 text-center">
-          <summary className="h4 mb-0" style={{ cursor: 'pointer', listStyle: 'none' }}>
-            <span className="me-2">&#9654;</span>Week 1
+          <summary
+            className="h4 mb-0 position-relative text-center"
+            style={{ cursor: 'pointer', listStyle: 'none' }}
+          >
+            <span className="position-absolute start-0 top-50 translate-middle-y" aria-hidden="true">
+              &#9654;
+            </span>
+            <span>Week 1</span>
+            <Link
+              className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
+              to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+              params={{
+                orgUrlSlug: data.organization.urlSlug,
+                competitionUrlSlug: data.competition.urlSlug ?? '',
+                stageUrlSlug: data.week1Stage.urlSlug ?? '',
+              }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              All Standings
+            </Link>
           </summary>
           <div className="d-flex flex-column gap-3 mt-3">
             {data.week1Divisions.map((division) => (
