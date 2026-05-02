@@ -1,11 +1,12 @@
 export {}
 
-console.log('Spring League 2026: starting registration, week 1, and week 2 generation...')
+console.log('Spring League 2026: starting registration and week progression generation...')
 
-await import('./generateRegistration')
-await import('./generateWeek1')
-await import('./generateWeek1Scores')
-await import('./generateWeek2')
-await import('./generateWeek2Scores')
+await import('./generateRegistration.ts')
+await import('./generateWeek1.ts')
+await import('./generateWeek1Scores.ts')
+await import('./generateWeek2.ts')
+await import('./generateWeek2Scores.ts')
+await import('./generateWeek3.ts')
 
 console.log('Spring League 2026: all generation steps completed.')
