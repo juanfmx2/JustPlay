@@ -1,5 +1,4 @@
 import { and, eq } from 'drizzle-orm'
-import { Fragment } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -15,20 +14,8 @@ import {
   type Organization,
   type Stage,
 } from '@/schema'
-
-type StandingRow = {
-  id: number
-  teamId: number
-  teamName: string
-  gamesWon: number | null
-  gamesLost: number | null
-  pointsFor: number | null
-  pointsAgainst: number | null
-  coefficient: string | null
-  penalties: number | null
-  leaguePoints: number | null
-  leaguePointsMinusPenalties: number | null
-}
+import { StandingsTable, type StandingRow } from '@/components/StandingsTable'
+import { StandingsConventions } from '@/components/StandingsConventions'
 
 type LoaderData = {
   organization: Organization | null
@@ -165,16 +152,10 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
   component: DivisionStandingsPage,
 })
 
-function asDisplayNumber(value: number | null): string {
-  return value === null ? '--' : String(value)
-}
-
-function asDisplayCoefficient(value: string | null): string {
-  return value === null ? '--' : value
-}
-
 function DivisionStandingsPage() {
   const data = Route.useLoaderData()
+
+  const divNum = parseInt((data.division?.level ?? '').replace(/[^0-9]/g, ''), 10)
 
   if (!data.organization) {
     return (
@@ -246,114 +227,8 @@ function DivisionStandingsPage() {
         </div>
       </header>
 
-      {data.standingsRows.length === 0 ? (
-        <p className="text-body-secondary mb-0">No standings records found for this division yet.</p>
-      ) : (
-        <>
-          <div className="table-responsive d-none d-md-block">
-            <table className="table table-striped table-hover align-middle">
-              <thead>
-                <tr>
-                  <th scope="col" className="text-center">#</th>
-                  <th scope="col">Team</th>
-                  <th scope="col" className="text-center">GW</th>
-                  <th scope="col" className="text-center">GL</th>
-                  <th scope="col" className="text-center">PF</th>
-                  <th scope="col" className="text-center">PA</th>
-                  <th scope="col" className="text-center">Coef.</th>
-                  <th scope="col" className="text-center">P</th>
-                  <th scope="col" className="text-center">LP</th>
-                  <th scope="col" className="text-center">LP-P</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.standingsRows.map((row, index) => (
-                  <tr key={row.id}>
-                    <th scope="row" className="text-center">{index + 1}</th>
-                    <td style={{ minWidth: '8rem', maxWidth: '16rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>{row.teamName}</td>
-                    <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
-                    <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
-                    <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
-                    <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
-                    <td className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
-                    <td className="text-center">{asDisplayNumber(row.penalties)}</td>
-                    <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
-                    <td className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="table-responsive d-md-none">
-            <table className="table table-sm table-bordered align-middle mb-0">
-              <thead>
-                <tr>
-                  <th scope="col" className="text-center">Team</th>
-                  <th scope="col" className="text-center">GW</th>
-                  <th scope="col" className="text-center">GL</th>
-                  <th scope="col" className="text-center">PF</th>
-                  <th scope="col" className="text-center">PA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.standingsRows.map((row, index) => (
-                  <Fragment key={row.id}>
-                    <tr>
-                      <th scope="row" rowSpan={4} className="align-middle text-nowrap">
-                        <div className="fw-semibold" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}><b>#{index + 1}</b> - {row.teamName}</div>
-                      </th>
-                      <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
-                      <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
-                      <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
-                      <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2} className="text-center"><b>Coef.</b></td>
-                      <td colSpan={2} className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
-                    </tr>
-                    <tr>
-                      <td className="text-center">
-                        <b>P</b>
-                      </td>
-                      <td className="text-center">
-                        {asDisplayNumber(row.penalties)}
-                      </td>
-                      <td className="text-center">
-                        <b>LP</b>
-                      </td>
-                      <td className="text-center">
-                        {asDisplayNumber(row.leaguePoints)}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan={2} className="text-center">
-                        <b>LP-P</b>
-                      </td>
-                      <td colSpan={2} className="text-center">
-                        {asDisplayNumber(row.leaguePointsMinusPenalties)}
-                      </td>
-                    </tr>
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-3 p-3 border rounded bg-body-secondary small">
-            <p className="fw-semibold mb-1">Conventions</p>
-            <ul className="mb-0 ps-3">
-              <li><b>GW</b> — Games Won</li>
-              <li><b>GL</b> — Games Lost</li>
-              <li><b>PF</b> — Points For</li>
-              <li><b>PA</b> — Points Against</li>
-              <li><b>Coef.</b> — Coefficient (PF / PA)</li>
-              <li><b>P</b> — Penalties</li>
-              <li><b>LP</b> — League Points</li>
-              <li><b>LP-P</b> — League Points minus Penalties</li>
-            </ul>
-          </div>
-        </>
-      )}
+      <StandingsTable rows={data.standingsRows} divNum={isNaN(divNum) ? 0 : divNum} />
+      <StandingsConventions />
     </section>
   )
 }
