@@ -89,7 +89,7 @@ function computeTeamStandingSummaryFromGames(
   let gamesLost = 0
   let pointsFor = 0
   let pointsAgainst = 0
-  let leaguePoints = scoringRules.weeklyBonusPoints
+  let leaguePoints = 0
 
   for (const game of allGames) {
     const scoreA = game.scoreTeamA ?? 0
@@ -151,15 +151,33 @@ async function recalculateStandingsForStageInTx(
 
     const scoringRules = getDivisionScoringRules(div.level, stage?.urlSlug ?? null)
 
-    for (const row of divStandings) {
+    // Compute every team's summary first (without the weekly bonus)
+    const teamSummaries = divStandings.map((row) => {
       const teamGames = divGames.filter(
         (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
       )
-
       const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, scoringRules)
+      return { row, summary }
+    })
+
+    // Determine the team being demoted (lowest league points) so we can
+    // exclude it from the Division 1 survival bonus.
+    let demotedTeamId: number | null = null
+    if (scoringRules.weeklyBonusPoints > 0 && teamSummaries.length > 0) {
+      const minPoints = Math.min(...teamSummaries.map((t) => t.summary.leaguePoints))
+      const demoted = teamSummaries.find((t) => t.summary.leaguePoints === minPoints)
+      demotedTeamId = demoted?.row.teamId ?? null
+    }
+
+    for (const { row, summary } of teamSummaries) {
+      const survivorBonus =
+        scoringRules.weeklyBonusPoints > 0 && row.teamId !== demotedTeamId
+          ? scoringRules.weeklyBonusPoints
+          : 0
+      const totalLeaguePoints = summary.leaguePoints + survivorBonus
       const penalties = row.penalties ?? 0
       const leaguePointsMinusPenalties =
-        penalties === 0 ? summary.leaguePoints : summary.leaguePoints - penalties
+        penalties === 0 ? totalLeaguePoints : totalLeaguePoints - penalties
 
       await tx
         .update(standings)
@@ -169,7 +187,7 @@ async function recalculateStandingsForStageInTx(
           pointsFor: summary.pointsFor,
           pointsAgainst: summary.pointsAgainst,
           coefficient: summary.coefficient,
-          leaguePoints: summary.leaguePoints,
+          leaguePoints: totalLeaguePoints,
           leaguePointsMinusPenalties,
         })
         .where(eq(standings.id, row.id))

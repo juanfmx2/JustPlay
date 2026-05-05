@@ -131,7 +131,7 @@
           "html": "The team getting the lowest score on the day will get demoted to Division 2."
         },
         {
-          "html": "The teams in Division 1 will get 1 bonus point per week after 1st week."
+          "html": "At the end of each week stage, once all games have been played, every team that remains in Division 1 (i.e. is not being demoted) will receive 1 bonus point. This bonus does not apply in the 1st week."
         }
       ]
     },
