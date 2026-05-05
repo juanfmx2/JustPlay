@@ -47,7 +47,7 @@ ssh \
   -i "${tmp_key_file}" \
   -o IdentitiesOnly=yes \
   -o StrictHostKeyChecking=accept-new \
-  -tt "${SSH_USER}@${SSH_HOST}" \
+  -T "${SSH_USER}@${SSH_HOST}" \
   "bash -s -- '${db_url_b64}'" <<'REMOTE_SCRIPT'
 set -euo pipefail
 
@@ -64,10 +64,15 @@ else
   exit 1
 fi
 
+unset PM2_NO_DAEMON
+
 pm2 stop justplay || true
 pm2 delete justplay || true
 git pull --ff-only
 DATABASE_URL="${database_url}" pnpm build
-DATABASE_URL="${database_url}" pnpm db:generate-spring-league-w2
-DATABASE_URL="${database_url}" pm2 start "pnpm dev" --name justplay --update-env
+DATABASE_URL="${database_url}" pnpm db:drop-tables
+DATABASE_URL="${database_url}" pnpm db:gen-sl2026
+DATABASE_URL="${database_url}" pm2 start "pnpm dev" --name justplay --update-env </dev/null
+pm2 save
+pm2 status
 REMOTE_SCRIPT
