@@ -233,7 +233,7 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
 
   const now = new Date()
   const gameEnded = gameSet?.endTime && new Date(gameSet.endTime) < now
-  const dayEnded = gameSet?.endTime && new Date(gameSet.endTime).setHours(23, 0, 0, 0) < now.getTime()
+  const dayEnded = gameSet?.endTime && new Date(gameSet.endTime).setHours(22, 30, 0, 0) < now.getTime()
   const isActive = gameEnded && submittingSetId !== gameSet?.id && !isInCooldown
 
   React.useEffect(() => {
@@ -264,7 +264,7 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
     }
   }
 
-  if(dayEnded) return <div className="text-body-secondary small">Score updates locked after 23:00</div>
+  if(dayEnded) return <div className="text-body-secondary small">Score updates locked after 22:30</div>
 
   return (
     <form onSubmit={handleSubmit}>
@@ -296,7 +296,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
 
   const now = new Date()
   const gameEnded = Boolean(firstSet?.endTime && new Date(firstSet.endTime) < now)
-  const dayEnded = firstSet?.endTime && new Date(firstSet.endTime).setHours(23, 0, 0, 0) < now.getTime()
+  const dayEnded = firstSet?.endTime && new Date(firstSet.endTime).setHours(22, 30, 0, 0) < now.getTime()
 
   const [scoreA, setScoreA] = React.useState<number>(firstSet?.scoreTeamA ?? 0)
   const [scoreB, setScoreB] = React.useState<number>(firstSet?.scoreTeamB ?? 0)
