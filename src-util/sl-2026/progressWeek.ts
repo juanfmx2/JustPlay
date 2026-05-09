@@ -472,6 +472,16 @@ export async function progressWeek(input: ProgressWeekInput) {
 			name: scheduledDivision.name,
 			teams: divisionTeams,
 		}
+		if(nextWeekNumber >= 4){
+			const sortedTeams = []
+			const bananaTeam = divisionForScheduling.teams.find(team => team.name.toLowerCase().startsWith('banana'))
+			if(bananaTeam){
+				sortedTeams.push(...divisionForScheduling.teams.filter(team => team.id !== bananaTeam?.id))
+				sortedTeams.splice(1, 0, bananaTeam)
+				console.log(`Sorted teams for scheduling: ${sortedTeams.map(t => t.name).join(', ')}`)
+				divisionForScheduling.teams = sortedTeams
+			}
+		}
 
 		const scheduledGames = generateRoundRobinSchedule(
 			divisionForScheduling,
