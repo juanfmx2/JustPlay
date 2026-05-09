@@ -10,6 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "scrape-cva": "tsc ./src-util/ScrapeCVAData.ts -m nodenext --outDir ./dist/dist-util && node ./dist/dist-util/ScrapeCVAData.js",
+    "scrape:sl-scores": "pnpm exec tsx src-util/sl-2026/scrapeStageScores.ts",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
