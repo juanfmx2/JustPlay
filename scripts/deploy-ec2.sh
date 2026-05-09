@@ -47,13 +47,34 @@ ssh \
   -i "${tmp_key_file}" \
   -o IdentitiesOnly=yes \
   -o StrictHostKeyChecking=accept-new \
-  "${SSH_USER}@${SSH_HOST}" \
+  -tt "${SSH_USER}@${SSH_HOST}" \
   "bash -s -- '${db_url_b64}'" <<'REMOTE_SCRIPT'
 set -euo pipefail
 
 database_url_b64="$1"
 
 database_url="$(printf '%s' "${database_url_b64}" | base64 -d)"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pnpm was not found in PATH during remote deploy." >&2
+  echo "PATH=$PATH" >&2
+  exit 1
+fi
+
+if ! command -v pm2 >/dev/null 2>&1; then
+  echo "pm2 was not found in PATH during remote deploy." >&2
+  echo "PATH=$PATH" >&2
+  exit 1
+fi
+
+if [[ -d "$HOME/JustPlay" ]]; then
+  cd "$HOME/JustPlay"
+elif [[ -d "$HOME/JustPLay" ]]; then
+  cd "$HOME/JustPLay"
+else
+  echo "Could not find JustPlay directory in $HOME." >&2
+  exit 1
+fi
 
 unset PM2_NO_DAEMON
 
@@ -66,4 +87,5 @@ DATABASE_URL="${database_url}" pnpm db:gen-sl2026
 DATABASE_URL="${database_url}" pm2 start "pnpm dev" --name justplay --update-env </dev/null
 pm2 save
 pm2 status
+exit 0
 REMOTE_SCRIPT
