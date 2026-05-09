@@ -83,6 +83,7 @@ pm2 delete justplay || true
 git pull --ff-only
 DATABASE_URL="${database_url}" pnpm build
 DATABASE_URL="${database_url}" pnpm db:drop-tables
+DATABASE_URL="${database_url}" pnpm db:migrate
 DATABASE_URL="${database_url}" pnpm db:gen-sl2026
 DATABASE_URL="${database_url}" pm2 start "pnpm dev" --name justplay --update-env </dev/null
 pm2 save
