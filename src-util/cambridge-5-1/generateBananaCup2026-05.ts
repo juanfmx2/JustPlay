@@ -274,6 +274,10 @@ async function run() {
 
 		const allScheduledGames: ScheduledGame[] = []
 
+		const teamC = divisionTeams.pop()
+		divisionTeams.splice(0,0, teamC!)
+		console.log('TEAMS FOR SCHEDULING:')
+		console.log(divisionTeams.map(t => t.name).join(', '))
 		// Generate 3 consecutive round-robins, each within its own time window.
 		for (const [roundIndex, round] of ROUNDS.entries()) {
 			const divisionForScheduling: DivisionForScheduling = {
