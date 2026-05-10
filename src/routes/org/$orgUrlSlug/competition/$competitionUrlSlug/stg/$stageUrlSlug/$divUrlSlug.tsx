@@ -437,8 +437,10 @@ function DivisionSchedulePage() {
         .map((team) => [team.id, team] as const),
     ).values(),
   ).sort((a, b) => {
-    if(a.name.toLowerCase().startsWith('banana')) 
+    if(a.name.toLowerCase().startsWith('banana'))
       bananaTeam = a
+    else if(b.name.toLowerCase().startsWith('banana'))
+      bananaTeam = b
     return a.name.localeCompare(b.name)
   })
 
