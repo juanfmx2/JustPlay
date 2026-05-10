@@ -18,7 +18,8 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "db:drop-tables": "pnpm tsx src-util/dropTables.ts",
-    "db:gen-sl2026": "pnpm tsx src-util/sl-2026/generateAll.ts"
+    "db:gen-sl2026": "pnpm tsx src-util/sl-2026/generateAll.ts",
+    "db:gen-banana": "pnpm tsx src-util/cambridge-5-1/generateAll.ts"
   },
   "keywords": [],
   "author": "",
