@@ -24,14 +24,14 @@ const COURT_NAME = 'Sports Hall'
 // Each round (3 games, 2 intermissions): 3×17 + 2×2 = 55 min.
 // Remaining minute goes to the last round's final game.
 //
-// Round 1: 18:10 – 19:05 (55 min)   gap: 2 min
-// Round 2: 19:07 – 20:02 (55 min)   gap: 2 min
-// Round 3: 20:04 – 20:59 (55 min)
+// Round 1: 18:20 – 19:11 (51 min)   gap: 2 min
+// Round 2: 19:13 – 20:04 (51 min)   gap: 2 min
+// Round 3: 20:06 – 20:57 (51 min)
 
 const ROUNDS: Array<{ startTime: string; endTime: string }> = [
-	{ startTime: '18:10', endTime: '19:05' },
-	{ startTime: '19:07', endTime: '20:02' },
-	{ startTime: '20:04', endTime: '20:59' },
+	{ startTime: '18:20', endTime: '19:11' },
+	{ startTime: '19:13', endTime: '20:03' },
+	{ startTime: '20:05', endTime: '20:55' },
 ]
 
 const SETUP_WARMUP_MINUTES = 0
