@@ -119,70 +119,73 @@
     },
     {
       "heading": "Scoring - Division 1",
-      "description": "Points, demotion, and bonus rules for Division 1.",
+      "description": "Division Power scoring model for Division 1.",
       "rules": [
         {
-          "html": "Winning teams will get 3 points."
+          "html": "Division 1 has <b>Division Power = 4</b>."
         },
         {
-          "html": "Losing team will get 2 points if their final points score within 10 of the winning team, otherwise will get 0 points."
+          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
         },
         {
-          "html": "The team getting the lowest score on the day will get demoted to Division 2."
+          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
         },
         {
-          "html": "At the end of each week stage, once all games have been played, every team that remains in Division 1 (i.e. is not being demoted) will receive 1 bonus point. This bonus does not apply in the 1st week."
+          "html": "In Division 1 this means: <b>Win = 8</b>, <b>Close Loss = 4</b>, <b>Loss = 0</b>."
         }
       ]
     },
     {
       "heading": "Scoring - Division 2",
-      "description": "Points, promotion, and demotion rules for Division 2.",
+      "description": "Division Power scoring model for Division 2.",
       "rules": [
         {
-          "html": "Winning teams will get 2 points."
+          "html": "Division 2 has <b>Division Power = 3</b>."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 12 of the winning team, otherwise will get 0 points."
+          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
         },
         {
-          "html": "The team getting the best score on the day will get promoted to Division 1."
+          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
         },
         {
-          "html": "The team getting the lowest score on the day will get demoted to Division 3."
+          "html": "In Division 2 this means: <b>Win = 6</b>, <b>Close Loss = 3</b>, <b>Loss = 0</b>."
         }
       ]
     },
     {
       "heading": "Scoring - Division 3",
-      "description": "Points, promotion, and demotion rules for Division 3.",
+      "description": "Division Power scoring model for Division 3.",
       "rules": [
         {
-          "html": "Winning teams will get 2 points."
+          "html": "Division 3 has <b>Division Power = 2</b>."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 14 of the winning team, otherwise will get 0 points."
+          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
         },
         {
-          "html": "The team getting the best score on the day will get promoted to Division 2."
+          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
         },
         {
-          "html": "The team getting the lowest score on the day will get demoted to Division 4."
+          "html": "In Division 3 this means: <b>Win = 4</b>, <b>Close Loss = 2</b>, <b>Loss = 0</b>."
         }
       ]
     },
     {
       "heading": "Scoring - Division 4",
-      "description": "Points and promotion rules for Division 4.",
+      "description": "Division Power scoring model for Division 4.",
       "rules": [
         {
-          "html": "Winning teams will get 2 points."
+          "html": "Division 4 has <b>Division Power = 1</b>."
         },
         {
-          "html": "Losing team will get 1 point if their final points score within 16 of the winning team, otherwise will get 0 points."
+          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
         },
         {
-          "html": "The team getting the best score on the day will get promoted to Division 3."
+          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
+        },
+        {
+          "html": "In Division 4 this means: <b>Win = 2</b>, <b>Close Loss = 1</b>, <b>Loss = 0</b>."
         }
       ]
     }
