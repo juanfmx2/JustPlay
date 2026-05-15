@@ -31,52 +31,27 @@ function assertValidScore(value: number, label: string): void {
   }
 }
 
-function isDivisionOne(level: string): boolean {
-  const normalized = level.trim().toLowerCase()
-  return normalized === '1' || normalized === 'div 1' || normalized === 'division 1'
-}
-
 function normalizeDivisionLevel(level: string): string {
   return level.trim().toLowerCase()
 }
 
+function getDivisionNumber(level: string): number | null {
+	const match = normalizeDivisionLevel(level).match(/\d+/)
+	return match ? Number(match[0]) : null
+}
+
 function getDivisionScoringRules(level: string, stageUrlSlug: string | null): DivisionScoringRules {
-  const normalizedLevel = normalizeDivisionLevel(level)
-  const normalizedStageUrlSlug = stageUrlSlug?.trim().toLowerCase() ?? ''
-  const divisionOneBonus = isDivisionOne(level) && normalizedStageUrlSlug !== 'week-1' ? 1 : 0
-
-  if (normalizedLevel === '2' || normalizedLevel === 'div 2' || normalizedLevel === 'division 2') {
-    return {
-      winnerLeaguePoints: 2,
-      closeLossLeaguePoints: 1,
-      closeLossThreshold: 12,
-      weeklyBonusPoints: 0,
-    }
+  const numDivsions = 4
+  const divNumber = getDivisionNumber(level)
+  if (divNumber !== null && (divNumber < 1 || divNumber > numDivsions)) {
+      throw new Error(`Invalid division level number: ${level}`)
   }
-
-  if (normalizedLevel === '3' || normalizedLevel === 'div 3' || normalizedLevel === 'division 3') {
-    return {
-      winnerLeaguePoints: 2,
-      closeLossLeaguePoints: 1,
-      closeLossThreshold: 14,
-      weeklyBonusPoints: 0,
-    }
-  }
-
-  if (normalizedLevel === '4' || normalizedLevel === 'div 4' || normalizedLevel === 'division 4') {
-    return {
-      winnerLeaguePoints: 2,
-      closeLossLeaguePoints: 1,
-      closeLossThreshold: 16,
-      weeklyBonusPoints: 0,
-    }
-  }
-
+  const divPower = divNumber !== null ? numDivsions - divNumber + 1 : 1
   return {
-    winnerLeaguePoints: 3,
-    closeLossLeaguePoints: 2,
-    closeLossThreshold: 10,
-    weeklyBonusPoints: divisionOneBonus,
+      winnerLeaguePoints: 2*divPower,
+      closeLossLeaguePoints: Math.floor(1*divPower),
+      closeLossThreshold: 10,
+      weeklyBonusPoints: 0,
   }
 }
 
