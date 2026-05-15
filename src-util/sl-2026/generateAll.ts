@@ -10,6 +10,7 @@ await import('./generateWeek2Scores.ts')
 await import('./generateWeek3.ts')
 await import('./generateWeek3Scores.ts')
 await import('./generateWeek4.ts')
+await import('./generateWeek4Scores.ts')
 await import('./calculateGlobalStandings.ts')
 
 console.log('Spring League 2026: all generation steps completed.')
