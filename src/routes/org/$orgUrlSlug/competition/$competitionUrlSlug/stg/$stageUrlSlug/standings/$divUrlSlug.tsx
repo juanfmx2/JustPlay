@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { and, eq, is } from 'drizzle-orm'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -156,6 +156,7 @@ function DivisionStandingsPage() {
   const data = Route.useLoaderData()
 
   const divNum = parseInt((data.division?.level ?? '').replace(/[^0-9]/g, ''), 10)
+  const isWeek4 = data.stage?.urlSlug === 'week-4'
 
   if (!data.organization) {
     return (
@@ -228,8 +229,18 @@ function DivisionStandingsPage() {
         </div>
       </header>
 
-      <StandingsTable rows={data.standingsRows} divNum={isNaN(divNum) ? 0 : divNum} />
-      <StandingsConventions />
+      {isWeek4 ? (
+        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
+          Final week groups will be determined by the global standings.
+        </div>
+      ) : null}
+
+      <StandingsTable
+        rows={data.standingsRows}
+        divNum={isNaN(divNum) ? 0 : divNum}
+        highlightMovementRows={!isWeek4}
+      />
+      <StandingsConventions showMovementColors={!isWeek4} />
     </section>
   )
 }

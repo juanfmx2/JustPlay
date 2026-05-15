@@ -148,6 +148,7 @@ export const Route = createFileRoute(
 
 function AllStandingsPage() {
   const data = Route.useLoaderData()
+  const isWeek4 = data.stage?.urlSlug === 'week-4'
 
   if (!data.organization) {
     return (
@@ -199,6 +200,12 @@ function AllStandingsPage() {
         </div>
       </header>
 
+      {isWeek4 ? (
+        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
+          Final week groups will be determined by the global standings.
+        </div>
+      ) : null}
+
       {data.divisionStandings.length === 0 ? (
         <p className="text-body-secondary mb-0">No divisions found for this stage.</p>
       ) : (
@@ -208,12 +215,16 @@ function AllStandingsPage() {
             return (
               <div key={division.id} className="mb-5">
                 <h2 className="h4 mb-3">{division.name}</h2>
-                <StandingsTable rows={division.rows} divNum={isNaN(divNum) ? 0 : divNum} />
+                <StandingsTable
+                  rows={division.rows}
+                  divNum={isNaN(divNum) ? 0 : divNum}
+                  highlightMovementRows={!isWeek4}
+                />
               </div>
             )
           })}
 
-          <StandingsConventions />
+          <StandingsConventions showMovementColors={!isWeek4} />
         </>
       )}
     </section>
