@@ -32,6 +32,12 @@ type LoaderData = {
   divisionStandings: DivisionStandings[]
 }
 
+function coefficientToSortableNumber(value: string | null): number {
+  if (!value) return Number.NEGATIVE_INFINITY
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY
+}
+
 const loadAllStandings = createServerFn({ method: 'GET' })
   .inputValidator(
     (input: {
@@ -83,51 +89,93 @@ const loadAllStandings = createServerFn({ method: 'GET' })
       return a.level.localeCompare(b.level)
     })
 
-    const divisionStandings: DivisionStandings[] = []
+    const stageStandingsWithTeams = await db.query.standings.findMany({
+      where: eq(standings.stageId, stage.id),
+      with: { team: true },
+    })
 
-    for (const division of stageDivisions) {
-      const standingsWithTeams = await db.query.standings.findMany({
-        where: and(
-          eq(standings.stageId, stage.id),
-          eq(standings.divisionId, division.id),
-        ),
-        with: { team: true },
-      })
+    const globalStandingsWithTeams = competition.registrationStageId
+      ? await db.query.standings.findMany({
+          where: eq(standings.stageId, competition.registrationStageId),
+          with: { team: true },
+        })
+      : []
+
+    const globalRowsByTeam = new Map(
+      globalStandingsWithTeams
+        .slice()
+        .sort((a, b) => {
+          const lpMinusPenA = a.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
+          const lpMinusPenB = b.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
+          if (lpMinusPenB !== lpMinusPenA) return lpMinusPenB - lpMinusPenA
+
+          const coefA = coefficientToSortableNumber(a.coefficient)
+          const coefB = coefficientToSortableNumber(b.coefficient)
+          if (coefB !== coefA) return coefB - coefA
+
+          return (a.team?.name ?? `Team #${a.teamId}`).localeCompare(
+            b.team?.name ?? `Team #${b.teamId}`,
+          )
+        })
+        .map((row, index) => [
+          row.teamId,
+          {
+            globalRank: index + 1,
+            globalLeaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
+          },
+        ]),
+    )
+
+    const stageRowsByDivisionId = new Map<number, typeof stageStandingsWithTeams>()
+    for (const standingRow of stageStandingsWithTeams) {
+      const existing = stageRowsByDivisionId.get(standingRow.divisionId) ?? []
+      existing.push(standingRow)
+      stageRowsByDivisionId.set(standingRow.divisionId, existing)
+    }
+
+    const divisionStandings: DivisionStandings[] = stageDivisions.map((division) => {
+      const standingsWithTeams = stageRowsByDivisionId.get(division.id) ?? []
 
       const rows: StandingRow[] = standingsWithTeams
-        .map((row) => ({
-          id: row.id,
-          teamId: row.teamId,
-          teamName: row.team?.name ?? `Team #${row.teamId}`,
-          gamesWon: row.gamesWon,
-          gamesLost: row.gamesLost,
-          pointsFor: row.pointsFor,
-          pointsAgainst: row.pointsAgainst,
-          coefficient: row.coefficient,
-          penalties: row.penalties,
-          leaguePoints: row.leaguePoints,
-          leaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
-        }))
+        .map((row) => {
+          const global = globalRowsByTeam.get(row.teamId)
+
+          return {
+            id: row.id,
+            teamId: row.teamId,
+            teamName: row.team?.name ?? `Team #${row.teamId}`,
+            gamesWon: row.gamesWon,
+            gamesLost: row.gamesLost,
+            pointsFor: row.pointsFor,
+            pointsAgainst: row.pointsAgainst,
+            coefficient: row.coefficient,
+            penalties: row.penalties,
+            leaguePoints: row.leaguePoints,
+            leaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
+            globalRank: global?.globalRank ?? null,
+            globalLeaguePointsMinusPenalties: global?.globalLeaguePointsMinusPenalties ?? null,
+          }
+        })
         .sort((a, b) => {
           const gwA = a.gamesWon ?? Number.NEGATIVE_INFINITY
           const gwB = b.gamesWon ?? Number.NEGATIVE_INFINITY
           if (gwB !== gwA) return gwB - gwA
 
-          const coefA = a.coefficient === null ? Number.NEGATIVE_INFINITY : Number(a.coefficient)
-          const coefB = b.coefficient === null ? Number.NEGATIVE_INFINITY : Number(b.coefficient)
+          const coefA = coefficientToSortableNumber(a.coefficient)
+          const coefB = coefficientToSortableNumber(b.coefficient)
           if (coefB !== coefA) return coefB - coefA
 
           return a.teamName.localeCompare(b.teamName)
         })
 
-      divisionStandings.push({
+      return {
         id: division.id,
         name: division.name,
         level: division.level,
         urlSlug: division.urlSlug,
         rows,
-      })
-    }
+      }
+    })
 
     return { organization, competition, stage, divisionStandings }
   })

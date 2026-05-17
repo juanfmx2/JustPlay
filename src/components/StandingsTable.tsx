@@ -13,6 +13,8 @@ export type StandingRow = {
   penalties: number | null
   leaguePoints: number | null
   leaguePointsMinusPenalties: number | null
+  globalRank?: number | null
+  globalLeaguePointsMinusPenalties?: number | null
 }
 
 type Props = {
@@ -31,6 +33,7 @@ function asDisplayNumber(value: number | null): string {
 function asDisplayCoefficient(value: string | null): string {
   return value === null ? '--' : value
 }
+
 export function StandingsTable({ rows, divNum, highlightMovementRows = true, groupEveryNRows }: Props) {
   const lastIndex = rows.length - 1
   const showPromotion = highlightMovementRows && divNum >= 2
@@ -69,6 +72,8 @@ export function StandingsTable({ rows, divNum, highlightMovementRows = true, gro
               <th scope="col" className="text-center">P</th>
               <th scope="col" className="text-center">LP</th>
               <th scope="col" className="text-center">LP-P</th>
+              <th scope="col" className="text-center">Global #</th>
+              <th scope="col" className="text-center">Global LP-P</th>
             </tr>
           </thead>
           <tbody>
@@ -84,6 +89,8 @@ export function StandingsTable({ rows, divNum, highlightMovementRows = true, gro
                 <td className="text-center">{asDisplayNumber(row.penalties)}</td>
                 <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
                 <td className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
+                <td className="text-center">{asDisplayNumber(row.globalRank ?? null)}</td>
+                <td className="text-center">{asDisplayNumber(row.globalLeaguePointsMinusPenalties ?? null)}</td>
               </tr>
             ))}
           </tbody>
@@ -106,7 +113,7 @@ export function StandingsTable({ rows, divNum, highlightMovementRows = true, gro
             {rows.map((row, index) => (
               <Fragment key={row.id}>
                 <tr className={rowClass(index)}>
-                  <th scope="row" rowSpan={4} className="align-middle text-nowrap">
+                  <th scope="row" rowSpan={5} className="align-middle text-nowrap">
                     <div className="fw-semibold" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}><b>#{index + 1}</b> - {row.teamName}</div>
                   </th>
                   <td className="text-center">{asDisplayNumber(row.gamesWon)}</td>
@@ -127,6 +134,12 @@ export function StandingsTable({ rows, divNum, highlightMovementRows = true, gro
                 <tr className={rowClass(index)} style={groupBorderStyle(index)}>
                   <td colSpan={2} className="text-center"><b>LP-P</b></td>
                   <td colSpan={2} className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
+                </tr>
+                <tr className={rowClass(index)}>
+                  <td colSpan={2} className="text-center"><b>Global # / LP-P</b></td>
+                  <td colSpan={2} className="text-center">
+                    {asDisplayNumber(row.globalRank ?? null)} / {asDisplayNumber(row.globalLeaguePointsMinusPenalties ?? null)}
+                  </td>
                 </tr>
               </Fragment>
             ))}
