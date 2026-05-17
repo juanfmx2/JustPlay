@@ -89,6 +89,17 @@ function leaguePointsMinusPenaltiesToNumber(value: number | null): number {
 	return Number.isFinite(value) ? value : Number.NEGATIVE_INFINITY
 }
 
+function orderTeamsForPriorityFinalSlots(teamsByRank: TeamRef[]): TeamRef[] {
+	if (teamsByRank.length !== 4) {
+		return teamsByRank
+	}
+
+	const [rank1, rank2, rank3, rank4] = teamsByRank
+
+	// For the 4-team round-robin generator, this order makes the final games: 2v3 then 1v2.
+	return [rank4, rank3, rank1, rank2]
+}
+
 function assignReffingTeams(
 	fixtures: ScheduledGame[],
 	divisionTeams: TeamRef[],
@@ -558,9 +569,12 @@ export async function progressWeek(input: ProgressWeekInput) {
 		const divisionForScheduling: DivisionForScheduling = {
 			id: scheduledDivision.id,
 			name: scheduledDivision.name,
-			teams: divisionTeams,
+			teams:
+				teamPlacementStrategy === 'GLOBAL_STANDINGS'
+					? orderTeamsForPriorityFinalSlots(divisionTeams)
+					: divisionTeams,
 		}
-		if(nextWeekNumber >= 4){
+		if(nextWeekNumber == 4){
 			const sortedTeams = []
 			const bananaTeam = divisionForScheduling.teams.find(team => team.name.toLowerCase().startsWith('banana'))
 			if(bananaTeam){
