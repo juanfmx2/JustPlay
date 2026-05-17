@@ -25,6 +25,7 @@ type ProgressWeekInput = {
 	organizationSlug: string
 	competitionSlug: string
 	currentWeekStageSlug: string
+	teamPlacementStrategy?: 'PROMOTION_DEMOTION' | 'GLOBAL_STANDINGS'
 }
 
 type TeamRef = {
@@ -81,6 +82,11 @@ function coefficientToNumber(value: string | null): number {
 	if (!value) return Number.NEGATIVE_INFINITY
 	const parsed = Number.parseFloat(value)
 	return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY
+}
+
+function leaguePointsMinusPenaltiesToNumber(value: number | null): number {
+	if (value === null || value === undefined) return Number.NEGATIVE_INFINITY
+	return Number.isFinite(value) ? value : Number.NEGATIVE_INFINITY
 }
 
 function assignReffingTeams(
@@ -323,52 +329,18 @@ export async function progressWeek(input: ProgressWeekInput) {
 		throw new Error(`Current stage has no divisions: ${input.currentWeekStageSlug}`)
 	}
 
+	const teamPlacementStrategy = input.teamPlacementStrategy ?? 'PROMOTION_DEMOTION'
+
 	const currentWeekNumber = parseWeekNumberOrThrow(input.currentWeekStageSlug)
 	const nextWeekNumber = currentWeekNumber + 1
 	const nextWeekStage = await getOrCreateWeekStage(competition.id, nextWeekNumber)
 
-	const rankedTeamsByLevel = new Map<number, TeamRef[]>()
 	const sourceDivisionByLevel = new Map<number, (typeof currentWeekStage.divisions)[number]>()
 	const assignmentByLevel = new Map<number, DivisionAssignment>()
 
 	for (const division of currentWeekStage.divisions) {
 		const levelNumber = parseDivisionLevel(division.level)
 		sourceDivisionByLevel.set(levelNumber, division)
-
-		const standingsRows = await db.query.standings.findMany({
-			where: and(
-				eq(standings.stageId, currentWeekStage.id),
-				eq(standings.divisionId, division.id),
-			),
-			with: {
-				team: {
-					columns: {
-						id: true,
-						name: true,
-					},
-				},
-			},
-		})
-
-		const rankedTeams = standingsRows
-			.sort((a, b) => {
-				const gwA = a.gamesWon ?? 0
-				const gwB = b.gamesWon ?? 0
-				if (gwA !== gwB) {
-					return gwB - gwA
-				}
-
-				return coefficientToNumber(b.coefficient) - coefficientToNumber(a.coefficient)
-			})
-			.map((row) => ({ id: row.team.id, name: row.team.name }))
-
-		if (rankedTeams.length < 2) {
-			throw new Error(
-				`Division ${division.level} has fewer than 2 ranked teams; cannot progress week.`,
-			)
-		}
-
-		rankedTeamsByLevel.set(levelNumber, rankedTeams)
 
 		const firstGameWithCourt = division.games.find(
 			(game) => game.gameSets.length > 0 && game.gameSets[0].court?.venue?.name,
@@ -389,55 +361,171 @@ export async function progressWeek(input: ProgressWeekInput) {
 		})
 	}
 
-	const levels = Array.from(rankedTeamsByLevel.keys()).sort((a, b) => a - b)
-	const promotedByLevel = new Map<number, TeamRef>()
-	const demotedByLevel = new Map<number, TeamRef>()
-
-	for (let i = 0; i < levels.length; i += 1) {
-		const level = levels[i]
-		const divisionTeams = rankedTeamsByLevel.get(level)
-		if (!divisionTeams) continue
-
-		const hasUpperDivision = i > 0
-		const hasLowerDivision = i < levels.length - 1
-
-		if (hasUpperDivision) {
-			promotedByLevel.set(level, divisionTeams[0])
-		}
-
-		if (hasLowerDivision) {
-			demotedByLevel.set(level, divisionTeams[divisionTeams.length - 1])
-		}
-	}
-
+	const levels = Array.from(sourceDivisionByLevel.keys()).sort((a, b) => a - b)
 	const nextTeamsByLevel = new Map<number, TeamRef[]>()
 
-	for (let i = 0; i < levels.length; i += 1) {
-		const level = levels[i]
-		const divisionTeams = rankedTeamsByLevel.get(level)
-		if (!divisionTeams) continue
+	if (teamPlacementStrategy === 'PROMOTION_DEMOTION') {
+		const rankedTeamsByLevel = new Map<number, TeamRef[]>()
+		const promotedByLevel = new Map<number, TeamRef>()
+		const demotedByLevel = new Map<number, TeamRef>()
 
-		const promotedOut = promotedByLevel.get(level)
-		const demotedOut = demotedByLevel.get(level)
-		const incomingFromUpper = i > 0 ? demotedByLevel.get(levels[i - 1]) : undefined
-		const incomingFromLower = i < levels.length - 1 ? promotedByLevel.get(levels[i + 1]) : undefined
+		for (const division of currentWeekStage.divisions) {
+			const levelNumber = parseDivisionLevel(division.level)
 
-		const baseTeams = divisionTeams.filter(
-			(team) => team.id !== promotedOut?.id && team.id !== demotedOut?.id,
-		)
+			const standingsRows = await db.query.standings.findMany({
+				where: and(
+					eq(standings.stageId, currentWeekStage.id),
+					eq(standings.divisionId, division.id),
+				),
+				with: {
+					team: {
+						columns: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+			})
 
-		const nextDivisionTeams = [
-			...baseTeams,
-			...(incomingFromUpper ? [incomingFromUpper] : []),
-			...(incomingFromLower ? [incomingFromLower] : []),
-		]
+			const rankedTeams = standingsRows
+				.sort((a, b) => {
+					const gwA = a.gamesWon ?? 0
+					const gwB = b.gamesWon ?? 0
+					if (gwA !== gwB) {
+						return gwB - gwA
+					}
 
-		const uniqueTeamIds = new Set(nextDivisionTeams.map((team) => team.id))
-		if (uniqueTeamIds.size !== nextDivisionTeams.length) {
-			throw new Error(`Duplicate team assignment detected after progression in Div ${level}`)
+					return coefficientToNumber(b.coefficient) - coefficientToNumber(a.coefficient)
+				})
+				.map((row) => ({ id: row.team.id, name: row.team.name }))
+
+			if (rankedTeams.length < 2) {
+				throw new Error(
+					`Division ${division.level} has fewer than 2 ranked teams; cannot progress week.`,
+				)
+			}
+
+			rankedTeamsByLevel.set(levelNumber, rankedTeams)
 		}
 
-		nextTeamsByLevel.set(level, nextDivisionTeams)
+		for (let i = 0; i < levels.length; i += 1) {
+			const level = levels[i]
+			const divisionTeams = rankedTeamsByLevel.get(level)
+			if (!divisionTeams) continue
+
+			const hasUpperDivision = i > 0
+			const hasLowerDivision = i < levels.length - 1
+
+			if (hasUpperDivision) {
+				promotedByLevel.set(level, divisionTeams[0])
+			}
+
+			if (hasLowerDivision) {
+				demotedByLevel.set(level, divisionTeams[divisionTeams.length - 1])
+			}
+		}
+
+		for (let i = 0; i < levels.length; i += 1) {
+			const level = levels[i]
+			const divisionTeams = rankedTeamsByLevel.get(level)
+			if (!divisionTeams) continue
+
+			const promotedOut = promotedByLevel.get(level)
+			const demotedOut = demotedByLevel.get(level)
+			const incomingFromUpper = i > 0 ? demotedByLevel.get(levels[i - 1]) : undefined
+			const incomingFromLower = i < levels.length - 1 ? promotedByLevel.get(levels[i + 1]) : undefined
+
+			const baseTeams = divisionTeams.filter(
+				(team) => team.id !== promotedOut?.id && team.id !== demotedOut?.id,
+			)
+
+			const nextDivisionTeams = [
+				...baseTeams,
+				...(incomingFromUpper ? [incomingFromUpper] : []),
+				...(incomingFromLower ? [incomingFromLower] : []),
+			]
+
+			const uniqueTeamIds = new Set(nextDivisionTeams.map((team) => team.id))
+			if (uniqueTeamIds.size !== nextDivisionTeams.length) {
+				throw new Error(`Duplicate team assignment detected after progression in Div ${level}`)
+			}
+
+			nextTeamsByLevel.set(level, nextDivisionTeams)
+		}
+	} else if (teamPlacementStrategy === 'GLOBAL_STANDINGS') {
+		if (!competition.registrationStageId) {
+			throw new Error(`Competition ${competition.urlSlug} has no registration stage configured.`)
+		}
+
+		const registrationStage = await db.query.stages.findFirst({
+			where: and(
+				eq(stages.id, competition.registrationStageId),
+				eq(stages.competitionId, competition.id),
+			),
+		})
+
+		if (!registrationStage) {
+			throw new Error(`Registration stage not found for ${competition.urlSlug}`)
+		}
+
+		const globalStandingsRows = await db.query.standings.findMany({
+			where: eq(standings.stageId, registrationStage.id),
+			with: {
+				team: {
+					columns: {
+						id: true,
+						name: true,
+					},
+				},
+			},
+		})
+
+		if (globalStandingsRows.length === 0) {
+			throw new Error(
+				`No global standings found in registration stage (${registrationStage.urlSlug ?? registrationStage.id}). Run calculateGlobalStandings first.`,
+			)
+		}
+
+		const globallyRankedTeams = globalStandingsRows
+			.sort((a, b) => {
+				const lpMinusPenA = leaguePointsMinusPenaltiesToNumber(a.leaguePointsMinusPenalties)
+				const lpMinusPenB = leaguePointsMinusPenaltiesToNumber(b.leaguePointsMinusPenalties)
+				if (lpMinusPenA !== lpMinusPenB) {
+					return lpMinusPenB - lpMinusPenA
+				}
+
+				const coefficientDiff =
+					coefficientToNumber(b.coefficient) - coefficientToNumber(a.coefficient)
+				if (coefficientDiff !== 0) {
+					return coefficientDiff
+				}
+
+				return a.team.id - b.team.id
+			})
+			.map((row) => ({ id: row.team.id, name: row.team.name }))
+
+		const TEAMS_PER_DIVISION = 4
+		const requiredTeams = levels.length * TEAMS_PER_DIVISION
+		if (globallyRankedTeams.length < requiredTeams) {
+			throw new Error(
+				`Not enough globally ranked teams for ${levels.length} divisions: required=${requiredTeams}, found=${globallyRankedTeams.length}.`,
+			)
+		}
+
+		for (let i = 0; i < levels.length; i += 1) {
+			const level = levels[i]
+			const start = i * TEAMS_PER_DIVISION
+			const end = start + TEAMS_PER_DIVISION
+			const assignedTeams = globallyRankedTeams.slice(start, end)
+
+			if (assignedTeams.length < 2) {
+				throw new Error(`Division ${level} has fewer than 2 teams after global assignment.`)
+			}
+
+			nextTeamsByLevel.set(level, assignedTeams)
+		}
+	} else {
+		throw new Error(`Unsupported team placement strategy: ${teamPlacementStrategy}`)
 	}
 
 	let totalGames = 0
