@@ -1,4 +1,4 @@
-import { and, eq, is } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -157,6 +157,8 @@ function DivisionStandingsPage() {
 
   const divNum = parseInt((data.division?.level ?? '').replace(/[^0-9]/g, ''), 10)
   const isWeek4 = data.stage?.urlSlug === 'week-4'
+  const isWeek5 = data.stage?.urlSlug === 'week-5'
+  const showMovementColors = !isWeek4 && !isWeek5
 
   if (!data.organization) {
     return (
@@ -233,14 +235,18 @@ function DivisionStandingsPage() {
         <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
           Final week groups will be determined by the global standings.
         </div>
+      ) : isWeek5 ? (
+        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
+          Division winner ranking: the winner will be the team with the highest LP-P in this division across the 5 weeks.
+        </div>
       ) : null}
 
       <StandingsTable
         rows={data.standingsRows}
         divNum={isNaN(divNum) ? 0 : divNum}
-        highlightMovementRows={!isWeek4}
+        highlightMovementRows={showMovementColors}
       />
-      <StandingsConventions showMovementColors={!isWeek4} />
+      <StandingsConventions showMovementColors={showMovementColors} />
     </section>
   )
 }

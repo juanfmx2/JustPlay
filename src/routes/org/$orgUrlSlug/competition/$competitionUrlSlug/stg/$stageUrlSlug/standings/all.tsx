@@ -149,6 +149,8 @@ export const Route = createFileRoute(
 function AllStandingsPage() {
   const data = Route.useLoaderData()
   const isWeek4 = data.stage?.urlSlug === 'week-4'
+  const isWeek5 = data.stage?.urlSlug === 'week-5'
+  const showMovementColors = !isWeek4 && !isWeek5
 
   if (!data.organization) {
     return (
@@ -204,6 +206,10 @@ function AllStandingsPage() {
         <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
           Final week groups will be determined by the global standings.
         </div>
+      ) : isWeek5 ? (
+        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
+          Division winner ranking: the winner will be the team with the highest LP-P in each division across the 5 weeks.
+        </div>
       ) : null}
 
       {data.divisionStandings.length === 0 ? (
@@ -218,13 +224,13 @@ function AllStandingsPage() {
                 <StandingsTable
                   rows={division.rows}
                   divNum={isNaN(divNum) ? 0 : divNum}
-                  highlightMovementRows={!isWeek4}
+                  highlightMovementRows={showMovementColors}
                 />
               </div>
             )
           })}
 
-          <StandingsConventions showMovementColors={!isWeek4} />
+          <StandingsConventions showMovementColors={showMovementColors} />
         </>
       )}
     </section>
