@@ -1,4 +1,5 @@
 import { and, eq, inArray } from 'drizzle-orm'
+import { fileURLToPath } from 'node:url'
 
 import { db } from '../../src/db/client'
 import { competitions, stages } from '../../src/schema/competition'
@@ -22,7 +23,7 @@ function computeCoefficient(pointsFor: number, pointsAgainst: number): string | 
   return (pointsFor / pointsAgainst).toFixed(4)
 }
 
-async function run() {
+export async function calculateGlobalStandings() {
   const organization = await db.query.organizations.findFirst({
     where: eq(organizations.urlSlug, ORGANIZATION_SLUG),
   })
@@ -169,4 +170,6 @@ async function run() {
   )
 }
 
-await run()
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  await calculateGlobalStandings()
+}

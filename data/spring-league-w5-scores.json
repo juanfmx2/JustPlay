@@ -1,0 +1,11 @@
+{
+  "weekStageSlug": "week-5",
+  "matches": [
+    { "division": 1, "teamA": "Kiss My Ace", "teamB": "Net Ninjas", "scoreTeamA": 40, "scoreTeamB": 41 },
+    { "division": 1, "teamA": "Mikasa es su casa", "teamB": "Arepas & Feta", "scoreTeamA": 42, "scoreTeamB": 48 },
+    { "division": 1, "teamA": "Kiss My Ace", "teamB": "Arepas & Feta", "scoreTeamA": 43, "scoreTeamB": 41 },
+    { "division": 1, "teamA": "Net Ninjas", "teamB": "Mikasa es su casa", "scoreTeamA": 46, "scoreTeamB": 32 },
+    { "division": 1, "teamA": "Kiss My Ace", "teamB": "Mikasa es su casa", "scoreTeamA": 43, "scoreTeamB": 42 },
+    { "division": 1, "teamA": "Arepas & Feta", "teamB": "Net Ninjas", "scoreTeamA": 42, "scoreTeamB": 41 }
+  ]
+}
