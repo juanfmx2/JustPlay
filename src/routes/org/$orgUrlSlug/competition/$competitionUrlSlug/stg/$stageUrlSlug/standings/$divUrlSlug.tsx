@@ -139,7 +139,9 @@ const loadDivisionStandings = createServerFn({ method: 'GET' })
           row.teamId,
           {
             globalRank: index + 1,
+            globalLeaguePoints: row.leaguePoints,
             globalLeaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
+            globalCoefficient: row.coefficient,
           },
         ]),
     )
@@ -161,10 +163,24 @@ const loadDivisionStandings = createServerFn({ method: 'GET' })
           leaguePoints: row.leaguePoints,
           leaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
           globalRank: global?.globalRank ?? null,
+          globalLeaguePoints: global?.globalLeaguePoints ?? null,
           globalLeaguePointsMinusPenalties: global?.globalLeaguePointsMinusPenalties ?? null,
+          globalCoefficient: global?.globalCoefficient ?? null,
         }
       })
       .sort((a, b) => {
+        if (stage.urlSlug === 'week-5') {
+          const globalLpA = a.globalLeaguePoints ?? Number.NEGATIVE_INFINITY
+          const globalLpB = b.globalLeaguePoints ?? Number.NEGATIVE_INFINITY
+          if (globalLpB !== globalLpA) return globalLpB - globalLpA
+
+          const globalCoefA = coefficientToSortableNumber(a.globalCoefficient ?? null)
+          const globalCoefB = coefficientToSortableNumber(b.globalCoefficient ?? null)
+          if (globalCoefB !== globalCoefA) return globalCoefB - globalCoefA
+
+          return a.teamName.localeCompare(b.teamName)
+        }
+
         const gwA = a.gamesWon ?? Number.NEGATIVE_INFINITY
         const gwB = b.gamesWon ?? Number.NEGATIVE_INFINITY
         if (gwB !== gwA) return gwB - gwA
@@ -247,7 +263,9 @@ function DivisionStandingsPage() {
       <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <div>
           <h1 className="h2 mb-1">{data.stage.name} - {data.division.name} Standings</h1>
-          <p className="text-body-secondary mb-0">Sorted by GW, then coefficient.</p>
+          <p className="text-body-secondary mb-0">
+            {isWeek5 ? 'Sorted by Global LP, then Global Coef.' : 'Sorted by GW, then coefficient.'}
+          </p>
         </div>
 
         <div className="d-flex gap-2">
@@ -291,8 +309,12 @@ function DivisionStandingsPage() {
         rows={data.standingsRows}
         divNum={isNaN(divNum) ? 0 : divNum}
         highlightMovementRows={showMovementColors}
+        highlightFirstRowAsWinner={isWeek5}
       />
-      <StandingsConventions showMovementColors={showMovementColors} />
+      <StandingsConventions
+        showMovementColors={showMovementColors}
+        showDivisionWinner={isWeek5}
+      />
     </section>
   )
 }

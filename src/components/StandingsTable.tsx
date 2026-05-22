@@ -14,7 +14,9 @@ export type StandingRow = {
   leaguePoints: number | null
   leaguePointsMinusPenalties: number | null
   globalRank?: number | null
+  globalLeaguePoints?: number | null
   globalLeaguePointsMinusPenalties?: number | null
+  globalCoefficient?: string | null
 }
 
 type Props = {
@@ -22,6 +24,7 @@ type Props = {
   /** Numeric division level (1, 2, 3, 4 …). Used to determine promotion/relegation rows. */
   divNum: number
   highlightMovementRows?: boolean
+  highlightFirstRowAsWinner?: boolean
   /** If set, renders a thicker border-bottom after every Nth row (1-based). */
   groupEveryNRows?: number
 }
@@ -34,12 +37,19 @@ function asDisplayCoefficient(value: string | null): string {
   return value === null ? '--' : value
 }
 
-export function StandingsTable({ rows, divNum, highlightMovementRows = true, groupEveryNRows }: Props) {
+export function StandingsTable({
+  rows,
+  divNum,
+  highlightMovementRows = true,
+  highlightFirstRowAsWinner = false,
+  groupEveryNRows,
+}: Props) {
   const lastIndex = rows.length - 1
   const showPromotion = highlightMovementRows && divNum >= 2
   const showRelegation = highlightMovementRows && divNum <= 3
 
   function rowClass(index: number): string | undefined {
+    if (highlightFirstRowAsWinner && index === 0) return 'table-success'
     if (index === 0 && showPromotion) return 'table-success'
     if (index === lastIndex && showRelegation) return 'table-danger'
     return undefined
