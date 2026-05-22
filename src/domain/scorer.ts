@@ -2,6 +2,8 @@ import { and, eq, isNotNull } from 'drizzle-orm'
 
 import { db } from '@/db/client'
 import { divisions, games, gameSets, stages, standings } from '@/schema'
+import { calculateGlobalStandings } from '@/../src-util/sl-2026/calculateGlobalStandings'
+
 
 type ApplyGameSetScoreInput = {
   gameSetId: number
@@ -215,5 +217,8 @@ export async function applyGameSetScoreAndUpdateStandings(
       .where(eq(games.id, game.id))
 
     await recalculateStandingsForStageInTx(tx, stageId)
+    console.log('Standings recalculated for stage #', stageId)
+    console.log('Calculating global standings...')
+    await calculateGlobalStandings()
   })
 }
