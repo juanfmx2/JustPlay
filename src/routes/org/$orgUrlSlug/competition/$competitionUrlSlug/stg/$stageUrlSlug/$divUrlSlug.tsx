@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm'
 import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { calculateGlobalStandings } from '@/../src-util/sl-2026/calculateGlobalStandings'
 
 import { db } from '@/db/client'
 import { competitions, organizations, 
@@ -258,6 +259,7 @@ function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSu
           scoreTeamB: scoreB,
         },
       })
+      calculateGlobalStandings()
       setIsInCooldown(true)
     } finally {
       setLoading(false)
