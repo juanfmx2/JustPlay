@@ -1,0 +1,40 @@
+name: Manual Run Global Standings Until 22:30
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to use for workflow files/scripts
+        required: true
+        default: main
+      cutoff_time:
+        description: Cutoff time on production server (HH:MM, 24h)
+        required: true
+        default: '22:30'
+      interval_minutes:
+        description: Minutes between runs
+        required: true
+        default: '2'
+
+jobs:
+  run-global-standings:
+    name: Run Global Standings Loop
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: EC2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Run remote standings loop
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          ID_ED25519_CONTENT: ${{ secrets.ID_ED25519_CONTENT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CUTOFF_TIME: ${{ github.event.inputs.cutoff_time }}
+          INTERVAL_MINUTES: ${{ github.event.inputs.interval_minutes }}
+        run: bash ./scripts/run-global-standings-until.sh
