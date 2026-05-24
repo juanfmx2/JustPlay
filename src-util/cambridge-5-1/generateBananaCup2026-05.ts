@@ -13,25 +13,25 @@ import { standings } from '../../src/schema/standings'
 import { courts, venues } from '../../src/schema/venue'
 
 const COMPETITION_SLUG = 'banana-cup'
-const EVENT_DATE = '2026-05-11'
+const EVENT_DATE = '2026-05-24'
 const STAGE_SLUG = 'banana-cup-2026-05'
 const VENUE_NAME = 'North Cambridge Academy (NCA)'
 const COURT_NAME = 'Sports Hall'
 
 // 3 teams × 3 round-robins = 9 games, 8 gaps of 2 min.
-// Total window: 18:10 – 21:00 = 170 min.
+// Total window: 12:10 – 21:00 = 170 min.
 // 170 – 8×2 = 154 min playable → floor(154/9) = 17 min/game.
 // Each round (3 games, 2 intermissions): 3×17 + 2×2 = 55 min.
 // Remaining minute goes to the last round's final game.
 //
-// Round 1: 18:20 – 19:11 (51 min)   gap: 2 min
-// Round 2: 19:13 – 20:04 (51 min)   gap: 2 min
-// Round 3: 20:06 – 20:57 (51 min)
+// Round 1: 12:15 – 13:08 (51 min)   gap: 2 min
+// Round 2: 13:10 – 14:03 (51 min)   gap: 2 min
+// Round 3: 14:05 – 14:57 (51 min)
 
 const ROUNDS: Array<{ startTime: string; endTime: string }> = [
-	{ startTime: '18:20', endTime: '19:11' },
-	{ startTime: '19:13', endTime: '20:03' },
-	{ startTime: '20:05', endTime: '20:55' },
+	{ startTime: '12:15', endTime: '13:08' },
+	{ startTime: '13:10', endTime: '14:03' },
+	{ startTime: '14:05', endTime: '14:57' },
 ]
 
 const SETUP_WARMUP_MINUTES = 0
@@ -255,7 +255,7 @@ async function run() {
 	let totalGameSets = 0
 
     const eventDivisions = [
-        { name: '11th of May', level: '11th of May'}
+        { name: '24th of May', level: '24th of May'}
     ]
 
     const baseDiv = registrationDivisions[0]
@@ -311,7 +311,7 @@ async function run() {
 					teamBId: fixture.teamB.id,
 					reffingTeamId: reffingTeamIds[index],
 					name: `${scheduledDivision.level} – ${fixture.teamA.name} vs ${fixture.teamB.name}`,
-					description: `Banana Cup 11 May 2026 – ${VENUE_NAME} / ${COURT_NAME}`,
+					description: `Banana Cup 24th of May 2026 – ${VENUE_NAME} / ${COURT_NAME}`,
 					startTime: toDateTime(fixture.date, fixture.startTime),
 					endTime: toDateTime(fixture.date, fixture.endTime),
 				})
@@ -321,7 +321,7 @@ async function run() {
 				gameId: game.id,
 				courtId: court.id,
 				name: 'Set 1',
-				description: 'Banana Cup 11 May 2026 – scheduled match slot',
+				description: 'Banana Cup 24th of May 2026 – scheduled match slot',
 				startTime: toDateTime(fixture.date, fixture.startTime),
 				endTime: toDateTime(fixture.date, fixture.endTime),
 			})

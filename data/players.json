@@ -1,14 +1,14 @@
 [
   {
     "id": "1",
-    "player_name": "Tinashe No 5",
+    "player_name": "Larissa Franca",
     "position": "OH",
     "level": "NVL Low"
   },
   {
     "id": "2",
     "player_name": "Sofia Sosnikhina",
-    "position": "MB",
+    "position": "OH",
     "level": "CVA Low"
   },
   {
@@ -19,25 +19,25 @@
   },
   {
     "id": "4",
-    "player_name": "Lilly Minzat",
+    "player_name": "Max Tropets",
     "position": "MB",
     "level": "CVA High"
   },
   {
     "id": "5",
-    "player_name": "Jerry Tsang",
+    "player_name": "Gift Nuka",
     "position": "OH",
     "level": "CVA High"
   },
   {
     "id": "6",
-    "player_name": "Gift Nuka",
+    "player_name": "Claudia Gittel",
     "position": "OPP",
     "level": "CVA Low"
   },
   {
     "id": "7",
-    "player_name": "Flavia Autore",
+    "player_name": "Ataturk Rehayee",
     "position": "OH",
     "level": "CVA Low"
   },
@@ -49,19 +49,19 @@
   },
   {
     "id": "9",
-    "player_name": "Maya Stancheva",
+    "player_name": "Julia O",
     "position": "S",
     "level": "CVA Low"
   },
   {
     "id": "10",
-    "player_name": "Bianca Fraunhoffer",
+    "player_name": "Albert Amadeus",
     "position": "MB",
     "level": "CVA Low"
   },
   {
     "id": "11",
-    "player_name": "Arif Ismail",
+    "player_name": "Andrii Bakthiozin",
     "position": "OPP",
     "level": "CVA Low"
   },
@@ -73,25 +73,25 @@
   },
   {
     "id": "13",
-    "player_name": "Evangelos Karatzas",
-    "position": "MB",
+    "player_name": "Mariarosaria Ferraro",
+    "position": "L",
     "level": "CVA Low"
   },
   {
     "id": "14",
-    "player_name": "Max Tropets",
-    "position": "MB",
+    "player_name": "Sneider",
+    "position": "L",
     "level": "NVL Low"
   },
   {
     "id": "15",
-    "player_name": "Germana Baldi",
-    "position": "OH",
+    "player_name": "Federica Balduzzi",
+    "position": "L",
     "level": "CVA Low"
   },
   {
     "id": "16",
-    "player_name": "Ambra Cortese",
+    "player_name": "Mitesh Patel",
     "position": "OPP",
     "level": "CVA Low"
   },
