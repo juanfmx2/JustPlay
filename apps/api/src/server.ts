@@ -4,7 +4,7 @@ const fastify = Fastify({
   logger: true,
 })
 
-fastify.get('/health', async (request, reply) => {
+fastify.get('/health', async (_request, _reply) => {
   return { status: 'ok', timestamp: new Date().toISOString() }
 })
 

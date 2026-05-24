@@ -4,7 +4,7 @@ import '../styles/header.css'
 
 export const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
 
   return (
     <header className="header">

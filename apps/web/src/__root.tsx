@@ -1,4 +1,3 @@
-import React from 'react'
 import { createRootRoute, RootRoute } from '@tanstack/react-router'
 import App from './App'
 
