@@ -12,8 +12,8 @@
     }
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "@pothos/core": "^3.50.0",
-    "graphql": "^16.9.0"
+    "typescript": "^5.4.0",
+    "@pothos/core": "^4.0.0",
+    "graphql": "^16.8.0"
   }
 }

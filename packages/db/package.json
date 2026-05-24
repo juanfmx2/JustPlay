@@ -18,8 +18,11 @@
       "default": "./dist/schema/index.js"
     }
   },
+  "dependencies": {
+    "drizzle-orm": "^0.45.0"
+  },
   "devDependencies": {
-    "drizzle-kit": "^0.21.0",
-    "typescript": "^5.5.0"
+    "drizzle-kit": "^0.22.0",
+    "typescript": "^5.4.0"
   }
 }
