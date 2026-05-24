@@ -1,6 +1,6 @@
 import React from 'react'
-import '../styles/globals.css'
-import '../styles/home.css'
+import './styles/globals.css'
+import './styles/home.css'
 import { Header } from './components/Header'
 import { ThemeProvider } from './hooks/useTheme'
 
