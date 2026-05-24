@@ -58,3 +58,44 @@ Use this document to define traceable requirements and implementation-ready use 
 - Use INFRA only for cross-cutting technical requirements not owned by a single business domain.
 - Every INFRA requirement must include at least one measurable constraint in Acceptance Criteria or Non-Functional Constraints.
 - Keep requirement and use-case entries concise and update them when scope changes.
+
+## INFRA Requirements
+
+### INFRA-001: Baseline Backend Architecture and Service Boundaries
+- ID: INFRA-001
+- Name: Establish baseline backend architecture and technology foundations.
+- Domain: INFRA
+- Type: Technical
+- Summary: Define and implement the foundational backend architecture, technology stack, and service boundaries that enable all subsequent feature development.
+- Business Goal: Enable scalable, maintainable backend services that can support multi-sport logistics features.
+- Primary Actors: Backend engineers, infrastructure team.
+- In Scope:
+  - Set up pnpm monorepo with Turborepo build orchestration.
+  - Establish apps/api (Fastify + GraphQL Yoga + Pothos) and apps/web (React + Vite + TanStack Router) folder structure.
+  - Create packages/db with Drizzle ORM schema and migrations setup.
+  - Integrate Better Auth for authentication and session management.
+  - Establish TypeScript project configuration and type sharing.
+  - Create home page with responsive UI (header, navigation, theme selector, mobile menu).
+- Out Of Scope:
+  - Actual feature implementation for business domains.
+  - Database deployment or production infrastructure.
+  - API endpoint implementations beyond health check.
+- Acceptance Criteria:
+  - Monorepo builds successfully with all packages.
+  - Build duration is under 60 seconds on initial full build.
+  - Frontend home page renders with responsive design on mobile and desktop.
+  - Theme selector switches between light/dark/system modes.
+  - Navigation menu is sticky and mobile-responsive.
+  - Mission statement and footer are visible on home page.
+  - All code passes lint, typecheck, and unit test suites.
+- Non-Functional Constraints:
+  - Build target: under 60 seconds initial, growth budget up to 300 seconds.
+  - TypeScript strict mode enabled.
+  - All dependencies from trusted sources, no unstable releases.
+  - Frontend must be responsive to 320px (mobile) through 1920px (desktop).
+  - Light, dark, and system theme modes supported.
+  - WCAG 2.1 AA accessibility compliance for home page.
+- Risks:
+  - Monorepo complexity might slow iteration; mitigate with clear package boundaries.
+  - GraphQL schema evolution needs planning before feature implementation.
+  - Theme system colors must guarantee sufficient contrast across all modes.

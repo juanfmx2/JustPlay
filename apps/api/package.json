@@ -1,0 +1,29 @@
+{
+  "name": "@justplay/api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --loader ts-node/esm src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src --ext ts",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "fastify": "^5.0.0",
+    "@graphql-yoga/node": "^3.2.0",
+    "graphql": "^16.9.0",
+    "@pothos/core": "^3.50.0",
+    "better-auth": "^0.17.0",
+    "drizzle-orm": "^0.32.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.14.0",
+    "eslint": "^9.0.0",
+    "jest": "^29.7.0"
+  }
+}

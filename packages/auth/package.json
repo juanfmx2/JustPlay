@@ -1,0 +1,20 @@
+{
+  "name": "@justplay/auth",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "better-auth": "^0.17.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
