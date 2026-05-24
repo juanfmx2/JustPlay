@@ -24,6 +24,13 @@
 - API contracts are defined near service boundaries.
 - Use explicit exports by context rather than ad hoc re-exports.
 
+## Frontend Standards
+- Build reusable CSS primitives and component-level styles before creating page-specific overrides.
+- Use a mobile-first responsive approach and verify usability on smartphones and large screens.
+- Support light, dark, and system theme modes by default.
+- Provide accessibility support across interactions, semantics, keyboard navigation, and contrast.
+- Define and maintain a base theme palette with color tokens that guarantee strong contrast per theme.
+
 ## Testing Baseline
 - New code requires unit tests.
 - Behavior changes require test updates.
