@@ -6,6 +6,27 @@
     { "division": 1, "teamA": "Kiss My Ace", "teamB": "Arepas & Feta", "scoreTeamA": 43, "scoreTeamB": 41 },
     { "division": 1, "teamA": "Net Ninjas", "teamB": "Mikasa es su casa", "scoreTeamA": 46, "scoreTeamB": 32 },
     { "division": 1, "teamA": "Kiss My Ace", "teamB": "Mikasa es su casa", "scoreTeamA": 43, "scoreTeamB": 42 },
-    { "division": 1, "teamA": "Arepas & Feta", "teamB": "Net Ninjas", "scoreTeamA": 42, "scoreTeamB": 41 }
+    { "division": 1, "teamA": "Arepas & Feta", "teamB": "Net Ninjas", "scoreTeamA": 42, "scoreTeamB": 41 },
+
+    { "division": 2, "teamA": "Big Guys", "teamB": "Team salsa", "scoreTeamA": 29, "scoreTeamB": 45 },
+    { "division": 2, "teamA": "Cambridge Blues", "teamB": "MSG", "scoreTeamA": 47, "scoreTeamB": 45 },
+    { "division": 2, "teamA": "Big Guys", "teamB": "MSG", "scoreTeamA": 41, "scoreTeamB": 46 },
+    { "division": 2, "teamA": "Team salsa", "teamB": "Cambridge Blues", "scoreTeamA": 53, "scoreTeamB": 33 },
+    { "division": 2, "teamA": "Big Guys", "teamB": "Cambridge Blues", "scoreTeamA": 45, "scoreTeamB": 42 },
+    { "division": 2, "teamA": "MSG", "teamB": "Team salsa", "scoreTeamA": 39, "scoreTeamB": 49 },
+
+    { "division": 3, "teamA": "Maniacs", "teamB": "The Great White Wall", "scoreTeamA": 38, "scoreTeamB": 56 },
+    { "division": 3, "teamA": "Hit and Miss", "teamB": "My digs don't lie", "scoreTeamA": 46, "scoreTeamB": 39 },
+    { "division": 3, "teamA": "Maniacs", "teamB": "My digs don't lie", "scoreTeamA": 31, "scoreTeamB": 45 },
+    { "division": 3, "teamA": "The Great White Wall", "teamB": "Hit and Miss", "scoreTeamA": 44, "scoreTeamB": 39 },
+    { "division": 3, "teamA": "Maniacs", "teamB": "Hit and Miss", "scoreTeamA": 39, "scoreTeamB": 48 },
+    { "division": 3, "teamA": "My digs don't lie", "teamB": "The Great White Wall", "scoreTeamA": 45, "scoreTeamB": 46 },
+
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "United Cambridge Colleges", "scoreTeamA": 41, "scoreTeamB": 47 },
+    { "division": 4, "teamA": "Andrew's Minions", "teamB": "Banana Split 🍌", "scoreTeamA": 43, "scoreTeamB": 45 },
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "Banana Split 🍌", "scoreTeamA": 48, "scoreTeamB": 39 },
+    { "division": 4, "teamA": "United Cambridge Colleges", "teamB": "Andrew's Minions", "scoreTeamA": 43, "scoreTeamB": 38 },
+    { "division": 4, "teamA": "Bouncy Noodles", "teamB": "Andrew's Minions", "scoreTeamA": 45, "scoreTeamB": 38 },
+    { "division": 4, "teamA": "Banana Split 🍌", "teamB": "United Cambridge Colleges", "scoreTeamA": 41, "scoreTeamB": 50 }
   ]
 }
