@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup pnpm
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        if: ${{ hashFiles('package.json') != '' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        if: ${{ hashFiles('package.json') != '' }}
+        run: pnpm -r lint --if-present
+
+      - name: Typecheck
+        if: ${{ hashFiles('package.json') != '' }}
+        run: pnpm -r typecheck --if-present
+
+      - name: Unit tests
+        if: ${{ hashFiles('package.json') != '' }}
+        run: pnpm -r test --if-present -- --run
+
+      - name: Build
+        if: ${{ hashFiles('package.json') != '' }}
+        run: |
+          start=$(date +%s)
+          pnpm -r build --if-present
+          end=$(date +%s)
+          duration=$((end - start))
+          echo "build_duration_seconds=$duration" >> "$GITHUB_ENV"
+          echo "Build duration: ${duration}s"
+          if [ "$duration" -gt 60 ]; then
+            echo "::warning::Build exceeded initial target of 60s"
+          fi
+          if [ "$duration" -gt 300 ]; then
+            echo "::warning::Build exceeded growth budget of 300s"
+          fi
+
+      - name: Security audit
+        if: ${{ hashFiles('package.json') != '' }}
+        run: pnpm audit --audit-level high
