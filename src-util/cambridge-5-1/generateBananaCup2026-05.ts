@@ -255,7 +255,7 @@ async function run() {
 	let totalGameSets = 0
 
     const eventDivisions = [
-        { name: '24th of May', level: '24th of May'}
+        { name: 'Division 1', level: 'div 1'}
     ]
 
     const baseDiv = registrationDivisions[0]
