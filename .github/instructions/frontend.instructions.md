@@ -10,12 +10,6 @@ applyTo: "apps/web/**"
 - Keep state local by default and elevate only when necessary.
 - Validate user input before submit and handle API errors clearly.
 - Keep pages responsive and accessible.
-- Add tests for new UI behavior and interaction logic.
-
-# Design Iteration
-
-- Implement from approved design notes and use-case criteria.
-- If implementation needs design changes, update design docs in the same branch.
 
 # Canonical References
 

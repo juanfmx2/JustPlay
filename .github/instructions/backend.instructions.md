@@ -7,10 +7,8 @@ applyTo: "apps/api/**"
 
 - Keep endpoints thin and move business logic into service/domain modules.
 - Validate request payloads and query params at the boundary.
-- Keep modules focused by feature and responsibility.
 - Prefer explicit transactional boundaries for multi-write operations.
 - Propagate typed domain errors, not raw infrastructure errors.
-- Add unit tests for domain logic and integration tests for endpoint wiring when added.
 
 # Security
 

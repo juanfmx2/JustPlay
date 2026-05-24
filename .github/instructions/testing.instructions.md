@@ -1,20 +1,14 @@
 ---
-description: "Testing strategy rules for unit tests, coverage quality, and merge safety"
+description: "Testing strategy rules for test quality and reliability"
 applyTo: "**/*.{test,spec}.{ts,tsx,js,jsx}"
 ---
 
 # Testing Rules
 
-- New code requires new or updated unit tests.
 - Test behavior and outcomes, not private implementation details.
 - Keep tests deterministic and isolated.
 - Prefer fast tests with clear setup and teardown boundaries.
 - Add regression tests for every production bug fix.
-
-# Merge Safety
-
-- Pull requests are not ready unless tests pass in CI.
-- Include concise test evidence in pull request description.
 
 # Canonical References
 
