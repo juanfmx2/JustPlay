@@ -8,6 +8,27 @@
       "when": 1777415145961,
       "tag": "0000_wandering_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780012800000,
+      "tag": "0001_2v2_players",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780016400000,
+      "tag": "0002_players_name_unique",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780020000000,
+      "tag": "0003_2v2_games_and_player_stats",
+      "breakpoints": true
     }
   ]
 }
