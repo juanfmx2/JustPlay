@@ -27,16 +27,8 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@justplay/db": ["packages/db/src"],
-      "@justplay/gql": ["packages/gql/src"],
-      "@justplay/auth": ["packages/auth/src"],
-      "@justplay/web": ["apps/web/src"],
-      "@justplay/api": ["apps/api/src"]
-    }
+    "sourceMap": true
   },
-  "include": ["apps/**", "packages/**"],
+  "include": ["apps/**/*", "packages/**/*"],
   "exclude": ["node_modules", "dist", "build"]
 }
