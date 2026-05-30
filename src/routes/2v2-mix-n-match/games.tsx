@@ -4,7 +4,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { useMemo, useState } from 'react'
 
 import { db } from '@/db/client'
-import { players, twoVsTwoGames, type Player, type TwoVsTwoGame } from '@/schema'
+import { players, twoVsTwoGames, twoVsTwoSettings, type Player, type TwoVsTwoGame } from '@/schema'
 
 const MIN_PLAYERS_FOR_GAME = 4
 
@@ -41,6 +41,12 @@ type GameWithNames = TwoVsTwoGame & {
 type LoaderData = {
   players: Player[]
   games: GameWithNames[]
+  registerGamesEnabled: boolean
+}
+
+type SetRegisterGamesEnabledInput = {
+  enabled: boolean
+  edit: string
 }
 
 function rankingSwingFromDiff(diff: number): number {
@@ -72,9 +78,32 @@ function toPlayerNameMap(playerRows: Player[]): Map<number, string> {
   return new Map(playerRows.map((player) => [player.id, player.name]))
 }
 
+async function readRegisterGamesEnabled(): Promise<boolean> {
+  const settingsRow = await db.query.twoVsTwoSettings.findFirst({
+    where: eq(twoVsTwoSettings.id, 1),
+  })
+
+  if (settingsRow) {
+    return settingsRow.registerGamesEnabled
+  }
+
+  const [created] = await db
+    .insert(twoVsTwoSettings)
+    .values({
+      id: 1,
+      registerGamesEnabled: true,
+      updatedAt: new Date(),
+    })
+    .onConflictDoNothing()
+    .returning()
+
+  return created?.registerGamesEnabled ?? true
+}
+
 const loadGamesPageData = createServerFn({ method: 'GET' }).handler(async (): Promise<LoaderData> => {
   const playerRows = await db.select().from(players).orderBy(players.id)
   const gameRows = await db.select().from(twoVsTwoGames).orderBy(desc(twoVsTwoGames.id)).limit(50)
+  const registerGamesEnabled = await readRegisterGamesEnabled()
 
   const namesById = toPlayerNameMap(playerRows)
 
@@ -89,12 +118,18 @@ const loadGamesPageData = createServerFn({ method: 'GET' }).handler(async (): Pr
   return {
     players: playerRows,
     games: gamesWithNames,
+    registerGamesEnabled,
   }
 })
 
 const registerGame = createServerFn({ method: 'POST' })
   .inputValidator((input: RegisterGameInput) => input)
   .handler(async ({ data }) => {
+    const registerGamesEnabled = await readRegisterGamesEnabled()
+    if (!registerGamesEnabled) {
+      throw new Error('Registering games is currently disabled.')
+    }
+
     assertValidScore(data.scoreTeamA, 'scoreTeamA')
     assertValidScore(data.scoreTeamB, 'scoreTeamB')
 
@@ -180,6 +215,34 @@ const registerGame = createServerFn({ method: 'POST' })
         teamBPlayer1Name: namesById.get(game.teamBPlayer1Id) ?? `#${game.teamBPlayer1Id}`,
         teamBPlayer2Name: namesById.get(game.teamBPlayer2Id) ?? `#${game.teamBPlayer2Id}`,
       })),
+    }
+  })
+
+const setRegisterGamesEnabled = createServerFn({ method: 'POST' })
+  .inputValidator((input: SetRegisterGamesEnabledInput) => input)
+  .handler(async ({ data }) => {
+    if (data.edit !== 'banana') {
+      throw new Error('Edition is not allowed.')
+    }
+
+    const [saved] = await db
+      .insert(twoVsTwoSettings)
+      .values({
+        id: 1,
+        registerGamesEnabled: data.enabled,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [twoVsTwoSettings.id],
+        set: {
+          registerGamesEnabled: data.enabled,
+          updatedAt: new Date(),
+        },
+      })
+      .returning()
+
+    return {
+      registerGamesEnabled: saved?.registerGamesEnabled ?? data.enabled,
     }
   })
 
@@ -283,6 +346,8 @@ function TwoVsTwoGamesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingGameId, setDeletingGameId] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isRegisterGamesEnabled, setIsRegisterGamesEnabled] = useState(loaderData.registerGamesEnabled)
+  const [isTogglingRegisterGames, setIsTogglingRegisterGames] = useState(false)
 
   const hasEnoughPlayers = playerRows.length >= MIN_PLAYERS_FOR_GAME
   const canEdit = search.edit === 'banana'
@@ -361,6 +426,32 @@ function TwoVsTwoGamesPage() {
     }
   }
 
+  const onToggleRegisterGames = async () => {
+    if (!canEdit || isTogglingRegisterGames) {
+      return
+    }
+
+    setErrorMessage('')
+    setIsTogglingRegisterGames(true)
+
+    try {
+      const updated = await setRegisterGamesEnabled({
+        data: {
+          enabled: !isRegisterGamesEnabled,
+          edit: search.edit ?? '',
+        },
+      })
+
+      setIsRegisterGamesEnabled(updated.registerGamesEnabled)
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Could not update register games setting.',
+      )
+    } finally {
+      setIsTogglingRegisterGames(false)
+    }
+  }
+
   return (
     <section className="container py-4">
       <header className="mb-4">
@@ -388,20 +479,38 @@ function TwoVsTwoGamesPage() {
         </Link>
       </div>
 
-      <div className="row g-4">
-        <div className="col-12 col-xl-5">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h2 className="h5 mb-3">Register Game</h2>
+      {canEdit ? (
+        <div className="mb-4">
+          <button
+            type="button"
+            className={`btn ${isRegisterGamesEnabled ? 'btn-outline-warning' : 'btn-outline-success'}`}
+            onClick={onToggleRegisterGames}
+            disabled={isTogglingRegisterGames}
+          >
+            {isTogglingRegisterGames
+              ? 'Updating...'
+              : isRegisterGamesEnabled
+                ? 'Disable Register Games'
+                : 'Enable Register Games'}
+          </button>
+        </div>
+      ) : null}
 
-              {!hasEnoughPlayers ? (
-                <p className="text-warning mb-0">Create at least 4 players first in /2v2-mix-n-match/players.</p>
-              ) : (
-                <form onSubmit={onSubmit} className="d-flex flex-column gap-3">
-                  <div className="row g-3">
-                    <div className="col-12 col-lg-6">
-                      <article className="border rounded p-3 h-100">
-                        <h3 className="h6 mb-3">Team A</h3>
+      <div className="row g-4">
+        {isRegisterGamesEnabled ? (
+          <div className="col-12 col-xl-5">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h2 className="h5 mb-3">Register Game</h2>
+
+                {!hasEnoughPlayers ? (
+                  <p className="text-warning mb-0">Create at least 4 players first in /2v2-mix-n-match/players.</p>
+                ) : (
+                  <form onSubmit={onSubmit} className="d-flex flex-column gap-3">
+                    <div className="row g-3">
+                      <div className="col-12 col-lg-6">
+                        <article className="border rounded p-3 h-100">
+                          <h3 className="h6 mb-3">Team A</h3>
 
                         <div className="d-flex flex-column gap-3">
                           <div>
@@ -469,9 +578,9 @@ function TwoVsTwoGamesPage() {
                       </article>
                     </div>
 
-                    <div className="col-12 col-lg-6">
-                      <article className="border rounded p-3 h-100">
-                        <h3 className="h6 mb-3">Team B</h3>
+                      <div className="col-12 col-lg-6">
+                        <article className="border rounded p-3 h-100">
+                          <h3 className="h6 mb-3">Team B</h3>
 
                         <div className="d-flex flex-column gap-3">
                           <div>
@@ -540,40 +649,41 @@ function TwoVsTwoGamesPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    className="btn btn-banana"
-                    disabled={
-                      isSubmitting ||
-                      !form.teamAPlayer1Id ||
-                      !form.teamAPlayer2Id ||
-                      !form.teamBPlayer1Id ||
-                      !form.teamBPlayer2Id
-                    }
-                  >
-                    {isSubmitting ? 'Registering...' : 'Register Game'}
-                  </button>
+                    <button
+                      type="submit"
+                      className="btn btn-banana"
+                      disabled={
+                        isSubmitting ||
+                        !form.teamAPlayer1Id ||
+                        !form.teamAPlayer2Id ||
+                        !form.teamBPlayer1Id ||
+                        !form.teamBPlayer2Id
+                      }
+                    >
+                      {isSubmitting ? 'Registering...' : 'Register Game'}
+                    </button>
 
-                  {errorMessage ? <p className="text-danger mb-0">{errorMessage}</p> : null}
-                </form>
-              )}
+                    {errorMessage ? <p className="text-danger mb-0">{errorMessage}</p> : null}
+                  </form>
+                )}
+              </div>
+            </div>
+
+            <div className="card shadow-sm mt-4">
+              <div className="card-body">
+                <h2 className="h5 mb-3">Scoring Rules</h2>
+                <ul className="mb-0">
+                  <li>Diff &lt; 3: winners +1, losers -1</li>
+                  <li>Diff 3-7: winners +2, losers -2</li>
+                  <li>Diff 8-12: winners +3, losers -3</li>
+                  <li>Diff &gt; 12: winners +4, losers -4</li>
+                </ul>
+              </div>
             </div>
           </div>
+        ) : null}
 
-          <div className="card shadow-sm mt-4">
-            <div className="card-body">
-              <h2 className="h5 mb-3">Scoring Rules</h2>
-              <ul className="mb-0">
-                <li>Diff &lt; 3: winners +1, losers -1</li>
-                <li>Diff 3-7: winners +2, losers -2</li>
-                <li>Diff 8-12: winners +3, losers -3</li>
-                <li>Diff &gt; 12: winners +4, losers -4</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-xl-7">
+        <div className={isRegisterGamesEnabled ? 'col-12 col-xl-7' : 'col-12'}>
           <div className="card shadow-sm mb-4">
             <div className="card-body">
               <h2 className="h5 mb-3">Players Ranking</h2>
@@ -635,8 +745,7 @@ function TwoVsTwoGamesPage() {
                               {`Team A / ${game.scoreTeamA > game.scoreTeamB ? '+' : '-'}${rankingSwingFromDiff(Math.abs(game.scoreTeamA - game.scoreTeamB))}`}
                             </h4>
                             <ul className="mb-0 ps-3">
-                              <li>P1: {game.teamAPlayer1Name}</li>
-                              <li>P2: {game.teamAPlayer2Name}</li>
+                              <li>{game.teamAPlayer1Name} & {game.teamAPlayer2Name}</li>
                               <li>Score: {game.scoreTeamA}</li>
                             </ul>
                           </article>
@@ -648,8 +757,7 @@ function TwoVsTwoGamesPage() {
                               {`Team B / ${game.scoreTeamB > game.scoreTeamA ? '+' : '-'}${rankingSwingFromDiff(Math.abs(game.scoreTeamA - game.scoreTeamB))}`}
                             </h4>
                             <ul className="mb-0 ps-3">
-                              <li>P1: {game.teamBPlayer1Name}</li>
-                              <li>P2: {game.teamBPlayer2Name}</li>
+                              <li>{game.teamBPlayer1Name} & {game.teamBPlayer2Name}</li>
                               <li>Score: {game.scoreTeamB}</li>
                             </ul>
                           </article>
