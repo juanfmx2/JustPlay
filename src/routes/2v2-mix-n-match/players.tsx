@@ -1,5 +1,5 @@
 import { count, eq, or, sql } from 'drizzle-orm'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useMemo, useState } from 'react'
 
@@ -102,7 +102,10 @@ const deletePlayer = createServerFn({ method: 'POST' })
     return deleted
   })
 
-export const Route = createFileRoute('/2v2-test/players')({
+export const Route = createFileRoute('/2v2-mix-n-match/players')({
+  head: () => ({
+    meta: [{ title: '2v2 Mix n Match Players | JustPlay' }],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     edit: typeof search.edit === 'string' ? search.edit : undefined,
   }),
@@ -181,11 +184,29 @@ function TwoVsTwoPlayersPage() {
   return (
     <section className="container py-4">
       <header className="mb-4">
-        <h1 className="h2 mb-1">2v2 Test Players</h1>
+        <h1 className="h2 mb-1">2v2 Mix n Match Players</h1>
         <p className="text-body-secondary mb-0">
           Add up to {MAX_PLAYERS} players. Every new player starts with ranking {INITIAL_RANKING}.
         </p>
       </header>
+
+      <div className="d-flex flex-wrap gap-2 mb-4">
+        <Link className="btn btn-banana" to="/2v2-mix-n-match">
+          Home
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/players" search={{ edit: undefined }}>
+          Players
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/games" search={{ edit: undefined }}>
+          Ranking Games
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/upper-pool" search={{ edit: undefined }}>
+          Upper Pool
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/lower-pool" search={{ edit: undefined }}>
+          Lower Pool
+        </Link>
+      </div>
 
       <div className="row g-4">
         {canEdit ? (

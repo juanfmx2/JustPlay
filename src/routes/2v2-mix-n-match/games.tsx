@@ -1,5 +1,5 @@
 import { desc, eq, inArray, sql } from 'drizzle-orm'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { useMemo, useState } from 'react'
 
@@ -256,7 +256,10 @@ const deleteGame = createServerFn({ method: 'POST' })
     }
   })
 
-export const Route = createFileRoute('/2v2-test/games')({
+export const Route = createFileRoute('/2v2-mix-n-match/games')({
+  head: () => ({
+    meta: [{ title: '2v2 Mix n Match Games | JustPlay' }],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     edit: typeof search.edit === 'string' ? search.edit : undefined,
   }),
@@ -361,11 +364,29 @@ function TwoVsTwoGamesPage() {
   return (
     <section className="container py-4">
       <header className="mb-4">
-        <h1 className="h2 mb-1">2v2 Test Games</h1>
+        <h1 className="h2 mb-1">2v2 Mix n Match Games</h1>
         <p className="text-body-secondary mb-0">
-          Register 2v2 games and automatically update ranking, PF, PA and coefficient.
+          Register 2v2 mix n match games and automatically update ranking, PF, PA and coefficient.
         </p>
       </header>
+
+      <div className="d-flex flex-wrap gap-2 mb-4">
+        <Link className="btn btn-banana" to="/2v2-mix-n-match">
+          Home
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/players" search={{ edit: undefined }}>
+          Players
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/games" search={{ edit: undefined }}>
+          Ranking Games
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/upper-pool" search={{ edit: undefined }}>
+          Upper Pool
+        </Link>
+        <Link className="btn btn-outline-secondary" to="/2v2-mix-n-match/lower-pool" search={{ edit: undefined }}>
+          Lower Pool
+        </Link>
+      </div>
 
       <div className="row g-4">
         <div className="col-12 col-xl-5">
@@ -374,7 +395,7 @@ function TwoVsTwoGamesPage() {
               <h2 className="h5 mb-3">Register Game</h2>
 
               {!hasEnoughPlayers ? (
-                <p className="text-warning mb-0">Create at least 4 players first in /2v2-test/players.</p>
+                <p className="text-warning mb-0">Create at least 4 players first in /2v2-mix-n-match/players.</p>
               ) : (
                 <form onSubmit={onSubmit} className="d-flex flex-column gap-3">
                   <div className="row g-3">
