@@ -46,7 +46,7 @@ const EVENTS: EventConfig[] = [
 		gameDescription: 'Banana Cup 5th of July 2026',
 		// Hosted 10:30-14:00 with the first game at 10:45.
 		rounds: [
-			{ startTime: '10:45', endTime: '11:48' },
+			{ startTime: '10:55', endTime: '11:48' },
 			{ startTime: '11:50', endTime: '12:53' },
 			{ startTime: '12:55', endTime: '14:00' },
 		],
