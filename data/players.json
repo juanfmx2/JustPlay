@@ -1,44 +1,44 @@
 [
   {
     "id": "1",
-    "player_name": "Larissa Franca",
-    "position": "OH",
+    "player_name": "Awaan Siddiqui",
+    "position": "PIN",
     "level": "NVL Low"
   },
   {
     "id": "2",
-    "player_name": "Sofia Sosnikhina",
-    "position": "OH",
+    "player_name": "Yinshui Chang",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
     "id": "3",
-    "player_name": "Olga Viliura",
-    "position": "MB",
+    "player_name": "Mariarosaria Ferraro",
+    "position": "L",
     "level": "CVA High"
   },
   {
     "id": "4",
-    "player_name": "Max Tropets",
-    "position": "MB",
+    "player_name": "Senider San",
+    "position": "L",
     "level": "CVA High"
   },
   {
     "id": "5",
     "player_name": "Gift Nuka",
-    "position": "OH",
+    "position": "PIN",
     "level": "CVA High"
   },
   {
     "id": "6",
-    "player_name": "Claudia Gittel",
-    "position": "OPP",
+    "player_name": "Olga Viliura",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
     "id": "7",
-    "player_name": "Ataturk Rehayee",
-    "position": "OH",
+    "player_name": "Germana Baldi",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
@@ -49,50 +49,50 @@
   },
   {
     "id": "9",
-    "player_name": "Julia O",
+    "player_name": "Dan Tinkler",
     "position": "S",
     "level": "CVA Low"
   },
   {
     "id": "10",
-    "player_name": "Albert Amadeus",
-    "position": "MB",
+    "player_name": "Tiago Candido",
+    "position": "L",
     "level": "CVA Low"
   },
   {
     "id": "11",
-    "player_name": "Andrii Bakthiozin",
-    "position": "OPP",
+    "player_name": "Arif Ismail",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
     "id": "12",
-    "player_name": "Daniel Kozak",
-    "position": "OH",
+    "player_name": "Julia O",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
     "id": "13",
-    "player_name": "Mariarosaria Ferraro",
-    "position": "L",
+    "player_name": "Adrian Czuchaj",
+    "position": "MB",
     "level": "CVA Low"
   },
   {
     "id": "14",
-    "player_name": "Sneider",
-    "position": "L",
+    "player_name": "Paolo Costa",
+    "position": "MB",
     "level": "NVL Low"
   },
   {
     "id": "15",
-    "player_name": "Federica Balduzzi",
-    "position": "L",
+    "player_name": "Evangelos Karatzas",
+    "position": "MB",
     "level": "CVA Low"
   },
   {
     "id": "16",
-    "player_name": "Mitesh Patel",
-    "position": "OPP",
+    "player_name": "Roberto Zanchi",
+    "position": "PIN",
     "level": "CVA Low"
   },
   {
@@ -103,8 +103,8 @@
   },
   {
     "id": "18",
-    "player_name": "Andrei Sosnikhin",
-    "position": "OH",
+    "player_name": "Agastasya Dahiya",
+    "position": "PIN",
     "level": "CVA Low"
   }
 ]

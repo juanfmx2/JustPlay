@@ -13,25 +13,44 @@ import { standings } from '../../src/schema/standings'
 import { courts, venues } from '../../src/schema/venue'
 
 const COMPETITION_SLUG = 'banana-cup'
-const EVENT_DATE = '2026-05-24'
-const STAGE_SLUG = 'banana-cup-2026-05'
 const VENUE_NAME = 'North Cambridge Academy (NCA)'
 const COURT_NAME = 'Sports Hall'
 
-// 3 teams × 3 round-robins = 9 games, 8 gaps of 2 min.
-// Total window: 12:10 – 21:00 = 170 min.
-// 170 – 8×2 = 154 min playable → floor(154/9) = 17 min/game.
-// Each round (3 games, 2 intermissions): 3×17 + 2×2 = 55 min.
-// Remaining minute goes to the last round's final game.
-//
-// Round 1: 12:15 – 13:08 (51 min)   gap: 2 min
-// Round 2: 13:10 – 14:03 (51 min)   gap: 2 min
-// Round 3: 14:05 – 14:57 (51 min)
+type EventConfig = {
+	date: string
+	stageSlug: string
+	stageName: string
+	stageDescription: string
+	gameDescription: string
+	rounds: Array<{ startTime: string; endTime: string }>
+}
 
-const ROUNDS: Array<{ startTime: string; endTime: string }> = [
-	{ startTime: '12:15', endTime: '13:08' },
-	{ startTime: '13:10', endTime: '14:03' },
-	{ startTime: '14:05', endTime: '14:57' },
+const EVENTS: EventConfig[] = [
+	{
+		date: '2026-05-24',
+		stageSlug: 'banana-cup-2026-05',
+		stageName: 'Banana Cup – May 2026',
+		stageDescription: 'Banana Cup event – 3× round-robin',
+		gameDescription: 'Banana Cup 24th of May 2026',
+		rounds: [
+			{ startTime: '12:15', endTime: '13:08' },
+			{ startTime: '13:10', endTime: '14:03' },
+			{ startTime: '14:05', endTime: '14:57' },
+		],
+	},
+	{
+		date: '2026-07-05',
+		stageSlug: 'banana-cup-2026-07-05',
+		stageName: 'Banana Cup – July 5 2026',
+		stageDescription: 'Banana Cup event – 3× round-robin (10:30-14:00)',
+		gameDescription: 'Banana Cup 5th of July 2026',
+		// Hosted 10:30-14:00 with the first game at 10:45.
+		rounds: [
+			{ startTime: '10:45', endTime: '11:48' },
+			{ startTime: '11:50', endTime: '12:53' },
+			{ startTime: '12:55', endTime: '14:00' },
+		],
+	},
 ]
 
 const SETUP_WARMUP_MINUTES = 0
@@ -105,9 +124,9 @@ async function getCompetitionOrThrow() {
 	return competition
 }
 
-async function getOrCreateEventStage(competitionId: number) {
+async function getOrCreateEventStage(competitionId: number, event: EventConfig) {
 	const existing = await db.query.stages.findFirst({
-		where: and(eq(stages.competitionId, competitionId), eq(stages.urlSlug, STAGE_SLUG)),
+		where: and(eq(stages.competitionId, competitionId), eq(stages.urlSlug, event.stageSlug)),
 	})
 
 	if (existing) {
@@ -118,9 +137,9 @@ async function getOrCreateEventStage(competitionId: number) {
 		.insert(stages)
 		.values({
 			competitionId,
-			name: 'Banana Cup – May 2026',
-			description: 'Banana Cup event – 3× round-robin',
-			urlSlug: STAGE_SLUG,
+			name: event.stageName,
+			description: event.stageDescription,
+			urlSlug: event.stageSlug,
 			type: 'PLAY',
 		})
 		.returning()
@@ -248,11 +267,11 @@ async function run() {
 		throw new Error('No divisions found in the registration stage. Run generateRegistration.ts first.')
 	}
 
-	const eventStage = await getOrCreateEventStage(competition.id)
 	const court = await getCourtOrThrow()
 
 	let totalGames = 0
 	let totalGameSets = 0
+	let totalStandings = 0
 
     const eventDivisions = [
         { name: 'Division 1', level: 'div 1'}
@@ -260,78 +279,82 @@ async function run() {
 
     const baseDiv = registrationDivisions[0]
 
-	for (const sourceDivision of eventDivisions) {
-		const scheduledDivision = await getOrCreateEventDivision(eventStage.id, {
-			name: sourceDivision.name,
-			level: sourceDivision.level,
-			type: baseDiv.type,
-		})
+	for (const event of EVENTS) {
+		const eventStage = await getOrCreateEventStage(competition.id, event)
 
-		// Idempotent: clear previously generated games for this division.
-		await db.delete(games).where(eq(games.divisionId, scheduledDivision.id))
+		for (const sourceDivision of eventDivisions) {
+			const scheduledDivision = await getOrCreateEventDivision(eventStage.id, {
+				name: sourceDivision.name,
+				level: sourceDivision.level,
+				type: baseDiv.type,
+			})
 
-		const divisionTeams = baseDiv.teams.map((team) => ({ id: team.id, name: team.name }))
+			// Idempotent: clear previously generated games for this division.
+			await db.delete(games).where(eq(games.divisionId, scheduledDivision.id))
 
-		const allScheduledGames: ScheduledGame[] = []
+			const divisionTeams = baseDiv.teams.map((team) => ({ id: team.id, name: team.name }))
 
-		const teamC = divisionTeams.pop()
-		divisionTeams.splice(0,0, teamC!)
-		console.log('TEAMS FOR SCHEDULING:')
-		console.log(divisionTeams.map(t => t.name).join(', '))
-		// Generate 3 consecutive round-robins, each within its own time window.
-		for (const [roundIndex, round] of ROUNDS.entries()) {
-			const divisionForScheduling: DivisionForScheduling = {
-				// Use a virtual ID per round so internal game IDs don't collide.
-				id: scheduledDivision.id * 10 + roundIndex,
-				name: `${scheduledDivision.name} – Round ${roundIndex + 1}`,
-				teams: divisionTeams,
+			const allScheduledGames: ScheduledGame[] = []
+
+			const teamC = divisionTeams.pop()
+			divisionTeams.splice(0, 0, teamC!)
+			console.log('TEAMS FOR SCHEDULING:')
+			console.log(divisionTeams.map((t) => t.name).join(', '))
+			// Generate 3 consecutive round-robins, each within its own time window.
+			for (const [roundIndex, round] of event.rounds.entries()) {
+				const divisionForScheduling: DivisionForScheduling = {
+					// Use a virtual ID per round so internal game IDs don't collide.
+					id: scheduledDivision.id * 10 + roundIndex,
+					name: `${scheduledDivision.name} – Round ${roundIndex + 1}`,
+					teams: divisionTeams,
+				}
+
+				const roundGames = generateRoundRobinSchedule(
+					divisionForScheduling,
+					event.date,
+					round.startTime,
+					round.endTime,
+					SETUP_WARMUP_MINUTES,
+					INTERMISSION_MINUTES,
+					CLOSEDOWN_MINUTES,
+				)
+
+				allScheduledGames.push(...roundGames)
 			}
 
-			const roundGames = generateRoundRobinSchedule(
-				divisionForScheduling,
-				EVENT_DATE,
-				round.startTime,
-				round.endTime,
-				SETUP_WARMUP_MINUTES,
-				INTERMISSION_MINUTES,
-				CLOSEDOWN_MINUTES,
-			)
+			const reffingTeamIds = assignReffingTeams(allScheduledGames, divisionTeams)
 
-			allScheduledGames.push(...roundGames)
-		}
+			for (const [index, fixture] of allScheduledGames.entries()) {
+				const [game] = await db
+					.insert(games)
+					.values({
+						divisionId: scheduledDivision.id,
+						teamAId: fixture.teamA.id,
+						teamBId: fixture.teamB.id,
+						reffingTeamId: reffingTeamIds[index],
+						name: `${scheduledDivision.level} – ${fixture.teamA.name} vs ${fixture.teamB.name}`,
+						description: `${event.gameDescription} – ${VENUE_NAME} / ${COURT_NAME}`,
+						startTime: toDateTime(fixture.date, fixture.startTime),
+						endTime: toDateTime(fixture.date, fixture.endTime),
+					})
+					.returning()
 
-		const reffingTeamIds = assignReffingTeams(allScheduledGames, divisionTeams)
-
-		for (const [index, fixture] of allScheduledGames.entries()) {
-			const [game] = await db
-				.insert(games)
-				.values({
-					divisionId: scheduledDivision.id,
-					teamAId: fixture.teamA.id,
-					teamBId: fixture.teamB.id,
-					reffingTeamId: reffingTeamIds[index],
-					name: `${scheduledDivision.level} – ${fixture.teamA.name} vs ${fixture.teamB.name}`,
-					description: `Banana Cup 24th of May 2026 – ${VENUE_NAME} / ${COURT_NAME}`,
+				await db.insert(gameSets).values({
+					gameId: game.id,
+					courtId: court.id,
+					name: 'Set 1',
+					description: `${event.gameDescription} – scheduled match slot`,
 					startTime: toDateTime(fixture.date, fixture.startTime),
 					endTime: toDateTime(fixture.date, fixture.endTime),
 				})
-				.returning()
 
-			await db.insert(gameSets).values({
-				gameId: game.id,
-				courtId: court.id,
-				name: 'Set 1',
-				description: 'Banana Cup 24th of May 2026 – scheduled match slot',
-				startTime: toDateTime(fixture.date, fixture.startTime),
-				endTime: toDateTime(fixture.date, fixture.endTime),
-			})
-
-			totalGames += 1
-			totalGameSets += 1
+				totalGames += 1
+				totalGameSets += 1
+			}
 		}
-	}
 
-	const totalStandings = await regenerateStandingsForStage(eventStage.id)
+		totalStandings += await regenerateStandingsForStage(eventStage.id)
+	}
 
 	console.log(
 		`Generated Banana Cup event stage for ${competition.urlSlug}: games=${totalGames}, gameSets=${totalGameSets}, standings=${totalStandings}`,
