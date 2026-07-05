@@ -4,7 +4,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react-jsx",
-    "types": ["vite/client", "jest", "@testing-library/jest-dom"],
+    "types": ["vite/client", "jest", "@testing-library/jest-dom", "node"],
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
   "include": ["src"],

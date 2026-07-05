@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { useTheme } from '../hooks/useTheme'
 import '../styles/header.css'
 
@@ -25,10 +26,39 @@ export const Header: React.FC = () => {
         </button>
 
         <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
-          <a href="/" className="nav-link">Home</a>
-          <a href="/" className="nav-link">About</a>
-          <a href="/" className="nav-link">Leagues</a>
-          <a href="/" className="nav-link">Sign In</a>
+          <Link
+            to="/"
+            className="nav-link"
+            activeProps={{ className: 'nav-link nav-link-active' }}
+            activeOptions={{ exact: true }}
+            onClick={() => setMenuOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="nav-link"
+            activeProps={{ className: 'nav-link nav-link-active' }}
+            onClick={() => setMenuOpen(false)}
+          >
+            About
+          </Link>
+          <Link
+            to="/leagues"
+            className="nav-link"
+            activeProps={{ className: 'nav-link nav-link-active' }}
+            onClick={() => setMenuOpen(false)}
+          >
+            Leagues
+          </Link>
+          <Link
+            to="/sign-in"
+            className="nav-link"
+            activeProps={{ className: 'nav-link nav-link-active' }}
+            onClick={() => setMenuOpen(false)}
+          >
+            Sign In
+          </Link>
         </nav>
 
         <div className="theme-selector">

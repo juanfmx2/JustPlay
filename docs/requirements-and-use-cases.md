@@ -83,8 +83,10 @@ Use this document to define traceable requirements and implementation-ready use 
 - Acceptance Criteria:
   - Monorepo builds successfully with all packages.
   - Build duration is under 60 seconds on initial full build.
+  - API health endpoint has a simple automated server-side test that verifies a successful response.
   - Frontend home page renders with responsive design on mobile and desktop.
   - Theme selector switches between light/dark/system modes.
+  - Initial page load applies the correct stored/system theme without flashing the opposite theme.
   - Navigation menu is sticky and mobile-responsive.
   - Mission statement and footer are visible on home page.
   - All code passes lint, typecheck, and unit test suites.
@@ -92,6 +94,7 @@ Use this document to define traceable requirements and implementation-ready use 
   - Build target: under 60 seconds initial, growth budget up to 300 seconds.
   - TypeScript strict mode enabled.
   - All dependencies from trusted sources, no unstable releases.
+  - In packages declared as `type: module`, JavaScript configuration files must use ESM syntax and avoid `.cjs` fallbacks.
   - Frontend must be responsive to 320px (mobile) through 1920px (desktop).
   - Light, dark, and system theme modes supported.
   - WCAG 2.1 AA accessibility compliance for home page.

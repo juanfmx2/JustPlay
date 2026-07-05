@@ -4,6 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var storedTheme = localStorage.getItem('theme')
+          var theme =
+            storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system'
+              ? storedTheme
+              : 'system'
+          var resolvedTheme =
+            theme === 'system'
+              ? window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : theme
+
+          document.documentElement.setAttribute('data-theme', resolvedTheme)
+        } catch (_error) {
+          document.documentElement.setAttribute('data-theme', 'light')
+        }
+      })()
+    </script>
     <title>JustPlay - Sports Logistics Made Simple</title>
   </head>
   <body>
