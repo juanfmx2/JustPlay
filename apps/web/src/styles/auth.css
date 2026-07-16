@@ -1,0 +1,127 @@
+.auth-content {
+  max-width: 560px;
+}
+
+.auth-subtitle {
+  opacity: 0.85;
+  margin-bottom: var(--spacing-lg);
+}
+
+.auth-mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+.auth-mode-button {
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  padding: var(--spacing-md);
+  font-weight: 600;
+}
+
+.auth-mode-button.active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.auth-field {
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.auth-field span {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth-field input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.auth-field input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.auth-submit {
+  margin-top: var(--spacing-sm);
+  border: 0;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 700;
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+}
+
+.auth-divider {
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+  opacity: 0.75;
+  font-size: 0.9rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auth-divider span {
+  padding: 0 var(--spacing-sm);
+}
+
+.auth-social {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.auth-social:hover {
+  border-color: var(--color-primary);
+}
+
+.auth-social:disabled {
+  opacity: 0.7;
+}
+
+.auth-message {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+}
+
+.auth-message.success {
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--color-success);
+}
+
+.auth-message.error {
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--color-error);
+}

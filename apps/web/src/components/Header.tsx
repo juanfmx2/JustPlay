@@ -1,11 +1,21 @@
 import React, { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { useAuthSession } from '../hooks/useAuthSession'
 import { useTheme } from '../hooks/useTheme'
 import '../styles/header.css'
 
 export const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const { theme, setTheme } = useTheme()
+  const { isLoading, user, signOut } = useAuthSession()
+
+  const onSignOut = async () => {
+    setIsSigningOut(true)
+    await signOut()
+    setMenuOpen(false)
+    setIsSigningOut(false)
+  }
 
   return (
     <header className="header">
@@ -51,14 +61,25 @@ export const Header: React.FC = () => {
           >
             Leagues
           </Link>
-          <Link
-            to="/sign-in"
-            className="nav-link"
-            activeProps={{ className: 'nav-link nav-link-active' }}
-            onClick={() => setMenuOpen(false)}
-          >
-            Sign In
-          </Link>
+          {isLoading ? <span className="nav-auth-status">Checking session...</span> : null}
+          {!isLoading && user ? (
+            <>
+              <span className="nav-auth-status">Signed in as {user.name || user.email}</span>
+              <button className="nav-signout" type="button" onClick={onSignOut} disabled={isSigningOut}>
+                {isSigningOut ? 'Signing out...' : 'Sign Out'}
+              </button>
+            </>
+          ) : null}
+          {!isLoading && !user ? (
+            <Link
+              to="/sign-in"
+              className="nav-link"
+              activeProps={{ className: 'nav-link nav-link-active' }}
+              onClick={() => setMenuOpen(false)}
+            >
+              Sign In
+            </Link>
+          ) : null}
         </nav>
 
         <div className="theme-selector">

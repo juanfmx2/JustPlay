@@ -1,6 +1,8 @@
 import { buildApp } from './app'
+import { registerAuthRoutes } from './auth-routes'
 
 const fastify = buildApp()
+registerAuthRoutes(fastify)
 
 const start = async () => {
   try {

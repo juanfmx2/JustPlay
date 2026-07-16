@@ -1,5 +1,6 @@
 import { createRoute, createRouter } from '@tanstack/react-router'
 import App from './App'
+import { AuthPage } from './components/AuthPage'
 import { Route as RootRoute } from './__root'
 
 const AboutPage = () => (
@@ -19,13 +20,6 @@ const LeaguesPage = () => (
       League operations will include registration windows, division management, standings,
       and scheduling tools designed for incremental rollout.
     </p>
-  </article>
-)
-
-const SignInPage = () => (
-  <article className="content">
-    <h2>Sign In</h2>
-    <p>Authentication flows are planned in the AUTH domain requirements and upcoming increments.</p>
   </article>
 )
 
@@ -50,7 +44,7 @@ const leaguesRoute = createRoute({
 const signInRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/sign-in',
-  component: SignInPage,
+  component: AuthPage,
 })
 
 const routeTree = RootRoute.addChildren([indexRoute, aboutRoute, leaguesRoute, signInRoute])
