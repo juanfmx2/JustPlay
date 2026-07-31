@@ -1,7 +1,7 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
 
 import { db } from '@/db/client'
-import { divisions, games, gameSets, stages, standings } from '@/schema'
+import { divisions, games, gameSets, stages, standings, type Game } from '@/schema'
 
 type ApplyGameSetScoreInput = {
   gameSetId: number
@@ -29,6 +29,59 @@ function assertValidScore(value: number, label: string): void {
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${label} must be a non-negative integer.`)
   }
+}
+
+type ScoredSet = {
+  id: number
+  scoreTeamA: number | null
+  scoreTeamB: number | null
+  startTime: Date | null
+}
+
+function orderSets<T extends ScoredSet>(sets: T[]): T[] {
+  return [...sets].sort((a, b) => {
+    const timeA = a.startTime ? a.startTime.getTime() : Number.MAX_SAFE_INTEGER
+    const timeB = b.startTime ? b.startTime.getTime() : Number.MAX_SAFE_INTEGER
+    if (timeA !== timeB) return timeA - timeB
+    return a.id - b.id
+  })
+}
+
+function setWinner(set: ScoredSet): 'A' | 'B' | null {
+  if (set.scoreTeamA === null || set.scoreTeamB === null) return null
+  if (set.scoreTeamA > set.scoreTeamB) return 'A'
+  if (set.scoreTeamB > set.scoreTeamA) return 'B'
+  return null
+}
+
+type MatchProgress<T> = {
+  // A game is complete once one team has won 2 sets: either sets 1-2 both
+  // went the same way, or the series is split 1-1 and a 3rd/decider set
+  // has been played.
+  isComplete: boolean
+  relevantSets: T[]
+}
+
+function computeMatchProgress<T extends ScoredSet>(sets: T[]): MatchProgress<T> {
+  const [set1, set2, set3] = orderSets(sets)
+
+  const winner1 = set1 ? setWinner(set1) : null
+  const winner2 = set2 ? setWinner(set2) : null
+
+  if (winner1 && winner2 && winner1 === winner2) {
+    return { isComplete: true, relevantSets: [set1, set2] }
+  }
+
+  if (!winner1 || !winner2) {
+    return { isComplete: false, relevantSets: [set1, set2].filter((set): set is T => Boolean(set)) }
+  }
+
+  const winner3 = set3 ? setWinner(set3) : null
+  if (!winner3) {
+    return { isComplete: false, relevantSets: [set1, set2, set3].filter((set): set is T => Boolean(set)) }
+  }
+
+  return { isComplete: true, relevantSets: [set1, set2, set3] }
 }
 
 function normalizeDivisionLevel(level: string): string {
@@ -214,23 +267,87 @@ export async function applyGameSetScoreAndUpdateStandings(
       where: eq(gameSets.gameId, game.id),
     })
 
-    const hasAllSetScores = allSetsForGame.every(
-      (set) => set.scoreTeamA !== null && set.scoreTeamB !== null,
-    )
+    const progress = computeMatchProgress(allSetsForGame)
 
-    const gameTotalScoreTeamA = hasAllSetScores
-      ? allSetsForGame.reduce((sum, set) => sum + (set.scoreTeamA ?? 0), 0)
+    const gameTotalScoreTeamA = progress.isComplete
+      ? progress.relevantSets.reduce((sum, set) => sum + (set.scoreTeamA ?? 0), 0)
       : null
-    const gameTotalScoreTeamB = hasAllSetScores
-      ? allSetsForGame.reduce((sum, set) => sum + (set.scoreTeamB ?? 0), 0)
+    const gameTotalScoreTeamB = progress.isComplete
+      ? progress.relevantSets.reduce((sum, set) => sum + (set.scoreTeamB ?? 0), 0)
       : null
 
     await tx
       .update(games)
-      .set({ scoreTeamA: gameTotalScoreTeamA, scoreTeamB: gameTotalScoreTeamB })
+      .set({
+        scoreTeamA: gameTotalScoreTeamA,
+        scoreTeamB: gameTotalScoreTeamB,
+        // Editing a score after the game was finished invalidates any
+        // approvals/validation already recorded against the old score.
+        ...(game.finishedAt
+          ? {
+              finishedAt: null,
+              teamAApprovedAt: null,
+              teamBApprovedAt: null,
+              adminValidatedAt: null,
+              adminValidatedByName: null,
+            }
+          : {}),
+      })
       .where(eq(games.id, game.id))
 
     // 4. Refresh standings for the stage.
     await recalculateStandingsForStageInTx(tx, stageId)
   })
+}
+
+export async function finishGame(gameId: number): Promise<Game> {
+  return db.transaction(async (tx) => {
+    const game = await tx.query.games.findFirst({ where: eq(games.id, gameId) })
+    if (!game) throw new Error(`Game #${gameId} was not found.`)
+
+    const allSetsForGame = await tx.query.gameSets.findMany({
+      where: eq(gameSets.gameId, gameId),
+    })
+    const progress = computeMatchProgress(allSetsForGame)
+
+    if (!progress.isComplete) {
+      throw new Error('A team must win at least 2 sets before the game can be finished.')
+    }
+
+    const [updated] = await tx
+      .update(games)
+      .set({ finishedAt: new Date() })
+      .where(eq(games.id, gameId))
+      .returning()
+
+    return updated
+  })
+}
+
+export async function approveGameForTeam(gameId: number, teamSide: 'A' | 'B'): Promise<Game> {
+  const game = await db.query.games.findFirst({ where: eq(games.id, gameId) })
+  if (!game) throw new Error(`Game #${gameId} was not found.`)
+  if (!game.finishedAt) throw new Error('The game must be finished before it can be approved.')
+
+  const [updated] = await db
+    .update(games)
+    .set(teamSide === 'A' ? { teamAApprovedAt: new Date() } : { teamBApprovedAt: new Date() })
+    .where(eq(games.id, gameId))
+    .returning()
+
+  return updated
+}
+
+export async function validateGameByAdmin(gameId: number, adminName: string): Promise<Game> {
+  const game = await db.query.games.findFirst({ where: eq(games.id, gameId) })
+  if (!game) throw new Error(`Game #${gameId} was not found.`)
+  if (!game.finishedAt) throw new Error('The game must be finished before it can be validated.')
+
+  const [updated] = await db
+    .update(games)
+    .set({ adminValidatedAt: new Date(), adminValidatedByName: adminName })
+    .where(eq(games.id, gameId))
+    .returning()
+
+  return updated
 }

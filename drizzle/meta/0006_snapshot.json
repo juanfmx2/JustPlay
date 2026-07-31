@@ -1,6 +1,6 @@
 {
-  "id": "afb2aef2-3edc-48b8-9d68-aba469cc9216",
-  "prevId": "b48a9c3d-951c-4f1f-877c-e90552911328",
+  "id": "54a1bffd-de56-4453-bb9a-d8e10bfa5be0",
+  "prevId": "afb2aef2-3edc-48b8-9d68-aba469cc9216",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -545,6 +545,36 @@
         "end_time": {
           "name": "end_time",
           "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_a_approved_at": {
+          "name": "team_a_approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_b_approved_at": {
+          "name": "team_b_approved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admin_validated_at": {
+          "name": "admin_validated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admin_validated_by_name": {
+          "name": "admin_validated_by_name",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }

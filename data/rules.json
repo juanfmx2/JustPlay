@@ -11,7 +11,19 @@
           "html": "No time-outs."
         },
         {
-          "html": "League points: <b>1 point for a win</b> and <b>0 points for a loss</b>."
+          "html": "League points: <b>1 point for a set win</b> and <b>0 points for a set loss</b>."
+        },
+        {
+          "html": "If league points end in a tie, a coefficient based on Sets For and Sets Against ratio will be used."
+        },
+        {
+          "html": "If the sets coefficient ends in a tie, a coefficient based on Points For and Points Against ratio will be used."
+        },
+        {
+          "html": "If the points coefficient ends in a tie, the team with higher Points For wins."
+        },
+        {
+          "html": "If all of this still results in a tie, a coin toss will decide the winner."
         }
       ]
     },

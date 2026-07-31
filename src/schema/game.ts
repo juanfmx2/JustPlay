@@ -27,6 +27,12 @@ export const games = pgTable('games', {
   // if this dates are null then this can be filled from the game set times
   startTime: timestamp('start_time', { withTimezone: true }),
   endTime: timestamp('end_time', { withTimezone: true }),
+  // Approval workflow: set once the ref/admin marks all sets as final.
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+  teamAApprovedAt: timestamp('team_a_approved_at', { withTimezone: true }),
+  teamBApprovedAt: timestamp('team_b_approved_at', { withTimezone: true }),
+  adminValidatedAt: timestamp('admin_validated_at', { withTimezone: true }),
+  adminValidatedByName: text('admin_validated_by_name'),
 })
 
 export type Game = typeof games.$inferSelect
