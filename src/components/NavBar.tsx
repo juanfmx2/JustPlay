@@ -1,6 +1,11 @@
 import { useTheme, getThemeLabelComponent } from '../hooks/ThemeContext'
+import type { AuthPrincipal } from '@/server/auth'
 
-export function NavBar() {
+type NavBarProps = {
+    readonly principal: AuthPrincipal | null
+}
+
+export function NavBar({ principal }: NavBarProps) {
     const { theme, toggleTheme } = useTheme()
 
     return (
@@ -23,6 +28,18 @@ export function NavBar() {
             </svg>
             JustPlay
             </a>
+
+            {/* Session info: kept outside the collapsible menu so it's always visible, even on small screens */}
+            {principal ? (
+            <div className="d-flex align-items-center gap-2 order-lg-3">
+                <span className="navbar-text mb-0 small">
+                Logged in as {principal.type === 'admin' ? 'Admin' : 'Team'}:<br/> {principal.name}
+                </span>
+                <a className="btn btn-sm btn-outline-secondary" href="/logout">
+                Logout
+                </a>
+            </div>
+            ) : null}
 
             {/* Mobile toggle */}
             <button
@@ -48,7 +65,7 @@ export function NavBar() {
                 </li>
             </ul>
 
-            {/* Search bar + theme toggle */}
+            {/* Theme toggle */}
             <div className="d-flex flex-column flex-lg-row gap-2 align-items-stretch align-items-lg-center">
                 <button
                 className="btn btn-banana theme-toggle"

@@ -6,11 +6,16 @@ import {
   HeadContent,
   Scripts,
 } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { ThemeProvider } from '../hooks/ThemeContextProvider'
 import { NavBar } from '../components/NavBar'
+import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/styles.css'
 
+const loadSessionPrincipal = createServerFn({ method: 'GET' }).handler(async () => {
+  return getSessionPrincipal()
+})
 
 export const Route = createRootRoute({
   head: () => ({
@@ -27,6 +32,7 @@ export const Route = createRootRoute({
       },
     ],
   }),
+  loader: async () => ({ principal: await loadSessionPrincipal() }),
   component: RootComponent,
   notFoundComponent: () => (
     <div>
@@ -38,10 +44,12 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { principal } = Route.useLoaderData()
+
   return (
     <RootDocument>
       <ThemeProvider>
-        <SiteLayout>
+        <SiteLayout principal={principal}>
           <Outlet />
         </SiteLayout>
       </ThemeProvider>
@@ -49,7 +57,7 @@ function RootComponent() {
   )
 }
 
-function SiteLayout({ children }: {readonly children: ReactNode }) {
+function SiteLayout({ children, principal }: { readonly children: ReactNode; readonly principal: AuthPrincipal | null }) {
 
   // Bootstrap JS is browser-only; import it lazily on the client
   useEffect(() => {
@@ -58,7 +66,7 @@ function SiteLayout({ children }: {readonly children: ReactNode }) {
 
   return (
     <>
-      <NavBar />
+      <NavBar principal={principal} />
       <main className="container-fluid py-4">
         {children}
       </main>
