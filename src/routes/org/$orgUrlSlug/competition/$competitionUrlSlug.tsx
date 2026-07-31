@@ -99,6 +99,22 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
   component: CompetitionDetailPage,
 })
 
+function splitDivisionName(name: string): { groupTitle: string; poolLabel: string | null } {
+  const match = name.match(/^(.*?)\s*-\s*(Pool\s+[A-Za-z0-9]+)$/i)
+
+  if (!match) {
+    return {
+      groupTitle: name,
+      poolLabel: null,
+    }
+  }
+
+  return {
+    groupTitle: match[1].trim(),
+    poolLabel: match[2].trim(),
+  }
+}
+
 function CompetitionDetailPage() {
   const data = Route.useLoaderData()
   const { pathname, hash } = useRouterState({
@@ -219,37 +235,73 @@ function CompetitionDetailPage() {
 
       {data.playStages.map((stage, index) => {
         const stageSectionId = stage.urlSlug ?? `stage-${stage.id}`
+        const groupedDivisions = stage.divisions.reduce<
+          Array<{
+            groupTitle: string
+            items: Array<{
+              division: (typeof stage.divisions)[number]
+              poolLabel: string | null
+            }>
+          }>
+        >((groups, division) => {
+          const { groupTitle, poolLabel } = splitDivisionName(division.name)
+          const existing = groups.find((group) => group.groupTitle === groupTitle)
+
+          if (existing) {
+            existing.items.push({ division, poolLabel })
+            return groups
+          }
+
+          groups.push({
+            groupTitle,
+            items: [{ division, poolLabel }],
+          })
+
+          return groups
+        }, [])
 
         const stageContent = (
           <div className="d-flex flex-column gap-3 mt-3">
-            {stage.divisions.map((division) => (
-              <div key={division.id}>
-                <h3 className="h6 mb-2">{division.name}</h3>
-                <div className="d-flex w-100 gap-2 justify-content-center">
-                  <Link
-                    className="btn btn-banana w-50"
-                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
-                    params={{
-                      orgUrlSlug: data.organization.urlSlug,
-                      competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: stage.urlSlug ?? '',
-                      divUrlSlug: division.urlSlug ?? '',
-                    }}
-                  >
-                    Schedule
-                  </Link>
-                  <Link
-                    className="btn btn-outline-secondary w-50"
-                    to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/$divUrlSlug"
-                    params={{
-                      orgUrlSlug: data.organization.urlSlug,
-                      competitionUrlSlug: data.competition.urlSlug ?? '',
-                      stageUrlSlug: stage.urlSlug ?? '',
-                      divUrlSlug: division.urlSlug ?? '',
-                    }}
-                  >
-                    Standings
-                  </Link>
+            {groupedDivisions.map((group) => (
+              <div key={group.groupTitle} className="text-start">
+                <h2 className="h4 mb-2 text-center">{group.groupTitle}</h2>
+                <div className="d-flex flex-column gap-2">
+                  {group.items.map(({ division, poolLabel }) => (
+                    <div key={division.id} className="border rounded p-2">
+                      {poolLabel ? <h3 className="h6 d-lg-none mb-2">{poolLabel}</h3> : null}
+                      <div className="d-flex w-100 gap-2 justify-content-center align-items-center">
+                        <div className="d-none d-lg-block text-start fw-semibold" style={{ minWidth: 84 }}>
+                          {poolLabel ?? division.name}
+                        </div>
+                        <div className="d-flex w-100 gap-2 justify-content-center">
+                          <Link
+                            className="btn btn-banana w-50"
+                            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/$divUrlSlug"
+                            params={{
+                              orgUrlSlug: data.organization.urlSlug,
+                              competitionUrlSlug: data.competition.urlSlug ?? '',
+                              stageUrlSlug: stage.urlSlug ?? '',
+                              divUrlSlug: division.urlSlug ?? '',
+                            }}
+                          >
+                            Schedule
+                          </Link>
+                          <Link
+                            className="btn btn-outline-secondary w-50"
+                            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/$divUrlSlug"
+                            params={{
+                              orgUrlSlug: data.organization.urlSlug,
+                              competitionUrlSlug: data.competition.urlSlug ?? '',
+                              stageUrlSlug: stage.urlSlug ?? '',
+                              divUrlSlug: division.urlSlug ?? '',
+                            }}
+                          >
+                            Standings
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
