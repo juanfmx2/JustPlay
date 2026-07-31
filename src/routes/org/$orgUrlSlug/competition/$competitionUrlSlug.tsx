@@ -5,6 +5,7 @@ import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '@/db/client'
 import { competitions, organizations, stages } from '@/schema'
+import { splitDivisionName, slugifyGroupTitle } from '@/domain/divisionGrouping'
 
 const loadCompetitionRegistration = createServerFn({ method: 'GET' })
   .inputValidator((input: { orgUrlSlug: string; competitionUrlSlug: string }) => input)
@@ -98,22 +99,6 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
   },
   component: CompetitionDetailPage,
 })
-
-function splitDivisionName(name: string): { groupTitle: string; poolLabel: string | null } {
-  const match = name.match(/^(.*?)\s*-\s*(Pool\s+[A-Za-z0-9]+)$/i)
-
-  if (!match) {
-    return {
-      groupTitle: name,
-      poolLabel: null,
-    }
-  }
-
-  return {
-    groupTitle: match[1].trim(),
-    poolLabel: match[2].trim(),
-  }
-}
 
 function CompetitionDetailPage() {
   const data = Route.useLoaderData()
@@ -264,7 +249,23 @@ function CompetitionDetailPage() {
           <div className="d-flex flex-column gap-3 mt-3">
             {groupedDivisions.map((group) => (
               <div key={group.groupTitle} className="text-start">
-                <h2 className="h4 mb-2 text-center">{group.groupTitle}</h2>
+                <h2 className="h4 mb-2 text-center d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                  {group.groupTitle}
+                  {group.items.length > 1 ? (
+                    <Link
+                      className="btn btn-sm btn-outline-secondary"
+                      to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+                      params={{
+                        orgUrlSlug: data.organization.urlSlug,
+                        competitionUrlSlug: data.competition.urlSlug ?? '',
+                        stageUrlSlug: stage.urlSlug ?? '',
+                      }}
+                      hash={`group-${slugifyGroupTitle(group.groupTitle)}`}
+                    >
+                      Combined Standings
+                    </Link>
+                  ) : null}
+                </h2>
                 <div className="d-flex flex-column gap-2">
                   {group.items.map(({ division, poolLabel }) => (
                     <div key={division.id} className="border rounded p-2">

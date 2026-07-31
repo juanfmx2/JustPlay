@@ -1,5 +1,6 @@
+import React from 'react'
 import { and, eq } from 'drizzle-orm'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 import { db } from '@/db/client'
@@ -13,29 +14,34 @@ import {
   type Organization,
   type Stage,
 } from '@/schema'
-import { StandingsTable, type StandingRow } from '@/components/StandingsTable'
-import { StandingsConventions } from '@/components/StandingsConventions'
+import { setStandingAdminBonus } from '@/domain/scorer'
+import { rankStandings } from '@/domain/standingsRanking'
+import { splitDivisionName, slugifyGroupTitle } from '@/domain/divisionGrouping'
+import { requireAdminPrincipal } from '@/server/auth'
+import { getSessionPrincipal } from '@/server/auth.server'
+import { PoolStandingsTable, type PoolStandingRow } from '@/components/PoolStandingsTable'
 
-
-type DivisionStandings = {
+type PoolStandings = {
   id: number
   name: string
-  level: string
+  poolLabel: string | null
   urlSlug: string | null
-  rows: StandingRow[]
+  rows: PoolStandingRow[]
+}
+
+type GroupStandings = {
+  groupTitle: string
+  groupSlug: string
+  combinedRows: PoolStandingRow[]
+  pools: PoolStandings[]
 }
 
 type LoaderData = {
   organization: Organization | null
   competition: Competition | null
   stage: Stage | null
-  divisionStandings: DivisionStandings[]
-}
-
-function coefficientToSortableNumber(value: string | null): number {
-  if (!value) return Number.NEGATIVE_INFINITY
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY
+  groupStandings: GroupStandings[]
+  isAdmin: boolean
 }
 
 const loadAllStandings = createServerFn({ method: 'GET' })
@@ -47,12 +53,15 @@ const loadAllStandings = createServerFn({ method: 'GET' })
     }) => input,
   )
   .handler(async ({ data }): Promise<LoaderData> => {
+    const principal = await getSessionPrincipal()
+    const isAdmin = principal?.type === 'admin'
+
     const organization = await db.query.organizations.findFirst({
       where: eq(organizations.urlSlug, data.orgUrlSlug),
     })
 
     if (!organization) {
-      return { organization: null, competition: null, stage: null, divisionStandings: [] }
+      return { organization: null, competition: null, stage: null, groupStandings: [], isAdmin }
     }
 
     const competition = await db.query.competitions.findFirst({
@@ -63,7 +72,7 @@ const loadAllStandings = createServerFn({ method: 'GET' })
     })
 
     if (!competition) {
-      return { organization, competition: null, stage: null, divisionStandings: [] }
+      return { organization, competition: null, stage: null, groupStandings: [], isAdmin }
     }
 
     const stage = await db.query.stages.findFirst({
@@ -74,14 +83,13 @@ const loadAllStandings = createServerFn({ method: 'GET' })
     })
 
     if (!stage) {
-      return { organization, competition, stage: null, divisionStandings: [] }
+      return { organization, competition, stage: null, groupStandings: [], isAdmin }
     }
 
     const stageDivisions = await db.query.divisions.findMany({
       where: eq(divisions.stageId, stage.id),
     })
 
-    // Sort divisions by level number (Div 1, Div 2, …)
     stageDivisions.sort((a, b) => {
       const numA = parseInt(a.level.replace(/[^0-9]/g, ''), 10)
       const numB = parseInt(b.level.replace(/[^0-9]/g, ''), 10)
@@ -94,106 +102,75 @@ const loadAllStandings = createServerFn({ method: 'GET' })
       with: { team: true },
     })
 
-    const globalStandingsWithTeams = competition.registrationStageId
-      ? await db.query.standings.findMany({
-          where: eq(standings.stageId, competition.registrationStageId),
-          with: { team: true },
-        })
-      : []
-
-    const globalRowsByTeam = new Map(
-      globalStandingsWithTeams
-        .slice()
-        .sort((a, b) => {
-          const lpMinusPenA = a.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
-          const lpMinusPenB = b.leaguePointsMinusPenalties ?? Number.NEGATIVE_INFINITY
-          if (lpMinusPenB !== lpMinusPenA) return lpMinusPenB - lpMinusPenA
-
-          const coefA = coefficientToSortableNumber(a.coefficient)
-          const coefB = coefficientToSortableNumber(b.coefficient)
-          if (coefB !== coefA) return coefB - coefA
-
-          return (a.team?.name ?? `Team #${a.teamId}`).localeCompare(
-            b.team?.name ?? `Team #${b.teamId}`,
-          )
-        })
-        .map((row, index) => [
-          row.teamId,
-          {
-            globalRank: index + 1,
-            globalLeaguePoints: row.leaguePoints,
-            globalLeaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
-            globalCoefficient: row.coefficient,
-          },
-        ]),
-    )
-
-    const stageRowsByDivisionId = new Map<number, typeof stageStandingsWithTeams>()
-    for (const standingRow of stageStandingsWithTeams) {
-      const existing = stageRowsByDivisionId.get(standingRow.divisionId) ?? []
-      existing.push(standingRow)
-      stageRowsByDivisionId.set(standingRow.divisionId, existing)
+    const rowsByDivisionId = new Map<number, typeof stageStandingsWithTeams>()
+    for (const row of stageStandingsWithTeams) {
+      const existing = rowsByDivisionId.get(row.divisionId) ?? []
+      existing.push(row)
+      rowsByDivisionId.set(row.divisionId, existing)
     }
 
-    const divisionStandings: DivisionStandings[] = stageDivisions.map((division) => {
-      const standingsWithTeams = stageRowsByDivisionId.get(division.id) ?? []
-
-      const rows: StandingRow[] = standingsWithTeams
-        .map((row) => {
-          const global = globalRowsByTeam.get(row.teamId)
-
-          return {
-            id: row.id,
-            teamId: row.teamId,
-            teamName: row.team?.name ?? `Team #${row.teamId}`,
-            gamesWon: row.gamesWon,
-            gamesLost: row.gamesLost,
-            pointsFor: row.pointsFor,
-            pointsAgainst: row.pointsAgainst,
-            coefficient: row.coefficient,
-            penalties: row.penalties,
-            leaguePoints: row.leaguePoints,
-            leaguePointsMinusPenalties: row.leaguePointsMinusPenalties,
-            globalRank: global?.globalRank ?? null,
-            globalLeaguePoints: global?.globalLeaguePoints ?? null,
-            globalLeaguePointsMinusPenalties: global?.globalLeaguePointsMinusPenalties ?? null,
-            globalCoefficient: global?.globalCoefficient ?? null,
-          }
-        })
-        .sort((a, b) => {
-          if (stage.urlSlug === 'week-5') {
-            const globalLpA = a.globalLeaguePoints ?? Number.NEGATIVE_INFINITY
-            const globalLpB = b.globalLeaguePoints ?? Number.NEGATIVE_INFINITY
-            if (globalLpB !== globalLpA) return globalLpB - globalLpA
-
-            const globalCoefA = coefficientToSortableNumber(a.globalCoefficient ?? null)
-            const globalCoefB = coefficientToSortableNumber(b.globalCoefficient ?? null)
-            if (globalCoefB !== globalCoefA) return globalCoefB - globalCoefA
-
-            return a.teamName.localeCompare(b.teamName)
-          }
-
-          const gwA = a.gamesWon ?? Number.NEGATIVE_INFINITY
-          const gwB = b.gamesWon ?? Number.NEGATIVE_INFINITY
-          if (gwB !== gwA) return gwB - gwA
-
-          const coefA = coefficientToSortableNumber(a.coefficient)
-          const coefB = coefficientToSortableNumber(b.coefficient)
-          if (coefB !== coefA) return coefB - coefA
-
-          return a.teamName.localeCompare(b.teamName)
-        })
-
-      return {
-        id: division.id,
-        name: division.name,
-        level: division.level,
-        urlSlug: division.urlSlug,
-        rows,
-      }
+    const toPoolStandingRow = (row: (typeof stageStandingsWithTeams)[number]) => ({
+      id: row.id,
+      teamId: row.teamId,
+      teamName: row.team?.name ?? `Team #${row.teamId}`,
+      gamesWon: row.gamesWon,
+      gamesLost: row.gamesLost,
+      setsFor: row.setsFor,
+      setsAgainst: row.setsAgainst,
+      setsCoefficient: row.setsCoefficient,
+      pointsFor: row.pointsFor,
+      pointsAgainst: row.pointsAgainst,
+      coefficient: row.coefficient,
+      leaguePoints: row.leaguePoints,
+      adminBonusPoints: row.adminBonusPoints,
     })
 
-    return { organization, competition, stage, divisionStandings }
+    const groups: GroupStandings[] = []
+    for (const division of stageDivisions) {
+      const { groupTitle, poolLabel } = splitDivisionName(division.name)
+      const divisionRows = rowsByDivisionId.get(division.id) ?? []
+
+      const pool: PoolStandings = {
+        id: division.id,
+        name: division.name,
+        poolLabel,
+        urlSlug: division.urlSlug,
+        rows: rankStandings(divisionRows.map(toPoolStandingRow)),
+      }
+
+      const existingGroup = groups.find((group) => group.groupTitle === groupTitle)
+      if (existingGroup) {
+        existingGroup.pools.push(pool)
+      } else {
+        groups.push({
+          groupTitle,
+          groupSlug: slugifyGroupTitle(groupTitle),
+          combinedRows: [],
+          pools: [pool],
+        })
+      }
+    }
+
+    for (const group of groups) {
+      const allRowsInGroup = group.pools.flatMap((pool) =>
+        (rowsByDivisionId.get(pool.id) ?? []).map(toPoolStandingRow),
+      )
+      group.combinedRows = rankStandings(allRowsInGroup)
+    }
+
+    return { organization, competition, stage, groupStandings: groups, isAdmin }
+  })
+
+const setTieBreakWinnerServerFn = createServerFn({ method: 'POST' })
+  .inputValidator((input: { winnerId: number | null; groupIds: number[] }) => input)
+  .handler(async ({ data }) => {
+    await requireAdminPrincipal()
+
+    for (const standingId of data.groupIds) {
+      await setStandingAdminBonus(standingId, standingId === data.winnerId ? 1 : 0)
+    }
+
+    return { success: true }
   })
 
 export const Route = createFileRoute(
@@ -211,10 +188,9 @@ export const Route = createFileRoute(
 })
 
 function AllStandingsPage() {
+  const router = useRouter()
   const data = Route.useLoaderData()
-  const isWeek4 = data.stage?.urlSlug === 'week-4'
-  const isWeek5 = data.stage?.urlSlug === 'week-5'
-  const showMovementColors = !isWeek4 && !isWeek5
+  const [pendingRowId, setPendingRowId] = React.useState<number | null>(null)
 
   if (!data.organization) {
     return (
@@ -243,13 +219,23 @@ function AllStandingsPage() {
     )
   }
 
+  const handleSetTieBreakWinner = async (winnerId: number | null, groupIds: number[]) => {
+    setPendingRowId(winnerId ?? groupIds[0] ?? null)
+    try {
+      await setTieBreakWinnerServerFn({ data: { winnerId, groupIds } })
+      await router.invalidate()
+    } finally {
+      setPendingRowId(null)
+    }
+  }
+
   return (
     <section className="container py-4">
       <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <div>
           <h1 className="h2 mb-1">{data.stage.name} — Standings</h1>
           <p className="text-body-secondary mb-0">
-            {isWeek5 ? 'Sorted by Global LP, then Global Coef.' : 'Sorted by GW, then coefficient.'}
+            Sorted by league points, then sets coefficient, then points coefficient, then points for.
           </p>
         </div>
 
@@ -268,40 +254,41 @@ function AllStandingsPage() {
         </div>
       </header>
 
-      {isWeek4 ? (
-        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
-          Final week groups will be determined by the global standings.
-        </div>
-      ) : isWeek5 ? (
-        <div className="alert alert-warning border-2 border-warning-emphasis text-center fw-bold fs-5 mb-4" role="alert">
-          Division winner ranking: the winner will be the team with the highest LP-P in each division across the 5 weeks.
-        </div>
-      ) : null}
-
-      {data.divisionStandings.length === 0 ? (
+      {data.groupStandings.length === 0 ? (
         <p className="text-body-secondary mb-0">No divisions found for this stage.</p>
       ) : (
-        <>
-          {data.divisionStandings.map((division) => {
-            const divNum = parseInt(division.level.replace(/[^0-9]/g, ''), 10)
-            return (
-              <div key={division.id} className="mb-5">
-                <h2 className="h4 mb-3">{division.name}</h2>
-                <StandingsTable
-                  rows={division.rows}
-                  divNum={isNaN(divNum) ? 0 : divNum}
-                  highlightMovementRows={showMovementColors}
-                  highlightFirstRowAsWinner={isWeek5}
-                />
-              </div>
-            )
-          })}
+        data.groupStandings.map((group) => (
+          <div key={group.groupTitle} id={`group-${group.groupSlug}`} className="mb-5">
+            <h2 className="h4 mb-3">{group.groupTitle}</h2>
+            <PoolStandingsTable
+              rows={group.combinedRows}
+              isAdmin={data.isAdmin}
+              pendingRowId={pendingRowId}
+              onSetTieBreakWinner={handleSetTieBreakWinner}
+            />
 
-          <StandingsConventions
-            showMovementColors={showMovementColors}
-            showDivisionWinner={isWeek5}
-          />
-        </>
+            {group.pools.length > 1 ? (
+              <details className="mt-3">
+                <summary className="text-body-secondary" style={{ cursor: 'pointer' }}>
+                  Show individual pools
+                </summary>
+                <div className="d-flex flex-column gap-4 mt-3">
+                  {group.pools.map((pool) => (
+                    <div key={pool.id}>
+                      <h3 className="h6 mb-2">{pool.poolLabel ?? pool.name}</h3>
+                      <PoolStandingsTable
+                        rows={pool.rows}
+                        isAdmin={data.isAdmin}
+                        pendingRowId={pendingRowId}
+                        onSetTieBreakWinner={handleSetTieBreakWinner}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ) : null}
+          </div>
+        ))
       )}
     </section>
   )

@@ -18,13 +18,24 @@ export const Route = createFileRoute('/admin/login-qr-codes')({
 })
 
 function EntryCard({ entry }: { readonly entry: LoginEntry }) {
+  const responsiveQrSvg = entry.qrSvg.replace(
+    '<svg',
+    '<svg style="width: 100%; height: auto; display: block;"',
+  )
+
   return (
     <div className="col">
       <div className="card h-100 shadow-sm">
         <div className="card-body text-center d-flex flex-column align-items-center gap-2">
           <h2 className="h6 mb-0">{entry.name}</h2>
           {entry.division ? <span className="badge text-bg-secondary">{entry.division}</span> : null}
-          <div dangerouslySetInnerHTML={{ __html: entry.qrSvg }} />
+          <div className="w-100" style={{ maxWidth: '420px' }}>
+            <div
+              className="w-100"
+              style={{ lineHeight: 0 }}
+              dangerouslySetInnerHTML={{ __html: responsiveQrSvg }}
+            />
+          </div>
           <a className="small" href={entry.url}>
             Open login link
           </a>
@@ -97,7 +108,7 @@ function LoginQrCodesPage() {
   }, [])
 
   return (
-    <section className="container py-4">
+    <section className="container-fluid container-md py-4">
       <header className="mb-4 d-flex flex-wrap justify-content-between align-items-end gap-3">
         <div>
           <h1 className="h2 mb-1">Login QR Codes</h1>
@@ -108,31 +119,39 @@ function LoginQrCodesPage() {
         </a>
       </header>
 
-      <h2 className="h4 mb-3">Admins</h2>
-      <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3 mb-5">
-        {admins.map((entry) => (
-          <EntryCard key={entry.name} entry={entry} />
-        ))}
-      </div>
+      <details className="mb-4 border rounded p-3">
+        <summary className="h4 mb-0" style={{ cursor: 'pointer' }}>
+          Admins
+        </summary>
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
+          {admins.map((entry) => (
+            <EntryCard key={entry.name} entry={entry} />
+          ))}
+        </div>
+      </details>
 
       <h2 className="h4 mb-3">Teams</h2>
       <div className="d-flex flex-column gap-4">
         {groupedTeams.map((divisionGroup) => (
-          <div key={divisionGroup.mainDivision}>
-            <h2 className="h4 mb-3">{divisionGroup.mainDivision}</h2>
-            <div className="d-flex flex-column gap-3">
+          <details key={divisionGroup.mainDivision} className="border rounded p-3">
+            <summary className="h4 mb-0" style={{ cursor: 'pointer' }}>
+              {divisionGroup.mainDivision}
+            </summary>
+            <div className="d-flex flex-column gap-3 mt-3">
               {divisionGroup.pools.map((poolGroup) => (
-                <div key={`${divisionGroup.mainDivision}-${poolGroup.subPool}`}>
-                  <h3 className="h5 mb-2">{poolGroup.subPool}</h3>
-                  <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                <details key={`${divisionGroup.mainDivision}-${poolGroup.subPool}`} className="border rounded p-2">
+                  <summary className="h5 mb-0" style={{ cursor: 'pointer' }}>
+                    {poolGroup.subPool}
+                  </summary>
+                  <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
                     {poolGroup.entries.map((entry) => (
                       <EntryCard key={entry.name} entry={entry} />
                     ))}
                   </div>
-                </div>
+                </details>
               ))}
             </div>
-          </div>
+          </details>
         ))}
       </div>
     </section>

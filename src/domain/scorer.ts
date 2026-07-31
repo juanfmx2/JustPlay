@@ -1,7 +1,7 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
 
 import { db } from '@/db/client'
-import { divisions, games, gameSets, stages, standings, type Game } from '@/schema'
+import { divisions, games, gameSets, standings, type Game, type Standing } from '@/schema'
 
 type ApplyGameSetScoreInput = {
   gameSetId: number
@@ -9,20 +9,19 @@ type ApplyGameSetScoreInput = {
   scoreTeamB: number
 }
 
+// Scoring rules (data/rules.json, "All Matches"):
+// - League points: 1 point per set won, 0 for a set lost.
+// - Ties broken by: sets coefficient, then points coefficient, then points for.
 type TeamStandingSummary = {
   gamesWon: number
   gamesLost: number
+  setsFor: number
+  setsAgainst: number
+  setsCoefficient: string | null
   pointsFor: number
   pointsAgainst: number
   coefficient: string | null
   leaguePoints: number
-}
-
-type DivisionScoringRules = {
-  winnerLeaguePoints: number
-  closeLossLeaguePoints: number
-  closeLossThreshold: number
-  weeklyBonusPoints: number
 }
 
 function assertValidScore(value: number, label: string): void {
@@ -84,79 +83,66 @@ function computeMatchProgress<T extends ScoredSet>(sets: T[]): MatchProgress<T> 
   return { isComplete: true, relevantSets: [set1, set2, set3] }
 }
 
-function normalizeDivisionLevel(level: string): string {
-  return level.trim().toLowerCase()
-}
-
-function getDivisionNumber(level: string): number | null {
-	const match = normalizeDivisionLevel(level).match(/\d+/)
-	return match ? Number(match[0]) : null
-}
-
-function getDivisionScoringRules(level: string, stageUrlSlug: string | null): DivisionScoringRules {
-  const numDivsions = 4
-  const divNumber = getDivisionNumber(level)
-  if (divNumber !== null && (divNumber < 1 || divNumber > numDivsions)) {
-      throw new Error(`Invalid division level number: ${level}`)
-  }
-  const divPower = divNumber !== null ? numDivsions - divNumber + 1 : 1
-  return {
-      winnerLeaguePoints: 2*divPower,
-      closeLossLeaguePoints: Math.floor(1*divPower),
-      closeLossThreshold: 10,
-      weeklyBonusPoints: 0,
-  }
+function ratioToFixed(numerator: number, denominator: number): string | null {
+  if (denominator === 0) return null
+  return (numerator / denominator).toFixed(4)
 }
 
 function computeTeamStandingSummaryFromGames(
-  allGames: Array<{ teamAId: number; teamBId: number; scoreTeamA: number | null; scoreTeamB: number | null }>,
+  allGames: Array<Game & { gameSets: ScoredSet[] }>,
   teamId: number,
-  scoringRules: DivisionScoringRules,
 ): TeamStandingSummary {
   let gamesWon = 0
   let gamesLost = 0
+  let setsFor = 0
+  let setsAgainst = 0
   let pointsFor = 0
   let pointsAgainst = 0
-  let leaguePoints = 0
 
   for (const game of allGames) {
+    if (game.teamAId !== teamId && game.teamBId !== teamId) continue
+
+    const teamIsA = game.teamAId === teamId
     const scoreA = game.scoreTeamA ?? 0
     const scoreB = game.scoreTeamB ?? 0
-    const teamIsA = game.teamAId === teamId
-
     const teamScore = teamIsA ? scoreA : scoreB
     const opponentScore = teamIsA ? scoreB : scoreA
 
     pointsFor += teamScore
     pointsAgainst += opponentScore
+    if (teamScore > opponentScore) gamesWon += 1
+    else if (teamScore < opponentScore) gamesLost += 1
 
-    if (teamScore > opponentScore) {
-      gamesWon += 1
-      leaguePoints += scoringRules.winnerLeaguePoints
-      continue
-    }
-
-    if (teamScore < opponentScore) {
-      gamesLost += 1
-      if (opponentScore - teamScore <= scoringRules.closeLossThreshold) {
-        leaguePoints += scoringRules.closeLossLeaguePoints
-      }
+    const progress = computeMatchProgress(game.gameSets)
+    for (const set of progress.relevantSets) {
+      const winner = setWinner(set)
+      if (!winner) continue
+      const teamWonSet = (winner === 'A') === teamIsA
+      if (teamWonSet) setsFor += 1
+      else setsAgainst += 1
     }
   }
 
-  const coefficient = pointsAgainst === 0 ? null : (pointsFor / pointsAgainst).toFixed(4)
+  // League points: 1 point per set won, 0 for a set lost (data/rules.json).
+  const leaguePoints = setsFor
 
-  return { gamesWon, gamesLost, pointsFor, pointsAgainst, coefficient, leaguePoints }
+  return {
+    gamesWon,
+    gamesLost,
+    setsFor,
+    setsAgainst,
+    setsCoefficient: ratioToFixed(setsFor, setsAgainst),
+    pointsFor,
+    pointsAgainst,
+    coefficient: ratioToFixed(pointsFor, pointsAgainst),
+    leaguePoints,
+  }
 }
 
 async function recalculateStandingsForStageInTx(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
   stageId: number,
 ): Promise<void> {
-  const stage = await tx.query.stages.findFirst({
-    where: eq(stages.id, stageId),
-  })
-
   const stageDivisions = await tx.query.divisions.findMany({
     where: eq(divisions.stageId, stageId),
   })
@@ -168,6 +154,7 @@ async function recalculateStandingsForStageInTx(
         isNotNull(games.scoreTeamA),
         isNotNull(games.scoreTeamB),
       ),
+      with: { gameSets: true },
     })
 
     const divStandings = await tx.query.standings.findMany({
@@ -177,46 +164,21 @@ async function recalculateStandingsForStageInTx(
       ),
     })
 
-    const scoringRules = getDivisionScoringRules(div.level, stage?.urlSlug ?? null)
-
-    // Compute every team's summary first (without the weekly bonus)
-    const teamSummaries = divStandings.map((row) => {
-      const teamGames = divGames.filter(
-        (g) => g.teamAId === row.teamId || g.teamBId === row.teamId,
-      )
-      const summary = computeTeamStandingSummaryFromGames(teamGames, row.teamId, scoringRules)
-      return { row, summary }
-    })
-
-    // Determine the team being demoted (lowest league points) so we can
-    // exclude it from the Division 1 survival bonus.
-    let demotedTeamId: number | null = null
-    if (scoringRules.weeklyBonusPoints > 0 && teamSummaries.length > 0) {
-      const minPoints = Math.min(...teamSummaries.map((t) => t.summary.leaguePoints))
-      const demoted = teamSummaries.find((t) => t.summary.leaguePoints === minPoints)
-      demotedTeamId = demoted?.row.teamId ?? null
-    }
-
-    for (const { row, summary } of teamSummaries) {
-      const survivorBonus =
-        scoringRules.weeklyBonusPoints > 0 && row.teamId !== demotedTeamId
-          ? scoringRules.weeklyBonusPoints
-          : 0
-      const totalLeaguePoints = summary.leaguePoints + survivorBonus
-      const penalties = row.penalties ?? 0
-      const leaguePointsMinusPenalties =
-        penalties === 0 ? totalLeaguePoints : totalLeaguePoints - penalties
+    for (const row of divStandings) {
+      const summary = computeTeamStandingSummaryFromGames(divGames, row.teamId)
 
       await tx
         .update(standings)
         .set({
           gamesWon: summary.gamesWon,
           gamesLost: summary.gamesLost,
+          setsFor: summary.setsFor,
+          setsAgainst: summary.setsAgainst,
+          setsCoefficient: summary.setsCoefficient,
           pointsFor: summary.pointsFor,
           pointsAgainst: summary.pointsAgainst,
           coefficient: summary.coefficient,
-          leaguePoints: totalLeaguePoints,
-          leaguePointsMinusPenalties,
+          leaguePoints: summary.leaguePoints,
         })
         .where(eq(standings.id, row.id))
     }
@@ -348,6 +310,26 @@ export async function validateGameByAdmin(gameId: number, adminName: string): Pr
     .set({ adminValidatedAt: new Date(), adminValidatedByName: adminName })
     .where(eq(games.id, gameId))
     .returning()
+
+  return updated
+}
+
+// Manual coin-toss resolution: an admin awards (or revokes) a single bonus
+// point to a team's standings row. This is the final tie-breaker, applied
+// only after league points, sets coefficient, points coefficient, and points
+// for have all been compared and are still equal (data/rules.json).
+export async function setStandingAdminBonus(standingId: number, bonusPoints: number): Promise<Standing> {
+  if (!Number.isInteger(bonusPoints) || bonusPoints < 0) {
+    throw new Error('bonusPoints must be a non-negative integer.')
+  }
+
+  const [updated] = await db
+    .update(standings)
+    .set({ adminBonusPoints: bonusPoints })
+    .where(eq(standings.id, standingId))
+    .returning()
+
+  if (!updated) throw new Error(`Standing #${standingId} was not found.`)
 
   return updated
 }

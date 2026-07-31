@@ -104,6 +104,67 @@ body {
   color: var(--bs-primary) !important;
 }
 
+.navbar-user-subnav {
+  background-color: var(--color-accent);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent-strong) 45%, var(--color-accent));
+}
+
+.navbar-user-subnav-inner {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.navbar-user-summary {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-interactive-active-text);
+  min-width: 0;
+}
+
+.navbar-user-label {
+  font-size: 0.75rem;
+  line-height: 1;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.navbar-user-name {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 575.98px) {
+  .navbar-user-subnav-inner {
+    align-items: stretch;
+  }
+
+  .navbar-user-subnav-inner .btn {
+    align-self: center;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .navbar-user-summary {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .navbar-user-label {
+    font-size: 0.8rem;
+  }
+}
+
 .btn-banana {
   --bs-btn-color: var(--color-interactive-active-text);
   --bs-btn-bg: var(--color-accent);
