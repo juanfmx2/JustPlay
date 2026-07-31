@@ -203,17 +203,34 @@ export async function applyGameSetScoreAndUpdateStandings(
 
     const stageId = division.stageId
 
-    // 2. Persist the new score on the game set and parent game
+    // 2. Persist the new score only on the targeted game set.
     await tx
       .update(gameSets)
       .set({ scoreTeamA: input.scoreTeamA, scoreTeamB: input.scoreTeamB, lastUpdated: new Date() })
       .where(eq(gameSets.id, input.gameSetId))
 
+    // 3. Recompute parent game totals from this game's sets only.
+    const allSetsForGame = await tx.query.gameSets.findMany({
+      where: eq(gameSets.gameId, game.id),
+    })
+
+    const hasAllSetScores = allSetsForGame.every(
+      (set) => set.scoreTeamA !== null && set.scoreTeamB !== null,
+    )
+
+    const gameTotalScoreTeamA = hasAllSetScores
+      ? allSetsForGame.reduce((sum, set) => sum + (set.scoreTeamA ?? 0), 0)
+      : null
+    const gameTotalScoreTeamB = hasAllSetScores
+      ? allSetsForGame.reduce((sum, set) => sum + (set.scoreTeamB ?? 0), 0)
+      : null
+
     await tx
       .update(games)
-      .set({ scoreTeamA: input.scoreTeamA, scoreTeamB: input.scoreTeamB })
+      .set({ scoreTeamA: gameTotalScoreTeamA, scoreTeamB: gameTotalScoreTeamB })
       .where(eq(games.id, game.id))
 
+    // 4. Refresh standings for the stage.
     await recalculateStandingsForStageInTx(tx, stageId)
   })
 }

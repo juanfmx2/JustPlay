@@ -200,82 +200,13 @@ function sameDay(date1: Date | null, date2: Date | null): boolean {
     date1.getDate() === date2.getDate()
 }
 
-function getHalfTime(startTime: Date | null, endTime: Date | null): Date | null {
-  if (!startTime || !endTime) return null
-
-  const diffMs = endTime.getTime() - startTime.getTime()
-  if (diffMs <= 15 * 60 * 1000) return null
-
-  return new Date(startTime.getTime() + Math.floor(diffMs / 2))
-}
-
-interface GameSetScoreSubmitFormProps {
-  gameSet: any
-  scoreA: number
-  scoreB: number
-  submittingSetId: number | null
-  onSubmit: () => void
-}
+type SetWinner = 'A' | 'B' | 'DRAW'
 
 const SCORE_UPDATE_COOLDOWN_MS = 5 * 60 * 1000
 
 
 const calculateIsInCooldown = (lastUpdatedMs:number|null, nowMs: number): boolean => {
   return lastUpdatedMs !== null && Number.isFinite(lastUpdatedMs) && nowMs - lastUpdatedMs < SCORE_UPDATE_COOLDOWN_MS
-}
-
-function GameSetScoreSubmitForm({ gameSet, scoreA, scoreB, submittingSetId, onSubmit }: GameSetScoreSubmitFormProps) {
-  const [loading, setLoading] = React.useState(false)
-  const [nowMs, setNowMs] = React.useState(() => Date.now())
-  const [isInCooldown, setIsInCooldown] = React.useState(calculateIsInCooldown(gameSet?.lastUpdated ? new Date(gameSet.lastUpdated).getTime() : null, nowMs))
-
-
-  const now = new Date()
-  const gameEnded = gameSet?.endTime && new Date(gameSet.endTime) < now
-  const dayEnded = gameSet?.endTime && new Date(gameSet.endTime).setHours(22, 30, 0, 0) < now.getTime()
-  const isActive = gameEnded && submittingSetId !== gameSet?.id && !isInCooldown
-
-  React.useEffect(() => {
-    if (!isInCooldown) return
-    const interval = window.setInterval(() => {
-      setNowMs(Date.now())
-    }, 10000) // Check every 10 seconds
-    return () => window.clearInterval(interval)
-  }, [isInCooldown])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!gameSet?.id || !isActive) return
-
-    setLoading(true)
-    try {
-      onSubmit()
-      await submitScore({
-        data: {
-          gameSetId: gameSet.id,
-          scoreTeamA: scoreA,
-          scoreTeamB: scoreB,
-        },
-      })
-      setIsInCooldown(true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if(dayEnded) return <div className="text-body-secondary small">Score updates locked after 22:30</div>
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <button
-        type="submit"
-        className="btn btn-sm btn-banana"
-        disabled={loading || isInCooldown || !gameEnded}
-      >
-        {!gameEnded? 'Please Wait': (isInCooldown ? 'Updated Successfully' : (loading ? 'Saving...' : 'Save'))}
-      </button>
-    </form>
-  )
 }
 
 interface GameCardProps {
@@ -285,20 +216,132 @@ interface GameCardProps {
   refTeamPaletteClass: string
   mostCommonDate: Date | null
   mostCommonCourt: CourtWithVenue | null
-  submittingSetId: number | null
-  onSubmitSetId: (id: number | null) => void
+  submittingGameId: number | null
+  onSubmitGameId: (id: number | null) => void
 }
 
-function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingSetId, onSubmitSetId }: GameCardProps) {
-  const firstSet = game.gameSets[0]
-  const halfTime = getHalfTime(game.startTime, game.endTime)
+function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingGameId, onSubmitGameId }: GameCardProps) {
+  const sortedGameSets = React.useMemo(
+    () =>
+      [...game.gameSets].sort((a, b) => {
+        const timeA = a.startTime ? new Date(a.startTime).getTime() : Number.MAX_SAFE_INTEGER
+        const timeB = b.startTime ? new Date(b.startTime).getTime() : Number.MAX_SAFE_INTEGER
+        if (timeA !== timeB) return timeA - timeB
+        return a.id - b.id
+      }),
+    [game.gameSets],
+  )
 
-  const now = new Date()
-  const gameEnded = Boolean(firstSet?.endTime && new Date(firstSet.endTime) < now)
-  const dayEnded = firstSet?.endTime && new Date(firstSet.endTime).setHours(22, 30, 0, 0) < now.getTime()
+  const firstSet = sortedGameSets[0]
 
-  const [scoreA, setScoreA] = React.useState<number>(firstSet?.scoreTeamA ?? 0)
-  const [scoreB, setScoreB] = React.useState<number>(firstSet?.scoreTeamB ?? 0)
+  const [scoresBySetId, setScoresBySetId] = React.useState<Record<number, { scoreA: number; scoreB: number }>>(
+    () =>
+      Object.fromEntries(
+        sortedGameSets.map((set) => [set.id, { scoreA: set.scoreTeamA ?? 0, scoreB: set.scoreTeamB ?? 0 }]),
+      ),
+  )
+  const [lastUpdatedBySetId, setLastUpdatedBySetId] = React.useState<Record<number, number | null>>(
+    () =>
+      Object.fromEntries(
+        sortedGameSets.map((set) => [set.id, set?.lastUpdated ? new Date(set.lastUpdated).getTime() : null]),
+      ),
+  )
+  const [savedWinnerBySetId, setSavedWinnerBySetId] = React.useState<Record<number, SetWinner>>({})
+  const [nowMs, setNowMs] = React.useState(() => Date.now())
+
+  const updateSetScore = (setId: number, side: 'A' | 'B', value: string) => {
+    const parsed = Number(value)
+    const nextValue = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+    setScoresBySetId((previous) => {
+      const current = previous[setId] ?? { scoreA: 0, scoreB: 0 }
+      return {
+        ...previous,
+        [setId]: side === 'A'
+          ? { ...current, scoreA: nextValue }
+          : { ...current, scoreB: nextValue },
+      }
+    })
+  }
+
+  const setStates = sortedGameSets.map((set) => {
+    const now = new Date()
+    const setEnded = Boolean(set?.endTime && new Date(set.endTime) < now)
+    const dayEnded = Boolean(
+      set?.endTime && new Date(set.endTime).setHours(22, 30, 0, 0) < now.getTime(),
+    )
+    const lastUpdatedMs = lastUpdatedBySetId[set.id] ?? null
+    const isInCooldown = calculateIsInCooldown(lastUpdatedMs, nowMs)
+    return {
+      set,
+      setEnded,
+      dayEnded,
+      isInCooldown,
+      scores: scoresBySetId[set.id] ?? { scoreA: 0, scoreB: 0 },
+    }
+  })
+
+  const hasAnyCooldown = setStates.some((state) => state.isInCooldown)
+  const hasAnyDayLock = setStates.some((state) => state.dayEnded)
+  const allSetsEnded = setStates.every((state) => state.setEnded)
+  const isSavingThisGame = submittingGameId === game.id
+
+  React.useEffect(() => {
+    if (!hasAnyCooldown) return
+    const interval = window.setInterval(() => {
+      setNowMs(Date.now())
+    }, 10000)
+    return () => window.clearInterval(interval)
+  }, [hasAnyCooldown])
+
+  const saveAllSetsForMatch = async () => {
+    if (!allSetsEnded || hasAnyDayLock || isSavingThisGame) return
+
+    onSubmitGameId(game.id)
+    try {
+      for (const state of setStates) {
+        await submitScore({
+          data: {
+            gameSetId: state.set.id,
+            scoreTeamA: state.scores.scoreA,
+            scoreTeamB: state.scores.scoreB,
+          },
+        })
+      }
+
+      const updatedAt = Date.now()
+      setLastUpdatedBySetId((previous) => {
+        const next = { ...previous }
+        for (const state of setStates) {
+          next[state.set.id] = updatedAt
+        }
+        return next
+      })
+
+      const winnerBySet: Record<number, SetWinner> = {}
+      for (const state of setStates) {
+        if (state.scores.scoreA > state.scores.scoreB) {
+          winnerBySet[state.set.id] = 'A'
+        } else if (state.scores.scoreB > state.scores.scoreA) {
+          winnerBySet[state.set.id] = 'B'
+        } else {
+          winnerBySet[state.set.id] = 'DRAW'
+        }
+      }
+      setSavedWinnerBySetId(winnerBySet)
+    } finally {
+      onSubmitGameId(null)
+    }
+  }
+
+  const saveButtonLabel = !allSetsEnded
+    ? 'Please Wait'
+    : hasAnyDayLock
+      ? 'Locked after 22:30'
+      : hasAnyCooldown
+        ? 'Updated Successfully'
+        : isSavingThisGame
+          ? 'Saving...'
+          : 'Save'
 
   return (
     <article className="card shadow-sm" key={game.id}>
@@ -306,20 +349,11 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
         <aside
           className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
         >
-          <div className={`division-schedule-time-slot ${halfTime ? 'division-schedule-time-slot-with-half' : ''}`}>
+          <div className={`division-schedule-time-slot`}>
             <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>
             <div className="fw-semibold division-schedule-time-value">{formatTime(game.startTime)}</div>
           </div>
-          {halfTime && (
-            <div className="division-schedule-time-slot division-schedule-time-half">
-              <div className="small text-body-secondary text-uppercase division-schedule-time-label">Half</div>
-              <div className="fw-semibold division-schedule-time-value">{formatTime(halfTime)}</div>
-            </div>
-          )}
-          <div className="division-schedule-time-slot">
-            <div className="small text-body-secondary text-uppercase division-schedule-time-label">End</div>
-            <div className="fw-semibold division-schedule-time-value">{formatTime(game.endTime)}</div>
-          </div>
+            
         </aside>
 
         <div className="d-flex flex-column gap-3 flex-grow-1 division-schedule-game-content">
@@ -334,48 +368,72 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
               className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamAPaletteClass}`}
             >
               <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={gameEnded ? scoreA : (game.scoreTeamA ?? '')}
-                onChange={(e) => setScoreA(Number(e.target.value))}
-                className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
-                aria-label={`Score for ${game.teamA.name}`}
-                disabled={!gameEnded || dayEnded}
-              />
-            </div>
+                {setStates.map(({ set, dayEnded, scores }, setIndex) => {
+                const savedWinner = savedWinnerBySetId[set.id]
+                const teamAHighlightClass =
+                  savedWinner === 'A'
+                    ? 'bg-success-subtle border-success'
+                    : savedWinner === 'B'
+                      ? 'bg-danger-subtle border-danger'
+                      : ''
+                return <React.Fragment key={set.id}>
+                  <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={scores.scoreA}
+                      onChange={(e) => updateSetScore(set.id, 'A', e.target.value)}
+                      className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamAHighlightClass}`}
+                      aria-label={`Set ${setIndex + 1} score for ${game.teamA.name}`}
+                      disabled={dayEnded}
+                    />
+                </React.Fragment>
+              })}
+              </div>
             <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
             <div
               className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamBPaletteClass}`}
             >
               <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={gameEnded ? scoreB : (game.scoreTeamB ?? '')}
-                onChange={(e) => setScoreB(Number(e.target.value))}
-                className="form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5"
-                aria-label={`Score for ${game.teamB.name}`}
-                disabled={!gameEnded || dayEnded}
-              />
+               {setStates.map(({ set, dayEnded, scores }, setIndex) => {
+                const savedWinner = savedWinnerBySetId[set.id]
+                const teamBHighlightClass =
+                  savedWinner === 'B'
+                    ? 'bg-success-subtle border-success'
+                    : savedWinner === 'A'
+                      ? 'bg-danger-subtle border-danger'
+                      : ''
+                return <React.Fragment key={set.id}>
+                  <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={scores.scoreB}
+                      onChange={(e) => updateSetScore(set.id, 'B', e.target.value)}
+                      className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamBHighlightClass}`}
+                      aria-label={`Set ${setIndex + 1} score for ${game.teamB.name}`}
+                      disabled={dayEnded}
+                    />
+                </React.Fragment>
+              })}
             </div>
           </div>
 
-          <div className="d-flex gap-2">
-            <div
-              className={`badge text-start py-2 flex-grow-1 division-schedule-ref-badge ${refTeamPaletteClass}`}
+          <div className="d-flex justify-content-end no-print">
+            <button
+              type="button"
+              className="btn btn-sm btn-banana"
+              onClick={saveAllSetsForMatch}
+              disabled={isSavingThisGame || hasAnyCooldown || !allSetsEnded || hasAnyDayLock}
             >
-              Ref: {game.reffingTeam?.name ?? 'TBD'}
-            </div>
-            <GameSetScoreSubmitForm
-              gameSet={firstSet}
-              scoreA={scoreA}
-              scoreB={scoreB}
-              submittingSetId={submittingSetId}
-              onSubmit={() => onSubmitSetId(firstSet?.id ?? null)}
-            />
+              {saveButtonLabel}
+            </button>
+          </div>
+
+          <div
+            className={`badge text-start py-2 flex-grow-1 division-schedule-ref-badge ${refTeamPaletteClass}`}
+          >
+            Ref: {game.reffingTeam?.name ?? 'TBD'}
           </div>
           {mostCommonCourt?.id && firstSet?.courtId !== mostCommonCourt?.id && (
             <footer className="small text-body-secondary mt-auto">
@@ -390,7 +448,7 @@ function GameCard({ game, teamAPaletteClass, teamBPaletteClass, refTeamPaletteCl
 
 function DivisionSchedulePage() {
   const data = Route.useLoaderData()
-  const [submittingSetId, setSubmittingSetId] = React.useState<number | null>(null)
+  const [submittingGameId, setSubmittingGameId] = React.useState<number | null>(null)
 
   if (!data.organization) {
     return (
@@ -460,11 +518,6 @@ function DivisionSchedulePage() {
     paletteClassByTeamId.set(team.id, PALETTE_CLASS_BY_INDEX[index % PALETTE_CLASS_BY_INDEX.length])
   })
 
-  const firstReffingTeam = data.division.games.find((game) => Boolean(game.reffingTeam))?.reffingTeam ?? null
-  const firstReffingTeamPaletteClass = firstReffingTeam
-    ? (paletteClassByTeamId.get(firstReffingTeam.id) ?? 'division-schedule-palette-2')
-    : ''
-
   return (
     <section className="container py-4 schedule-print-root">
 
@@ -507,13 +560,7 @@ function DivisionSchedulePage() {
       <div className="alert alert-warning d-flex align-items-center gap-2 no-print" role="alert">
         <span>
           <span className="fw-semibold">Warning: </span>
-          The first team reffing
-          <span
-            className={`badge ms-2 division-schedule-warning-team ${firstReffingTeamPaletteClass}`}
-          >
-            {firstReffingTeam?.name ?? 'TBD'}
-          </span>
-          {' '}needs to bring a printed copy of this scoresheet.
+          The <b>Schedule below</b> is subject to change. Please wait for referees and previous game to finish.
         </span>
       </div>
 
@@ -530,8 +577,8 @@ function DivisionSchedulePage() {
               refTeamPaletteClass={game.reffingTeam ? (paletteClassByTeamId.get(game.reffingTeam.id) ?? 'division-schedule-palette-2') : ''}
               mostCommonDate={data.mostCommonDate}
               mostCommonCourt={data.mostCommonCourt}
-              submittingSetId={submittingSetId}
-              onSubmitSetId={setSubmittingSetId}
+              submittingGameId={submittingGameId}
+              onSubmitGameId={setSubmittingGameId}
             />
           ))}
         </div>
