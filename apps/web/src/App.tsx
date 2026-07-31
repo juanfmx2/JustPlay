@@ -56,11 +56,6 @@ const App: React.FC = () => {
           JustPlay adapts to your needs. Sign in today to start managing your next event.
         </p>
 
-        <p style={{ marginTop: '2rem', fontStyle: 'italic', opacity: 0.7 }}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
-          labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-          laboris nisi ut aliquip ex ea commodo consequat.
-        </p>
       </article>
     </>
   )

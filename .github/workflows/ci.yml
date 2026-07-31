@@ -33,21 +33,21 @@ jobs:
 
       - name: Lint
         if: ${{ hashFiles('package.json') != '' }}
-        run: pnpm -r lint --if-present
+        run: pnpm -r --if-present run lint
 
       - name: Typecheck
         if: ${{ hashFiles('package.json') != '' }}
-        run: pnpm -r typecheck --if-present
+        run: pnpm -r --if-present run typecheck
 
       - name: Unit tests
         if: ${{ hashFiles('package.json') != '' }}
-        run: pnpm -r test --if-present -- --run
+        run: pnpm -r --if-present run test
 
       - name: Build
         if: ${{ hashFiles('package.json') != '' }}
         run: |
           start=$(date +%s)
-          pnpm -r build --if-present
+          pnpm -r --if-present run build
           end=$(date +%s)
           duration=$((end - start))
           echo "build_duration_seconds=$duration" >> "$GITHUB_ENV"
