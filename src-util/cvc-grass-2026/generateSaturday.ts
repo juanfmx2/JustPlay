@@ -15,8 +15,8 @@ import rulesData from '../../data/rules.json'
 const COMPETITION_SLUG = 'cvc-grass-2026'
 
 const SATURDAY_DATE = '2026-08-01'
-const SATURDAY_START_TIME = '09:30'
-const SATURDAY_STAGE_SLUG = 'saturday-2026-08-01'
+const SATURDAY_START_TIME = '09:15'
+const SATURDAY_STAGE_SLUG = 'saturday'
 const SATURDAY_STAGE_NAME = 'Saturday 1 August 2026'
 const SATURDAY_STAGE_DESCRIPTION = 'CVC Grass 2026 - Saturday fixtures'
 
@@ -24,7 +24,7 @@ const SATURDAY_VENUE_NAME = 'Shelford Rugby Club'
 const SATURDAY_VENUE_DESCRIPTION = 'https://maps.app.goo.gl/nwYu5yyGLj9a1KjH6'
 
 const SETS_PER_MATCH = 3
-const POINTS_PER_MINUTE = 2.5
+const POINTS_PER_MINUTE = 3.5
 const SET_BREAK_MINUTES = 1
 const ASSUMED_EXTRA_POINTS_FOR_UNCAPPED_SETS = 4
 

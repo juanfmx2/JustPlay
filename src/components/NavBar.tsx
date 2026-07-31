@@ -40,11 +40,7 @@ export function NavBar() {
             {/* Collapsible: nav links + search */}
             <div className="collapse navbar-collapse" id="navbarContent">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/">
-                    Home
-                </a>
-                </li>
+
                 <li className="nav-item">
                 <a className="nav-link" href="/org/cvc/competition/cvc-grass-2026">
                     CVC Grass
