@@ -40,6 +40,7 @@ type SaturdayMatch = {
 	team_1: string
 	team_2: string
 	referee: string
+	court: string
 }
 
 type RulesGroup = {
@@ -544,8 +545,6 @@ async function run() {
 
 		await db.delete(games).where(eq(games.divisionId, scheduledDivision.id))
 
-		const court = await getCourtOrCreate(`Court ${divisionFile}`)
-
 		const uniqueTeamNames = getUniqueTeamNames(divisionFile.matches)
 		const poolSize = uniqueTeamNames.length
 		const poolGender = getPoolGenderFromDivisionLevel(divisionFile.divisionLevel)
@@ -580,6 +579,8 @@ async function run() {
 				divisionFile.divisionLevel,
 				fixture.referee,
 			)
+				
+			const court = await getCourtOrCreate(`Court ${fixture.court}`)
 
 			const setTimes = buildSetTimesForMatch(
 				SATURDAY_DATE,
