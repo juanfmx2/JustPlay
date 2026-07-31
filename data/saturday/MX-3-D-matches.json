@@ -3,60 +3,70 @@
     "match": 1,
     "team_1": "Southend platypus",
     "team_2": "Hills Road x CVC Juniors",
-    "referee": "Friday Group"
+    "referee": "Friday Group",
+    "court": "19"
   },
   {
     "match": 2,
     "team_1": "Chelmsford Ladies - W2",
     "team_2": "Sugar & Spike Remix",
-    "referee": "Southend platypus"
+    "referee": "Southend platypus",
+    "court": "19"
   },
   {
     "match": 3,
     "team_1": "Hills Road x CVC Juniors",
     "team_2": "Friday Group",
-    "referee": "Chelmsford Ladies - W2"
+    "referee": "Chelmsford Ladies - W2",
+    "court": "19"
   },
   {
     "match": 4,
     "team_1": "Sugar & Spike Remix",
     "team_2": "Southend platypus",
-    "referee": "Hills Road x CVC Juniors"
+    "referee": "Hills Road x CVC Juniors",
+    "court": "19"
   },
   {
     "match": 5,
     "team_1": "Friday Group",
     "team_2": "Chelmsford Ladies - W2",
-    "referee": "Sugar & Spike Remix"
+    "referee": "Sugar & Spike Remix",
+    "court": "19"
   },
   {
     "match": 6,
     "team_1": "Hills Road x CVC Juniors",
     "team_2": "Sugar & Spike Remix",
-    "referee": "Friday Group"
+    "referee": "Friday Group",
+    "court": "19"
   },
   {
     "match": 7,
     "team_1": "Southend platypus",
     "team_2": "Friday Group",
-    "referee": "Chelmsford Ladies - W2"
+    "referee": "Chelmsford Ladies - W2",
+    "court": "19"
   },
   {
     "match": 8,
     "team_1": "Hills Road x CVC Juniors",
     "team_2": "Chelmsford Ladies - W2",
-    "referee": "Sugar & Spike Remix"
+    "referee": "Sugar & Spike Remix",
+    "court": "19"
   },
   {
     "match": 9,
     "team_1": "Friday Group",
     "team_2": "Sugar & Spike Remix",
-    "referee": "Southend platypus"
+    "referee": "Southend platypus",
+    "court": "19"
   },
   {
     "match": 10,
     "team_1": "Southend platypus",
     "team_2": "Chelmsford Ladies - W2",
-    "referee": "Hills Road x CVC Juniors"
+    "referee": "Hills Road x CVC Juniors",
+    "court": "19"
   }
 ]

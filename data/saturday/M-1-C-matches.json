@@ -3,60 +3,70 @@
     "match": 1,
     "team_1": "The Fingringhoe Fiddlers",
     "team_2": "OSNACK",
-    "referee": "Notts Bots"
+    "referee": "Notts Bots",
+    "court": "3"
   },
   {
     "match": 2,
     "team_1": "Consensual Sets",
     "team_2": "GNG Bedford",
-    "referee": "The Fingringhoe Fiddlers"
+    "referee": "The Fingringhoe Fiddlers",
+    "court": "3"
   },
   {
     "match": 3,
     "team_1": "OSNACK",
     "team_2": "Notts Bots",
-    "referee": "Consensual Sets"
+    "referee": "Consensual Sets",
+    "court": "3"
   },
   {
     "match": 4,
     "team_1": "GNG Bedford",
     "team_2": "The Fingringhoe Fiddlers",
-    "referee": "OSNACK"
+    "referee": "OSNACK",
+    "court": "3"
   },
   {
     "match": 5,
     "team_1": "Notts Bots",
     "team_2": "Consensual Sets",
-    "referee": "GNG Bedford"
+    "referee": "GNG Bedford",
+    "court": "3"
   },
   {
     "match": 6,
     "team_1": "OSNACK",
     "team_2": "GNG Bedford",
-    "referee": "Notts Bots"
+    "referee": "Notts Bots",
+    "court": "3"
   },
   {
     "match": 7,
     "team_1": "The Fingringhoe Fiddlers",
     "team_2": "Notts Bots",
-    "referee": "Consensual Sets"
+    "referee": "Consensual Sets",
+    "court": "3"
   },
   {
     "match": 8,
     "team_1": "OSNACK",
     "team_2": "Consensual Sets",
-    "referee": "GNG Bedford"
+    "referee": "GNG Bedford",
+    "court": "3"
   },
   {
     "match": 9,
     "team_1": "Notts Bots",
     "team_2": "GNG Bedford",
-    "referee": "The Fingringhoe Fiddlers"
+    "referee": "The Fingringhoe Fiddlers",
+    "court": "3"
   },
   {
     "match": 10,
     "team_1": "The Fingringhoe Fiddlers",
     "team_2": "Consensual Sets",
-    "referee": "OSNACK"
+    "referee": "OSNACK",
+    "court": "3"
   }
 ]

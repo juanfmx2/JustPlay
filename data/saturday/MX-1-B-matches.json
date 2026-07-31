@@ -3,60 +3,70 @@
     "match": 1,
     "team_1": "Bald Eagles",
     "team_2": "Las guapas",
-    "referee": "Rush Hour"
+    "referee": "Rush Hour",
+    "court": "6"
   },
   {
     "match": 2,
     "team_1": "PDFiles",
     "team_2": "Bozballs",
-    "referee": "Bald Eagles"
+    "referee": "Bald Eagles",
+    "court": "6"
   },
   {
     "match": 3,
     "team_1": "Las guapas",
     "team_2": "Rush Hour",
-    "referee": "PDFiles"
+    "referee": "PDFiles",
+    "court": "6"
   },
   {
     "match": 4,
     "team_1": "Bozballs",
     "team_2": "Bald Eagles",
-    "referee": "Las guapas"
+    "referee": "Las guapas",
+    "court": "6"
   },
   {
     "match": 5,
     "team_1": "Rush Hour",
     "team_2": "PDFiles",
-    "referee": "Bozballs"
+    "referee": "Bozballs",
+    "court": "6"
   },
   {
     "match": 6,
     "team_1": "Las guapas",
     "team_2": "Bozballs",
-    "referee": "Rush Hour"
+    "referee": "Rush Hour",
+    "court": "6"
   },
   {
     "match": 7,
     "team_1": "Bald Eagles",
     "team_2": "Rush Hour",
-    "referee": "PDFiles"
+    "referee": "PDFiles",
+    "court": "6"
   },
   {
     "match": 8,
     "team_1": "Las guapas",
     "team_2": "PDFiles",
-    "referee": "Bozballs"
+    "referee": "Bozballs",
+    "court": "6"
   },
   {
     "match": 9,
     "team_1": "Rush Hour",
     "team_2": "Bozballs",
-    "referee": "Bald Eagles"
+    "referee": "Bald Eagles",
+    "court": "6"
   },
   {
     "match": 10,
     "team_1": "Bald Eagles",
     "team_2": "PDFiles",
-    "referee": "Las guapas"
+    "referee": "Las guapas",
+    "court": "6"
   }
 ]

@@ -3,60 +3,70 @@
     "match": 1,
     "team_1": "The Stags",
     "team_2": "Tequila",
-    "referee": "Team Dan"
+    "referee": "Team Dan",
+    "court": "2"
   },
   {
     "match": 2,
     "team_1": "The Hangover",
     "team_2": "Ola & the 7 Virgins",
-    "referee": "The Stags"
+    "referee": "The Stags",
+    "court": "2"
   },
   {
     "match": 3,
     "team_1": "Tequila",
     "team_2": "Team Dan",
-    "referee": "The Hangover"
+    "referee": "The Hangover",
+    "court": "2"
   },
   {
     "match": 4,
     "team_1": "Ola & the 7 Virgins",
     "team_2": "The Stags",
-    "referee": "Tequila"
+    "referee": "Tequila",
+    "court": "2"
   },
   {
     "match": 5,
     "team_1": "Team Dan",
     "team_2": "The Hangover",
-    "referee": "Ola & the 7 Virgins"
+    "referee": "Ola & the 7 Virgins",
+    "court": "2"
   },
   {
     "match": 6,
     "team_1": "Tequila",
     "team_2": "Ola & the 7 Virgins",
-    "referee": "Team Dan"
+    "referee": "Team Dan",
+    "court": "2"
   },
   {
     "match": 7,
     "team_1": "The Stags",
     "team_2": "Team Dan",
-    "referee": "The Hangover"
+    "referee": "The Hangover",
+    "court": "2"
   },
   {
     "match": 8,
     "team_1": "Tequila",
     "team_2": "The Hangover",
-    "referee": "Ola & the 7 Virgins"
+    "referee": "Ola & the 7 Virgins",
+    "court": "2"
   },
   {
     "match": 9,
     "team_1": "Team Dan",
     "team_2": "Ola & the 7 Virgins",
-    "referee": "The Stags"
+    "referee": "The Stags",
+    "court": "2"
   },
   {
     "match": 10,
     "team_1": "The Stags",
     "team_2": "The Hangover",
-    "referee": "Tequila"
+    "referee": "Tequila",
+    "court": "2"
   }
 ]

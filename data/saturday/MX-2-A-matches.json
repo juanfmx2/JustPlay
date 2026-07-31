@@ -3,36 +3,42 @@
     "match": 1,
     "team_1": "Kiss My Ace",
     "team_2": "PARKAS",
-    "referee": "Gold Diggers"
+    "referee": "Gold Diggers",
+    "court": "8"
   },
   {
     "match": 2,
     "team_1": "Gold Diggers",
     "team_2": "Holy Blockamole",
-    "referee": "Kiss My Ace"
+    "referee": "Kiss My Ace",
+    "court": "8"
   },
   {
     "match": 3,
     "team_1": "PARKAS",
     "team_2": "Gold Diggers",
-    "referee": "Holy Blockamole"
+    "referee": "Holy Blockamole",
+    "court": "8"
   },
   {
     "match": 4,
     "team_1": "Kiss My Ace",
     "team_2": "Holy Blockamole",
-    "referee": "PARKAS"
+    "referee": "PARKAS",
+    "court": "8"
   },
   {
     "match": 5,
     "team_1": "PARKAS",
     "team_2": "Holy Blockamole",
-    "referee": "Gold Diggers"
+    "referee": "Gold Diggers",
+    "court": "8"
   },
   {
     "match": 6,
     "team_1": "Kiss My Ace",
     "team_2": "Gold Diggers",
-    "referee": "PARKAS"
+    "referee": "PARKAS",
+    "court": "8"
   }
 ]

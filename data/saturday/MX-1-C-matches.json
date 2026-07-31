@@ -3,36 +3,42 @@
     "match": 1,
     "team_1": "Team Ramisu",
     "team_2": "E6 Hooligans",
-    "referee": "No Mercy"
+    "referee": "No Mercy",
+    "court": "7"
   },
   {
     "match": 2,
     "team_1": "No Mercy",
     "team_2": "Grass Bober Reborn",
-    "referee": "Team Ramisu"
+    "referee": "Team Ramisu",
+    "court": "7"
   },
   {
     "match": 3,
     "team_1": "E6 Hooligans",
     "team_2": "No Mercy",
-    "referee": "Grass Bober Reborn"
+    "referee": "Grass Bober Reborn",
+    "court": "7"
   },
   {
     "match": 4,
     "team_1": "Team Ramisu",
     "team_2": "Grass Bober Reborn",
-    "referee": "E6 Hooligans"
+    "referee": "E6 Hooligans",
+    "court": "7"
   },
   {
     "match": 5,
     "team_1": "E6 Hooligans",
     "team_2": "Grass Bober Reborn",
-    "referee": "No Mercy"
+    "referee": "No Mercy",
+    "court": "7"
   },
   {
     "match": 6,
     "team_1": "Team Ramisu",
     "team_2": "No Mercy",
-    "referee": "E6 Hooligans"
+    "referee": "E6 Hooligans",
+    "court": "7"
   }
 ]

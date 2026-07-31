@@ -3,60 +3,70 @@
     "match": 1,
     "team_1": "The Laundromat",
     "team_2": "Registered Set Offenders",
-    "referee": "Bump it Like It's Hot"
+    "referee": "Bump it Like It's Hot",
+    "court": "18"
   },
   {
     "match": 2,
     "team_1": "Maniacs - W2",
     "team_2": "VLA 2",
-    "referee": "The Laundromat"
+    "referee": "The Laundromat",
+    "court": "18"
   },
   {
     "match": 3,
     "team_1": "Registered Set Offenders",
     "team_2": "Bump it Like It's Hot",
-    "referee": "Maniacs - W2"
+    "referee": "Maniacs - W2",
+    "court": "18"
   },
   {
     "match": 4,
     "team_1": "VLA 2",
     "team_2": "The Laundromat",
-    "referee": "Registered Set Offenders"
+    "referee": "Registered Set Offenders",
+    "court": "18"
   },
   {
     "match": 5,
     "team_1": "Bump it Like It's Hot",
     "team_2": "Maniacs - W2",
-    "referee": "VLA 2"
+    "referee": "VLA 2",
+    "court": "18"
   },
   {
     "match": 6,
     "team_1": "Registered Set Offenders",
     "team_2": "VLA 2",
-    "referee": "Bump it Like It's Hot"
+    "referee": "Bump it Like It's Hot",
+    "court": "18"
   },
   {
     "match": 7,
     "team_1": "The Laundromat",
     "team_2": "Bump it Like It's Hot",
-    "referee": "Maniacs - W2"
+    "referee": "Maniacs - W2",
+    "court": "18"
   },
   {
     "match": 8,
     "team_1": "Registered Set Offenders",
     "team_2": "Maniacs - W2",
-    "referee": "VLA 2"
+    "referee": "VLA 2",
+    "court": "18"
   },
   {
     "match": 9,
     "team_1": "Bump it Like It's Hot",
     "team_2": "VLA 2",
-    "referee": "The Laundromat"
+    "referee": "The Laundromat",
+    "court": "18"
   },
   {
     "match": 10,
     "team_1": "The Laundromat",
     "team_2": "Maniacs - W2",
-    "referee": "Registered Set Offenders"
+    "referee": "Registered Set Offenders",
+    "court": "18"
   }
 ]
