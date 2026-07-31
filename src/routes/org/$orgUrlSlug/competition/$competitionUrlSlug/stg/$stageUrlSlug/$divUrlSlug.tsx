@@ -718,9 +718,9 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
           {actionError && <p className="text-danger small mb-0 no-print">{actionError}</p>}
 
           <div
-            className={`badge text-start py-2 flex-grow-1 division-schedule-ref-badge ${refTeamPaletteClass}`}
+            className={`badge text-start py-2 flex-grow-1 division-schedule-ref-badge text-center ${refTeamPaletteClass}`}
           >
-            Ref: {game.reffingTeam?.name ?? 'TBD'}
+            <strong>Referee:</strong> {game.reffingTeam?.name ?? 'TBD'}
           </div>
           {mostCommonCourt?.id && firstSet?.courtId !== mostCommonCourt?.id && (
             <footer className="small text-body-secondary mt-auto">
@@ -736,7 +736,11 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
         </Modal.Header>
         <Modal.Body>
           <p className="mb-2">
-            Final score: <strong>{game.teamA.name} {currentTotalA} - {currentTotalB} {game.teamB.name}</strong>
+            <b>A:</b> {game.teamA.name} <b>vs</b> <b>B:</b> {game.teamB.name}
+          </p>
+          <p className="mb-0">
+            Final Sets: <strong> A {teamASetWins} - {teamBSetWins} B</strong><br />
+            Final Points: <strong> A {currentTotalA} - {currentTotalB} B</strong>
           </p>
           <p className="mb-0">
             {currentWinner === 'DRAW'
@@ -769,8 +773,12 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
           <Modal.Title className="h5">Validate Result</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <p className="mb-2">
+            <b>A:</b> {game.teamA.name} <b>vs</b> <b>B:</b> {game.teamB.name}
+          </p>
           <p className="mb-0">
-            Final score: <strong>{game.teamA.name} {currentTotalA} - {currentTotalB} {game.teamB.name}</strong>
+            Final Sets: <strong> A {teamASetWins} - {teamBSetWins} B</strong><br />
+            Final Points: <strong> A {currentTotalA} - {currentTotalB} B</strong>
           </p>
           <p className="text-body-secondary small mt-2 mb-0">
             This confirms an admin has checked and validated this result.
@@ -804,22 +812,24 @@ function ApprovalControl({
 }) {
   if (approvedAt) {
     return (
-      <span className="badge text-bg-success-subtle text-success d-inline-flex align-items-center gap-1 py-2">
+      <span className="badge text-bg-success-subtle text-success d-inline-flex align-items-center justify-content-center gap-1 py-2 mt-2">
         <CheckCircleFill /> {label} Accepted
       </span>
     )
   }
 
   return (
+    (canApprove && (
     <button
       type="button"
-      className="btn btn-sm btn-outline-secondary"
+      className="btn btn-sm btn-banana w-100 mt-2"
       disabled={!canApprove || isSubmitting}
       title={canApprove ? undefined : `Only ${label}, logged in as that team, can approve`}
       onClick={onRequestApprove}
+      style={{ borderColor: 'black', color: 'black', backgroundColor: 'dark-yellow' }}
     >
       {isSubmitting ? 'Approving...' : `Approve as ${label}`}
-    </button>
+    </button>)) || (<div className="mt-2">Pending {label} Approval</div>)
   )
 }
 
@@ -845,16 +855,17 @@ function ValidateControl({
   }
 
   return (
+    (canValidate && (
     <button
       type="button"
-      className="btn btn-sm btn-outline-secondary w-100 d-flex justify-content-center align-items-center gap-1"
+      className="btn btn-sm btn-outline-dark w-100 d-flex justify-content-center align-items-center gap-1"
       disabled={!canValidate || isSubmitting}
       title={canValidate ? undefined : 'Only an admin can validate this result'}
       onClick={onRequestValidate}
     >
       <ShieldExclamation />
-      {isSubmitting ? 'Validating...' : 'Admin Validate'}
-    </button>
+      {isSubmitting ? 'Validating...' : 'Validate as Admin'}
+    </button>)) || (<div className="text-center mt-2">Pending Admin Validation</div>)
   )
 }
 

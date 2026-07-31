@@ -12,7 +12,7 @@ import { ThemeProvider } from '../hooks/ThemeContextProvider'
 import { NavBar } from '../components/NavBar'
 import { db } from '@/db/client'
 import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth.server'
-import { competitions, divisions, games, organizations, stages, teams } from '@/schema'
+import { competitions, organizations, stages, teams } from '@/schema'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/styles.css'
 
