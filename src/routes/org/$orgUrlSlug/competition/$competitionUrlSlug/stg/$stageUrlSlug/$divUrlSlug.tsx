@@ -637,10 +637,19 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
                       onChange={(e) => updateSetScore(set.id, 'A', e.target.value)}
                       className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamAHighlightClass}`}
                       aria-label={`Set ${setIndex + 1} score for ${game.teamA.name}`}
-                      disabled={!isToday || !canEditScores}
+                      disabled={!isAdmin && (!isToday || !canEditScores)}
+                      onFocus={(e) => e.target.select()}
                     />
                 </React.Fragment>
               })}
+              {isFinished && (
+                <ApprovalControl
+                label={game.teamA.name}
+                approvedAt={approvalState.teamAApprovedAt}
+                canApprove={isTeamA}
+                isSubmitting={approvingTeam === 'A'}
+                onRequestApprove={() => setConfirmApproveTeam('A')}
+              />)}
               </div>
             <div className="d-flex align-items-center fw-semibold text-body-secondary px-1">vs</div>
             <div
@@ -664,10 +673,20 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
                       onChange={(e) => updateSetScore(set.id, 'B', e.target.value)}
                       className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamBHighlightClass}`}
                       aria-label={`Set ${setIndex + 1} score for ${game.teamB.name}`}
-                      disabled={!isToday || !canEditScores}
+                      disabled={!isAdmin && (!isToday || !canEditScores)}
+                      onFocus={(e) => e.target.select()}
                     />
                 </React.Fragment>
               })}
+              
+              {isFinished && (
+                <ApprovalControl
+                label={game.teamB.name}
+                approvedAt={approvalState.teamBApprovedAt}
+                canApprove={isTeamB}
+                isSubmitting={approvingTeam === 'B'}
+                onRequestApprove={() => setConfirmApproveTeam('B')}
+              />)}
             </div>
           </div>
 
@@ -686,22 +705,6 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
 
           {isFinished && (
             <div className="d-flex flex-column gap-2 no-print division-schedule-approval-row">
-              <div className="d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                <ApprovalControl
-                  label={game.teamA.name}
-                  approvedAt={approvalState.teamAApprovedAt}
-                  canApprove={isTeamA}
-                  isSubmitting={approvingTeam === 'A'}
-                  onRequestApprove={() => setConfirmApproveTeam('A')}
-                />
-                <ApprovalControl
-                  label={game.teamB.name}
-                  approvedAt={approvalState.teamBApprovedAt}
-                  canApprove={isTeamB}
-                  isSubmitting={approvingTeam === 'B'}
-                  onRequestApprove={() => setConfirmApproveTeam('B')}
-                />
-              </div>
               <ValidateControl
                 validatedAt={approvalState.adminValidatedAt}
                 validatedByName={approvalState.adminValidatedByName}
