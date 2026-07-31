@@ -8,7 +8,7 @@
   },
   {
     "match": 2,
-    "team_1": "Great Times",
+    "team_1": "The Dream Team",
     "team_2": "All Stars",
     "referee": "Feta & Friends",
     "court": "5"
@@ -17,7 +17,7 @@
     "match": 3,
     "team_1": "Hit Squad",
     "team_2": "Mulberries",
-    "referee": "Great Times",
+    "referee": "The Dream Team",
     "court": "5"
   },
   {
@@ -30,7 +30,7 @@
   {
     "match": 5,
     "team_1": "Mulberries",
-    "team_2": "Great Times",
+    "team_2": "The Dream Team",
     "referee": "All Stars",
     "court": "5"
   },
@@ -45,13 +45,13 @@
     "match": 7,
     "team_1": "Feta & Friends",
     "team_2": "Mulberries",
-    "referee": "Great Times",
+    "referee": "The Dream Team",
     "court": "5"
   },
   {
     "match": 8,
     "team_1": "Hit Squad",
-    "team_2": "Great Times",
+    "team_2": "The Dream Team",
     "referee": "All Stars",
     "court": "5"
   },
@@ -65,7 +65,7 @@
   {
     "match": 10,
     "team_1": "Feta & Friends",
-    "team_2": "Great Times",
+    "team_2": "The Dream Team",
     "referee": "Hit Squad",
     "court": "5"
   }

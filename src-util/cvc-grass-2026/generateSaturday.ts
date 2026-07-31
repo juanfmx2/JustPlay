@@ -20,8 +20,8 @@ const SATURDAY_STAGE_SLUG = 'saturday-2026-08-01'
 const SATURDAY_STAGE_NAME = 'Saturday 1 August 2026'
 const SATURDAY_STAGE_DESCRIPTION = 'CVC Grass 2026 - Saturday fixtures'
 
-const SATURDAY_VENUE_NAME = 'CVC Grass Saturday Venue'
-const SATURDAY_VENUE_DESCRIPTION = 'Courts used for Saturday matchday fixtures'
+const SATURDAY_VENUE_NAME = 'Shelford Rugby Club'
+const SATURDAY_VENUE_DESCRIPTION = 'https://maps.app.goo.gl/nwYu5yyGLj9a1KjH6'
 
 const SETS_PER_MATCH = 3
 const POINTS_PER_MINUTE = 2.5
@@ -395,9 +395,9 @@ async function getOrCreateCourt(venueId: number, name: string) {
 	return created
 }
 
-async function getCourtOrCreateForDivision(divisionLevel: string) {
+async function getCourtOrCreate(courtName: string) {
 	const venue = await getOrCreateVenue(SATURDAY_VENUE_NAME, SATURDAY_VENUE_DESCRIPTION)
-	return getOrCreateCourt(venue.id, `Court ${divisionLevel}`)
+	return getOrCreateCourt(venue.id, courtName)
 }
 
 async function getTeamByNameOrThrow(
@@ -544,7 +544,7 @@ async function run() {
 
 		await db.delete(games).where(eq(games.divisionId, scheduledDivision.id))
 
-		const court = await getCourtOrCreateForDivision(divisionFile.divisionLevel)
+		const court = await getCourtOrCreate(`Court ${divisionFile}`)
 
 		const uniqueTeamNames = getUniqueTeamNames(divisionFile.matches)
 		const poolSize = uniqueTeamNames.length
