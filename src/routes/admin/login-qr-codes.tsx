@@ -34,8 +34,67 @@ function EntryCard({ entry }: { readonly entry: LoginEntry }) {
   )
 }
 
+function splitDivisionLabel(division: string | null | undefined): {
+  mainDivision: string
+  subPool: string
+} {
+  const value = (division ?? '').trim()
+  if (!value) {
+    return {
+      mainDivision: 'Unassigned Division',
+      subPool: 'Other',
+    }
+  }
+
+  const match = value.match(/^(.*?)\s*-\s*(Pool\s+[A-Za-z0-9]+)$/i)
+  if (!match) {
+    return {
+      mainDivision: value,
+      subPool: 'Other',
+    }
+  }
+
+  return {
+    mainDivision: match[1].trim(),
+    subPool: match[2].trim(),
+  }
+}
+
 function LoginQrCodesPage() {
   const { admins, teams } = Route.useLoaderData()
+
+  const groupedTeams = teams.reduce<
+    Array<{
+      mainDivision: string
+      pools: Array<{
+        subPool: string
+        entries: LoginEntry[]
+      }>
+    }>
+  >((groups, entry) => {
+    const { mainDivision, subPool } = splitDivisionLabel(entry.division)
+    let divisionGroup = groups.find((group) => group.mainDivision === mainDivision)
+
+    if (!divisionGroup) {
+      divisionGroup = {
+        mainDivision,
+        pools: [],
+      }
+      groups.push(divisionGroup)
+    }
+
+    let poolGroup = divisionGroup.pools.find((pool) => pool.subPool === subPool)
+    if (!poolGroup) {
+      poolGroup = {
+        subPool,
+        entries: [],
+      }
+      divisionGroup.pools.push(poolGroup)
+    }
+
+    poolGroup.entries.push(entry)
+    return groups
+  }, [])
 
   return (
     <section className="container py-4">
@@ -57,9 +116,23 @@ function LoginQrCodesPage() {
       </div>
 
       <h2 className="h4 mb-3">Teams</h2>
-      <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
-        {teams.map((entry) => (
-          <EntryCard key={entry.name} entry={entry} />
+      <div className="d-flex flex-column gap-4">
+        {groupedTeams.map((divisionGroup) => (
+          <div key={divisionGroup.mainDivision}>
+            <h2 className="h4 mb-3">{divisionGroup.mainDivision}</h2>
+            <div className="d-flex flex-column gap-3">
+              {divisionGroup.pools.map((poolGroup) => (
+                <div key={`${divisionGroup.mainDivision}-${poolGroup.subPool}`}>
+                  <h3 className="h5 mb-2">{poolGroup.subPool}</h3>
+                  <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                    {poolGroup.entries.map((entry) => (
+                      <EntryCard key={entry.name} entry={entry} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </section>
