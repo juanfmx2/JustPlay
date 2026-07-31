@@ -1,7 +1,8 @@
 import { and, eq } from 'drizzle-orm'
 
-import springLeagueData from '../../data/spring-league.json'
-import springLeagueRulesData from '../../data/spring-league-rules.json'
+import menDivisionsData from '../../data/men_divisions.json'
+import mixedDivisionsData from '../../data/mixed_divisions.json'
+import rulesDataJson from '../../data/rules.json'
 import { db } from '../../src/db/client'
 import { competitions, ruleGroups, rules, stages } from '../../src/schema/competition'
 import { divisions } from '../../src/schema/division'
@@ -109,7 +110,11 @@ async function getOrCreateRegistrationStage(competitionId: number) {
 	return created
 }
 
-async function upsertDivisionsAndTeams(stageId: number, data: SpringLeagueDivision[]) {
+async function upsertDivisionsAndTeams(
+	stageId: number,
+	data: SpringLeagueDivision[],
+	divisionType: 'MEN' | 'MIXED',
+) {
 	let loadedTeams = 0
 
 	for (const divisionEntry of data) {
@@ -130,7 +135,7 @@ async function upsertDivisionsAndTeams(stageId: number, data: SpringLeagueDivisi
 							name: divisionEntry.division_name,
 							description: `Spring League 2026 - ${divisionEntry.division_short}`,
 							level: divisionEntry.division_short,
-							type: 'MIXED',
+							type: divisionType,
 							urlSlug: divisionSlug,
 						})
 						.where(eq(divisions.id, existingDivision[0].id))
@@ -144,7 +149,7 @@ async function upsertDivisionsAndTeams(stageId: number, data: SpringLeagueDivisi
 							name: divisionEntry.division_name,
 							description: `Spring League 2026 - ${divisionEntry.division_short}`,
 							level: divisionEntry.division_short,
-							type: 'MIXED',
+							type: divisionType,
 							urlSlug: divisionSlug,
 						})
 						.returning()
@@ -347,8 +352,9 @@ async function upsertSpringLeagueRules(competitionId: number, rulesData: SpringL
 }
 
 async function run() {
-	const data = springLeagueData as SpringLeagueDivision[]
-	const rulesData = springLeagueRulesData as SpringLeagueRules
+	const menDivisions = menDivisionsData as SpringLeagueDivision[]
+	const mixedDivisions = mixedDivisionsData as SpringLeagueDivision[]
+	const rulesData = rulesDataJson as SpringLeagueRules
 
 	const organization = await getOrCreateOrganization()
 	const competition = await getOrCreateCompetition(organization.id)
@@ -359,7 +365,17 @@ async function run() {
 		.set({ registrationStageId: registrationStage.id })
 		.where(eq(competitions.id, competition.id))
 
-	const loadedTeams = await upsertDivisionsAndTeams(registrationStage.id, data)
+	const loadedMenTeams = await upsertDivisionsAndTeams(
+		registrationStage.id,
+		menDivisions,
+		'MEN',
+	)
+	const loadedMixedTeams = await upsertDivisionsAndTeams(
+		registrationStage.id,
+		mixedDivisions,
+		'MIXED',
+	)
+	const loadedTeams = loadedMenTeams + loadedMixedTeams
 	const bookingsResult = await upsertSpringLeagueVenuesAndBookings(competition.id)
 	const rulesResult = await upsertSpringLeagueRules(competition.id, rulesData)
 

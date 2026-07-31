@@ -1,0 +1,268 @@
+[
+  {
+    "division_name": "Mixed Division 1 - Pool A",
+    "division_short": "MX-1-A",
+    "teams": [
+      {
+        "team_name": "Feta & Friends",
+        "captain": "Feta & Friends Captain"
+      },
+      {
+        "team_name": "Hit Squad",
+        "captain": "Hit Squad Captain"
+      },
+      {
+        "team_name": "Mulberries",
+        "captain": "Mulberries Captain"
+      },
+      {
+        "team_name": "Great Times",
+        "captain": "Great Times Captain"
+      },
+      {
+        "team_name": "All Stars",
+        "captain": "All Stars Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 1 - Pool B",
+    "division_short": "MX-1-B",
+    "teams": [
+      {
+        "team_name": "Bald Eagles",
+        "captain": "Bald Eagles Captain"
+      },
+      {
+        "team_name": "Las guapas",
+        "captain": "Las guapas Captain"
+      },
+      {
+        "team_name": "Rush Hour",
+        "captain": "Rush Hour Captain"
+      },
+      {
+        "team_name": "PDFiles",
+        "captain": "PDFiles Captain"
+      },
+      {
+        "team_name": "Bozballs",
+        "captain": "Bozballs Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 1 - Pool C",
+    "division_short": "MX-1-C",
+    "teams": [
+      {
+        "team_name": "Team Ramisu",
+        "captain": "Team Ramisu Captain"
+      },
+      {
+        "team_name": "E6 Hooligans",
+        "captain": "E6 Hooligans Captain"
+      },
+      {
+        "team_name": "No Mercy",
+        "captain": "No Mercy Captain"
+      },
+      {
+        "team_name": "Grass Bober Reborn",
+        "captain": "Grass Bober Reborn Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 2 - Pool A",
+    "division_short": "MX-2-A",
+    "teams": [
+      {
+        "team_name": "Kiss My Ace",
+        "captain": "Kiss My Ace Captain"
+      },
+      {
+        "team_name": "PARKAS",
+        "captain": "PARKAS Captain"
+      },
+      {
+        "team_name": "Gold Diggers",
+        "captain": "Gold Diggers Captain"
+      },
+      {
+        "team_name": "Holy Blockamole",
+        "captain": "Holy Blockamole Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 2 - Pool B",
+    "division_short": "MX-2-B",
+    "teams": [
+      {
+        "team_name": "MSG",
+        "captain": "MSG Captain"
+      },
+      {
+        "team_name": "Wembley Raccoons",
+        "captain": "Wembley Raccoons Captain"
+      },
+      {
+        "team_name": "Suck My Block",
+        "captain": "Suck My Block Captain"
+      },
+      {
+        "team_name": "WE'VE GOT CRABBS!",
+        "captain": "WE'VE GOT CRABBS! Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 2 - Pool C",
+    "division_short": "MX-2-C",
+    "teams": [
+      {
+        "team_name": "IS IT IN",
+        "captain": "IS IT IN Captain"
+      },
+      {
+        "team_name": "Block & Roll",
+        "captain": "Block & Roll Captain"
+      },
+      {
+        "team_name": "Setsy 2.0",
+        "captain": "Setsy 2.0 Captain"
+      },
+      {
+        "team_name": "Crispy Pancakes",
+        "captain": "Crispy Pancakes Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 2 - Pool D",
+    "division_short": "MX-2-D",
+    "teams": [
+      {
+        "team_name": "Serves you right",
+        "captain": "Serves you right Captain"
+      },
+      {
+        "team_name": "NO Kiss My Ace",
+        "captain": "NO Kiss My Ace Captain"
+      },
+      {
+        "team_name": "Big Dig Lovers -W1",
+        "captain": "Big Dig Lovers -W1 Captain"
+      },
+      {
+        "team_name": "Mikasa es su casa",
+        "captain": "Mikasa es su casa Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 3 - Pool A",
+    "division_short": "MX-3-A",
+    "teams": [
+      {
+        "team_name": "The Great White Wall",
+        "captain": "The Great White Wall Captain"
+      },
+      {
+        "team_name": "Bober",
+        "captain": "Bober Captain"
+      },
+      {
+        "team_name": "How You Doing?",
+        "captain": "How You Doing? Captain"
+      },
+      {
+        "team_name": "Drunkats - W1",
+        "captain": "Drunkats - W1 Captain"
+      },
+      {
+        "team_name": "My digs don't lie",
+        "captain": "My digs don't lie Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 3 - Pool B",
+    "division_short": "MX-3-B",
+    "teams": [
+      {
+        "team_name": "VLA 1",
+        "captain": "VLA 1 Captain"
+      },
+      {
+        "team_name": "Bury berries",
+        "captain": "Bury berries Captain"
+      },
+      {
+        "team_name": "Banana",
+        "captain": "Banana Captain"
+      },
+      {
+        "team_name": "Peaches - W2",
+        "captain": "Peaches - W2 Captain"
+      },
+      {
+        "team_name": "One Hit Wonders",
+        "captain": "One Hit Wonders Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 3 - Pool C",
+    "division_short": "MX-3-C",
+    "teams": [
+      {
+        "team_name": "The Laundromat",
+        "captain": "The Laundromat Captain"
+      },
+      {
+        "team_name": "Registered Set Offenders",
+        "captain": "Registered Set Offenders Captain"
+      },
+      {
+        "team_name": "Bump it Like It's Hot",
+        "captain": "Bump it Like It's Hot Captain"
+      },
+      {
+        "team_name": "Maniacs - W2",
+        "captain": "Maniacs - W2 Captain"
+      },
+      {
+        "team_name": "VLA 2",
+        "captain": "VLA 2 Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Mixed Division 3 - Pool D",
+    "division_short": "MX-3-D",
+    "teams": [
+      {
+        "team_name": "Southend platypus",
+        "captain": "Southend platypus Captain"
+      },
+      {
+        "team_name": "Hills Road x CVC Juniors",
+        "captain": "Hills Road x CVC Juniors Captain"
+      },
+      {
+        "team_name": "Friday Group",
+        "captain": "Friday Group Captain"
+      },
+      {
+        "team_name": "Chelmsford Ladies - W2",
+        "captain": "Chelmsford Ladies - W2 Captain"
+      },
+      {
+        "team_name": "Sugar & Spike Remix",
+        "captain": "Sugar & Spike Remix Captain"
+      }
+    ]
+  }
+]

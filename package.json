@@ -18,8 +18,7 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "db:drop-tables": "pnpm tsx src-util/dropTables.ts",
-    "db:gen-sl2026": "pnpm tsx src-util/sl-2026/generateAll.ts",
-    "db:gen-banana": "pnpm tsx src-util/cambridge-5-1/generateAll.ts"
+    "db:gen-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/generateAll.ts"
   },
   "keywords": [],
   "author": "",
@@ -33,7 +32,8 @@
     "react": "^19.2.4",
     "react-bootstrap": "^2.10.10",
     "react-bootstrap-icons": "^1.11.6",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "tsx": "^4.23.1"
   },
   "devDependencies": {
     "@swc/core": "^1.13.5",
@@ -58,7 +58,9 @@
   },
   "pnpm": {
     "peerDependencyRules": {
-      "ignoreMissing": ["@types/pg"]
+      "ignoreMissing": [
+        "@types/pg"
+      ]
     }
   }
 }

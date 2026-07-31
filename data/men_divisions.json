@@ -1,0 +1,158 @@
+[
+  {
+    "division_name": "Men Division 1 - Pool A",
+    "division_short": "M-1-A",
+    "teams": [
+      {
+        "team_name": "SOUTHEND VC",
+        "captain": "SOUTHEND VC Captain"
+      },
+      {
+        "team_name": "BAD BOYS",
+        "captain": "BAD BOYS Captain"
+      },
+      {
+        "team_name": "No Diggity",
+        "captain": "No Diggity Captain"
+      },
+      {
+        "team_name": "Braza 55",
+        "captain": "Braza 55 Captain"
+      },
+      {
+        "team_name": "The Float Goats",
+        "captain": "The Float Goats Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Men Division 1 - Pool B",
+    "division_short": "M-1-B",
+    "teams": [
+      {
+        "team_name": "The Stags",
+        "captain": "The Stags Captain"
+      },
+      {
+        "team_name": "Tequila",
+        "captain": "Tequila Captain"
+      },
+      {
+        "team_name": "Team Dan",
+        "captain": "Team Dan Captain"
+      },
+      {
+        "team_name": "The Hangover",
+        "captain": "The Hangover Captain"
+      },
+      {
+        "team_name": "Ola & the 7 Virgins",
+        "captain": "Ola & the 7 Virgins Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Men Division 1 - Pool C",
+    "division_short": "M-1-C",
+    "teams": [
+      {
+        "team_name": "The Fingringhoe Fiddlers",
+        "captain": "The Fingringhoe Fiddlers Captain"
+      },
+      {
+        "team_name": "OSNACK",
+        "captain": "OSNACK Captain"
+      },
+      {
+        "team_name": "Notts Bots",
+        "captain": "Notts Bots Captain"
+      },
+      {
+        "team_name": "Consensual Sets",
+        "captain": "Consensual Sets Captain"
+      },
+      {
+        "team_name": "GNG Bedford",
+        "captain": "GNG Bedford Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Men Division 2 - Pool A",
+    "division_short": "M-2-A",
+    "teams": [
+      {
+        "team_name": "Dad's Army",
+        "captain": "Dad's Army Captain"
+      },
+      {
+        "team_name": "One dip chip",
+        "captain": "One dip chip Captain"
+      },
+      {
+        "team_name": "Slops On Grass",
+        "captain": "Slops On Grass Captain"
+      },
+      {
+        "team_name": "Tip of the Iceberg",
+        "captain": "Tip of the Iceberg Captain"
+      },
+      {
+        "team_name": "VPS",
+        "captain": "VPS Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Men Division 2 - Pool B",
+    "division_short": "M-2-B",
+    "teams": [
+      {
+        "team_name": "Sky Ballers",
+        "captain": "Sky Ballers Captain"
+      },
+      {
+        "team_name": "The Shortbreads",
+        "captain": "The Shortbreads Captain"
+      },
+      {
+        "team_name": "Block Me Harder",
+        "captain": "Block Me Harder Captain"
+      },
+      {
+        "team_name": "No 'hit Sherlock",
+        "captain": "No 'hit Sherlock Captain"
+      },
+      {
+        "team_name": "Wembley Raccoons - Team 2",
+        "captain": "Wembley Raccoons - Team 2 Captain"
+      }
+    ]
+  },
+  {
+    "division_name": "Men Division 2 - Pool C",
+    "division_short": "M-2-C",
+    "teams": [
+      {
+        "team_name": "Volleybluds",
+        "captain": "Volleybluds Captain"
+      },
+      {
+        "team_name": "Adam's Grass Castles",
+        "captain": "Adam's Grass Castles Captain"
+      },
+      {
+        "team_name": "Smashy bashy",
+        "captain": "Smashy bashy Captain"
+      },
+      {
+        "team_name": "Unprotected sets",
+        "captain": "Unprotected sets Captain"
+      },
+      {
+        "team_name": "Oxford Templars",
+        "captain": "Oxford Templars Captain"
+      }
+    ]
+  }
+]
