@@ -39,3 +39,5 @@ Thumbs.db
 
 # Turbo
 .turbo
+
+data/security-keys.json
