@@ -1,0 +1,62 @@
+[
+  {
+    "match": 1,
+    "team_1": "Feta & Friends",
+    "team_2": "Hit Squad",
+    "referee": "Mulberries"
+  },
+  {
+    "match": 2,
+    "team_1": "Great Times",
+    "team_2": "All Stars",
+    "referee": "Feta & Friends"
+  },
+  {
+    "match": 3,
+    "team_1": "Hit Squad",
+    "team_2": "Mulberries",
+    "referee": "Great Times"
+  },
+  {
+    "match": 4,
+    "team_1": "All Stars",
+    "team_2": "Feta & Friends",
+    "referee": "Hit Squad"
+  },
+  {
+    "match": 5,
+    "team_1": "Mulberries",
+    "team_2": "Great Times",
+    "referee": "All Stars"
+  },
+  {
+    "match": 6,
+    "team_1": "Hit Squad",
+    "team_2": "All Stars",
+    "referee": "Mulberries"
+  },
+  {
+    "match": 7,
+    "team_1": "Feta & Friends",
+    "team_2": "Mulberries",
+    "referee": "Great Times"
+  },
+  {
+    "match": 8,
+    "team_1": "Hit Squad",
+    "team_2": "Great Times",
+    "referee": "All Stars"
+  },
+  {
+    "match": 9,
+    "team_1": "Mulberries",
+    "team_2": "All Stars",
+    "referee": "Feta & Friends"
+  },
+  {
+    "match": 10,
+    "team_1": "Feta & Friends",
+    "team_2": "Great Times",
+    "referee": "Hit Squad"
+  }
+]

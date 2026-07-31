@@ -1,191 +1,68 @@
 {
   "rulesGroups": [
     {
-      "heading": "General",
-      "description": "General conduct, officiating responsibilities, and score reporting rules.",
+      "heading": "All Matches",
+      "description": "Rules that apply to all matches.",
       "rules": [
         {
-          "html": "Everyone should encourage fair play and good sportsmanship."
+          "html": "Standard FIVB Indoor rules apply except as listed in the relevant pool rules."
         },
         {
-          "html": "Be respectful to other players, referees and officials."
+          "html": "No time-outs."
         },
         {
-          "html": "Please vacate the sports hall promptly at the end of the session."
-        },
-        {
-          "html": "Please make sure to accomplish your officiating duties assigning at least: the principal referee, the scorer and two line judges."
-        },
-        {
-          "html": "The first team acting as a referee for the day should bring a copy of the scoresheet provided on the website."
-        },
-        {
-          "html": "The officiating team is responsible to write down the score in the scoresheet provided."
-        },
-        {
-          "html": "The winner team is responsible to submit the game score using the app once the game is finished."
-        },
-        {
-          "html": "The last team refereeing should take a picture of the scoresheet and send it to the captains group to get a record of the scores as a backup."
-        },
-        {
-          "html": "All the scores of the day should be recorded and submitted as per the rules before 10:30pm at the latest."
-        },
-        {
-          "html": "<b>IMPORTANT:</b> Teams that fail to comply with refereeing duties, scorekeeping responsibilities, or the submission of match scores will be penalized by the deduction of <b>1 league point</b> per offence."
+          "html": "League points: <b>1 point for a win</b> and <b>0 points for a loss</b>."
         }
       ]
     },
     {
-      "heading": "Teams & Players",
-      "description": "Rules about team composition, eligibility, and borrowing players.",
+      "heading": "Pools of 5 - Mixed",
+      "description": "Additional rules for five-team Mixed pools.",
       "rules": [
         {
-          "html": "Each team must have 6 players on court all times."
+          "html": "All matches are best of 3 sets."
         },
         {
-          "html": "Each team is required to have at least 2 women on court at all times, regardless of their playing position."
+          "html": "First two sets: play to <b>21 points</b>, capped at <b>23</b>."
         },
         {
-          "html": "A team will forfeit their game should either they not have enough (female) players or they not have enough players on court (6 players), though they could still play for fun."
+          "html": "Third set: first to <b>11 points</b>. No win-by-two."
         },
         {
-          "html": "Teams can borrow a player from another team on game day under exceptional circumstances such as injuries or illnesses."
-        },
-        {
-          "html": "A player cannot play for more than one team, in case not following the rules, the teams where the player was playing will get 2 points deducted for each day."
-        },
-        {
-          "html": "Libero players will be allowed to serve if it is within the regular service rotation and it is needed to comply with the other rules."
+          "html": "Teams in Mixed divisions must have at least <b>THREE women</b> on court at all times."
         }
       ]
     },
     {
-      "heading": "Games",
-      "description": "Format and timing rules for matches and daily tiebreaks.",
+      "heading": "Pools of 5 - Men",
+      "description": "Additional rules for five-team Men's pools.",
       "rules": [
         {
-          "html": "6v6 timed games - please stick to the starting and ending times on the schedule."
+          "html": "All matches are best of 3 sets."
         },
         {
-          "html": "Normal volleyball rules apply."
+          "html": "First two sets: play to <b>25 points</b>, capped at <b>27</b>."
         },
         {
-          "html": "Teams can use different lineup for each set."
-        },
-        {
-          "html": "No limit of regular substitutions (A → B, B →A)."
-        },
-        {
-          "html": "Irregular substitutions (A → B, C →B) are not allowed."
-        },
-        {
-          "html": "Games will consist of:<br>04:00 min of warm-up<br>33:00 min of game (2 sets of 16:00 min each)<br>01:00 min to swap courts"
-        },
-        {
-          "html": "When the time is up, finish playing the point if a rally is in progress."
-        },
-        {
-          "html": "If the scores are level at the end of the game time, play ONE more point to decide the winner."
-        },
-        {
-          "html": "The tiebreaker in case teams having the same amount of points at the end of the day will be the best coefficient:<br><b>Coefficient = Points Scored / Points Against</b>"
+          "html": "Third set: play to <b>15 points</b>, capped at <b>17</b>."
         }
       ]
     },
     {
-      "heading": "Finals",
-      "description": "Qualification and tiebreak rules for finals week.",
+      "heading": "Pools of 4",
+      "description": "Additional rules for four-team pools.",
       "rules": [
         {
-          "html": "The 4 teams with the best overall of Total Points at the end of the 4th week will play the Division 1 final."
+          "html": "All matches are best of 3 sets."
         },
         {
-          "html": "The teams within the 5th to the 8th best overall of Total Points at the end of the 4th week will play the Division 2 final."
+          "html": "First two sets: play to <b>25 points</b>, win by <b>2 points</b>."
         },
         {
-          "html": "The teams within the 9th to the 12th best overall of Total Points at the end of the 4th week will play the Division 3 final."
+          "html": "Third set: play to <b>15 points</b>, capped at <b>19</b>."
         },
         {
-          "html": "The teams within the 13th to the 16th best overall of Total Points at the end of the 4th week will play the Division 4 final."
-        },
-        {
-          "html": "The tiebreaker for teams having the same amount of points at the end of the 4th week would be the times each team played Division 1, Division 2, Division 3 and Division 4."
-        },
-        {
-          "html": "If the tie persists after applying the previous criteria, then, the best coefficient will be applied:<br><b>Coefficient = Points Scored / Points Against</b>"
-        }
-      ]
-    },
-    {
-      "heading": "Scoring - Division 1",
-      "description": "Division Power scoring model for Division 1.",
-      "rules": [
-        {
-          "html": "Division 1 has <b>Division Power = 4</b>."
-        },
-        {
-          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
-        },
-        {
-          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
-        },
-        {
-          "html": "In Division 1 this means: <b>Win = 8</b>, <b>Close Loss = 4</b>, <b>Loss = 0</b>."
-        }
-      ]
-    },
-    {
-      "heading": "Scoring - Division 2",
-      "description": "Division Power scoring model for Division 2.",
-      "rules": [
-        {
-          "html": "Division 2 has <b>Division Power = 3</b>."
-        },
-        {
-          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
-        },
-        {
-          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
-        },
-        {
-          "html": "In Division 2 this means: <b>Win = 6</b>, <b>Close Loss = 3</b>, <b>Loss = 0</b>."
-        }
-      ]
-    },
-    {
-      "heading": "Scoring - Division 3",
-      "description": "Division Power scoring model for Division 3.",
-      "rules": [
-        {
-          "html": "Division 3 has <b>Division Power = 2</b>."
-        },
-        {
-          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
-        },
-        {
-          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
-        },
-        {
-          "html": "In Division 3 this means: <b>Win = 4</b>, <b>Close Loss = 2</b>, <b>Loss = 0</b>."
-        }
-      ]
-    },
-    {
-      "heading": "Scoring - Division 4",
-      "description": "Division Power scoring model for Division 4.",
-      "rules": [
-        {
-          "html": "Division 4 has <b>Division Power = 1</b>."
-        },
-        {
-          "html": "Base result points are: <b>Win = 2</b>, <b>Close Loss (within 10 points) = 1</b>, <b>Loss by more than 10 points = 0</b>."
-        },
-        {
-          "html": "League points for each game are calculated as: <b>Base Result Points × Division Power</b>."
-        },
-        {
-          "html": "In Division 4 this means: <b>Win = 2</b>, <b>Close Loss = 1</b>, <b>Loss = 0</b>."
+          "html": "Teams in Mixed divisions must have at least <b>THREE women</b> on court at all times."
         }
       ]
     }

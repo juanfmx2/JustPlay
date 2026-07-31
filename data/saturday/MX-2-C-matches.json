@@ -1,0 +1,38 @@
+[
+  {
+    "match": 1,
+    "team_1": "IS IT IN",
+    "team_2": "Block & Roll",
+    "referee": "Setsy 2.0"
+  },
+  {
+    "match": 2,
+    "team_1": "Setsy 2.0",
+    "team_2": "Crispy Pancakes",
+    "referee": "IS IT IN"
+  },
+  {
+    "match": 3,
+    "team_1": "Block & Roll",
+    "team_2": "Setsy 2.0",
+    "referee": "Crispy Pancakes"
+  },
+  {
+    "match": 4,
+    "team_1": "IS IT IN",
+    "team_2": "Crispy Pancakes",
+    "referee": "Block & Roll"
+  },
+  {
+    "match": 5,
+    "team_1": "Block & Roll",
+    "team_2": "Crispy Pancakes",
+    "referee": "Setsy 2.0"
+  },
+  {
+    "match": 6,
+    "team_1": "IS IT IN",
+    "team_2": "Setsy 2.0",
+    "referee": "Block & Roll"
+  }
+]

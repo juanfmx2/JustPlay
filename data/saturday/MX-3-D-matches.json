@@ -1,0 +1,62 @@
+[
+  {
+    "match": 1,
+    "team_1": "Southend platypus",
+    "team_2": "Hills Road x CVC Juniors",
+    "referee": "Friday Group"
+  },
+  {
+    "match": 2,
+    "team_1": "Chelmsford Ladies - W2",
+    "team_2": "Sugar & Spike Remix",
+    "referee": "Southend platypus"
+  },
+  {
+    "match": 3,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "Friday Group",
+    "referee": "Chelmsford Ladies - W2"
+  },
+  {
+    "match": 4,
+    "team_1": "Sugar & Spike Remix",
+    "team_2": "Southend platypus",
+    "referee": "Hills Road x CVC Juniors"
+  },
+  {
+    "match": 5,
+    "team_1": "Friday Group",
+    "team_2": "Chelmsford Ladies - W2",
+    "referee": "Sugar & Spike Remix"
+  },
+  {
+    "match": 6,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "Sugar & Spike Remix",
+    "referee": "Friday Group"
+  },
+  {
+    "match": 7,
+    "team_1": "Southend platypus",
+    "team_2": "Friday Group",
+    "referee": "Chelmsford Ladies - W2"
+  },
+  {
+    "match": 8,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "Chelmsford Ladies - W2",
+    "referee": "Sugar & Spike Remix"
+  },
+  {
+    "match": 9,
+    "team_1": "Friday Group",
+    "team_2": "Sugar & Spike Remix",
+    "referee": "Southend platypus"
+  },
+  {
+    "match": 10,
+    "team_1": "Southend platypus",
+    "team_2": "Chelmsford Ladies - W2",
+    "referee": "Hills Road x CVC Juniors"
+  }
+]

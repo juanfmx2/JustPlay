@@ -1,0 +1,38 @@
+[
+  {
+    "match": 1,
+    "team_1": "MSG",
+    "team_2": "Wembley Raccoons",
+    "referee": "Suck My Block"
+  },
+  {
+    "match": 2,
+    "team_1": "Suck My Block",
+    "team_2": "WE'VE GOT CRABBS!",
+    "referee": "MSG"
+  },
+  {
+    "match": 3,
+    "team_1": "Wembley Raccoons",
+    "team_2": "Suck My Block",
+    "referee": "WE'VE GOT CRABBS!"
+  },
+  {
+    "match": 4,
+    "team_1": "MSG",
+    "team_2": "WE'VE GOT CRABBS!",
+    "referee": "Wembley Raccoons"
+  },
+  {
+    "match": 5,
+    "team_1": "Wembley Raccoons",
+    "team_2": "WE'VE GOT CRABBS!",
+    "referee": "Suck My Block"
+  },
+  {
+    "match": 6,
+    "team_1": "MSG",
+    "team_2": "Suck My Block",
+    "referee": "Wembley Raccoons"
+  }
+]
