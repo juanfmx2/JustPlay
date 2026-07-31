@@ -152,8 +152,7 @@ function CompetitionDetailPage() {
   if (
     pathname.includes('/rules') ||
     pathname.includes('/stg/') ||
-    pathname.includes('/registered-teams') ||
-    pathname.includes('/total-standings')
+    pathname.includes('/registered-teams')
   ) {
     return <Outlet />
   }
@@ -204,16 +203,6 @@ function CompetitionDetailPage() {
             }}
           >
             Registered Teams
-          </Link>
-          <Link
-            className="btn btn-outline-secondary"
-            to="/org/$orgUrlSlug/competition/$competitionUrlSlug/total-standings"
-            params={{
-              orgUrlSlug: data.organization.urlSlug,
-              competitionUrlSlug: data.competition.urlSlug ?? '',
-            }}
-          >
-            Total Standings
           </Link>
         </div>
       </header>

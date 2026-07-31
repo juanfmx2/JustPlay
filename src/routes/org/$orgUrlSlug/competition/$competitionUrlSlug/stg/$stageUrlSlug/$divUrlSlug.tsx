@@ -969,13 +969,6 @@ function DivisionSchedulePage() {
         </div>
       </header>
 
-      <div className="alert alert-warning d-flex align-items-center gap-2 no-print" role="alert">
-        <span>
-          <span className="fw-semibold">Warning: </span>
-          The <b>Schedule below</b> is subject to change. Please wait for referees and previous game to finish.
-        </span>
-      </div>
-
       {data.division.games.length === 0 ? (
         <p className="text-body-secondary mb-0">No games scheduled for this division yet.</p>
       ) : (
