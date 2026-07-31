@@ -20,6 +20,7 @@ import { rankStandings } from '@/domain/standingsRanking'
 import { requireAdminPrincipal } from '@/server/auth'
 import { getSessionPrincipal } from '@/server/auth.server'
 import { PoolStandingsTable, type PoolStandingRow } from '@/components/PoolStandingsTable'
+import { StandingsLegend } from '@/components/StandingsLegend'
 
 type LoaderData = {
   organization: Organization | null
@@ -224,6 +225,8 @@ function DivisionStandingsPage() {
         </div>
       </header>
 
+      <StandingsLegend />
+
       <PoolStandingsTable
         rows={data.standingsRows}
         isAdmin={data.isAdmin}
@@ -231,10 +234,9 @@ function DivisionStandingsPage() {
         onSetTieBreakWinner={handleSetTieBreakWinner}
       />
 
-      {data.standingsRows.some((row) => row.isTied) ? (
+      {data.isAdmin && data.standingsRows.some((row) => row.isTied) ? (
         <p className="text-body-secondary small mt-2 mb-0">
-          Highlighted rows are tied on league points, sets coefficient, points coefficient, and points for - per the
-          rules, a coin toss decides the order.{data.isAdmin ? ' Use "Pick as winner" to record the result.' : ''}
+          Use "Break Tie" on a highlighted row to record the coin toss result.
         </p>
       ) : null}
     </section>

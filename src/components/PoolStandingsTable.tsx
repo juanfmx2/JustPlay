@@ -1,4 +1,4 @@
-import { TrophyFill } from 'react-bootstrap-icons'
+import { CheckCircleFill } from 'react-bootstrap-icons'
 import type { RankableStandingRow, RankedStandingRow } from '@/domain/standingsRanking'
 
 export type PoolStandingRow = RankedStandingRow<
@@ -75,7 +75,9 @@ export function PoolStandingsTable({ rows, isAdmin, pendingRowId, onSetTieBreakW
                 <td style={{ minWidth: '8rem', maxWidth: '16rem', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                   {row.teamName}
                   {hasBonus ? (
-                    <TrophyFill className="ms-2 text-warning" title="Admin tie-break winner" />
+                    <div className="small text-success d-flex align-items-center gap-1 mt-1">
+                      <CheckCircleFill /> Tie breaker decided with coinflip
+                    </div>
                   ) : null}
                 </td>
                 <td className="text-center">{played}</td>
@@ -97,7 +99,7 @@ export function PoolStandingsTable({ rows, isAdmin, pendingRowId, onSetTieBreakW
                         disabled={isPending}
                         onClick={() => onSetTieBreakWinner?.(hasBonus ? null : row.id, groupIds)}
                       >
-                        {hasBonus ? 'Undo' : 'Pick as winner'}
+                        {hasBonus ? 'Undo' : 'Break Tie'}
                       </button>
                     ) : (
                       <span className="text-body-secondary">--</span>

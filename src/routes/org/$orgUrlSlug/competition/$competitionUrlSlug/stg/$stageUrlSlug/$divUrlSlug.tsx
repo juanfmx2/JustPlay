@@ -255,16 +255,6 @@ export const Route = createFileRoute('/org/$orgUrlSlug/competition/$competitionU
   component: DivisionSchedulePage,
 })
 
-function formatTime(date: Date | null): string {
-  if (!date) return '--:--'
-  return new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Europe/London',
-  }).format(date)
-}
-
 function formatDate(date: Date | null): string {
   if (!date) return '--'
   return new Intl.DateTimeFormat('en-GB', {
@@ -293,6 +283,7 @@ const calculateIsInCooldown = (lastUpdatedMs:number|null, nowMs: number): boolea
 
 interface GameCardProps {
   game: any
+  matchNumber: number
   principal: AuthPrincipal | null
   teamAPaletteClass: string
   teamBPaletteClass: string
@@ -303,7 +294,7 @@ interface GameCardProps {
   onSubmitGameId: (id: number | null) => void
 }
 
-function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingGameId, onSubmitGameId }: GameCardProps) {
+function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingGameId, onSubmitGameId }: GameCardProps) {
   const sortedGameSets = React.useMemo(
     () =>
       [...game.gameSets].sort((a, b) => {
@@ -393,16 +384,13 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
 
   const setStates = sortedGameSets.map((set) => {
     const now = new Date()
-    const setEnded = Boolean(set?.endTime && new Date(set.endTime) < now)
-    const dayEnded = Boolean(
-      set?.endTime && new Date(set.endTime).setHours(22, 30, 0, 0) < now.getTime(),
-    )
+    const setDate = set?.startTime ?? set?.endTime ?? null
+    const isToday = sameDay(setDate, now)
     const lastUpdatedMs = lastUpdatedBySetId[set.id] ?? null
     const isInCooldown = calculateIsInCooldown(lastUpdatedMs, nowMs)
     return {
       set,
-      setEnded,
-      dayEnded,
+      isToday,
       isInCooldown,
       scores: scoresBySetId[set.id] ?? { scoreA: 0, scoreB: 0 },
     }
@@ -430,8 +418,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
   const activeSetStates = setStates.filter((_, index) => index < 2 || showThirdSet)
 
   const hasAnyCooldown = activeSetStates.some((state) => state.isInCooldown)
-  const hasAnyDayLock = activeSetStates.some((state) => state.dayEnded)
-  const allSetsEnded = activeSetStates.every((state) => state.setEnded)
+  const allSetsEnded = activeSetStates.every((state) => state.isToday)
   const allActiveSetsSaved = activeSetStates.every((state) => {
     const saved = savedScoresBySetId[state.set.id]
     return saved !== undefined && saved.scoreA === state.scores.scoreA && saved.scoreB === state.scores.scoreB
@@ -457,7 +444,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
 
   const handleSaveScores = async () => {
     if (!canEditScores || isSavingThisGame) return
-    if (!isAdmin && (!allSetsEnded || hasAnyDayLock)) return
+    if (!isAdmin && !allSetsEnded) return
 
     if (isFinished && isAdmin) {
       const confirmed = window.confirm(
@@ -587,15 +574,13 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
           : 'Save Changes'
         : !allSetsEnded && !isAdmin
           ? 'Please Wait'
-          : hasAnyDayLock && !isAdmin
-            ? 'Locked after 22:30'
-            : cooldownBlocksSave
+          : cooldownBlocksSave
               ? 'Updated Successfully'
               : isSavingThisGame
                 ? 'Saving...'
                 : 'Save'
 
-  const refereeTimeGateBlocked = !isAdmin && (!allSetsEnded || hasAnyDayLock)
+  const refereeTimeGateBlocked = !isAdmin && !allSetsEnded
   const saveButtonDisabled =
     !canEditScores ||
     isSavingThisGame ||
@@ -617,8 +602,8 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
           className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
         >
           <div className={`division-schedule-time-slot`}>
-            <div className="small text-body-secondary text-uppercase division-schedule-time-label">Start</div>
-            <div className="fw-semibold division-schedule-time-value">{formatTime(game.startTime)}</div>
+            <div className="small text-body-secondary text-uppercase division-schedule-time-label">Match</div>
+            <div className="fw-semibold division-schedule-time-value">{matchNumber}</div>
           </div>
             
         </aside>
@@ -635,7 +620,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
               className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamAPaletteClass}`}
             >
               <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamA.name}</div>
-                {activeSetStates.map(({ set, dayEnded, scores }, setIndex) => {
+                {activeSetStates.map(({ set, isToday, scores }, setIndex) => {
                 const savedWinner = savedWinnerBySetId[set.id]
                 const teamAHighlightClass =
                   savedWinner === 'A'
@@ -652,7 +637,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
                       onChange={(e) => updateSetScore(set.id, 'A', e.target.value)}
                       className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamAHighlightClass}`}
                       aria-label={`Set ${setIndex + 1} score for ${game.teamA.name}`}
-                      disabled={dayEnded || !canEditScores}
+                      disabled={!isToday || !canEditScores}
                     />
                 </React.Fragment>
               })}
@@ -662,7 +647,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
               className={`badge text-center py-2 d-flex flex-column h-100 division-schedule-team-badge ${teamBPaletteClass}`}
             >
               <div className="flex-grow-1 d-flex align-items-center justify-content-center">{game.teamB.name}</div>
-               {activeSetStates.map(({ set, dayEnded, scores }, setIndex) => {
+               {activeSetStates.map(({ set, isToday, scores }, setIndex) => {
                 const savedWinner = savedWinnerBySetId[set.id]
                 const teamBHighlightClass =
                   savedWinner === 'B'
@@ -679,7 +664,7 @@ function GameCard({ game, principal, teamAPaletteClass, teamBPaletteClass, refTe
                       onChange={(e) => updateSetScore(set.id, 'B', e.target.value)}
                       className={`form-control form-control-sm mt-2 division-schedule-score-input text-center fs-5 ${teamBHighlightClass}`}
                       aria-label={`Set ${setIndex + 1} score for ${game.teamB.name}`}
-                      disabled={dayEnded || !canEditScores}
+                      disabled={!isToday || !canEditScores}
                     />
                 </React.Fragment>
               })}
@@ -992,10 +977,11 @@ function DivisionSchedulePage() {
         <p className="text-body-secondary mb-0">No games scheduled for this division yet.</p>
       ) : (
         <div className="d-flex flex-column gap-3">
-          {data.division.games.map((game) => (
+          {data.division.games.map((game, index) => (
             <GameCard
               key={game.id}
               game={game}
+              matchNumber={index + 1}
               principal={data.principal}
               teamAPaletteClass={paletteClassByTeamId.get(game.teamA.id) ?? 'division-schedule-palette-0'}
               teamBPaletteClass={paletteClassByTeamId.get(game.teamB.id) ?? 'division-schedule-palette-1'}

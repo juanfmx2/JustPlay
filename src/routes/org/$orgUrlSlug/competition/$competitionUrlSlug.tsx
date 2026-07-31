@@ -325,7 +325,7 @@ function CompetitionDetailPage() {
               </span>
               <span>{stage.name}</span>
               <Link
-                className="btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y"
+                className="btn btn-outline-secondary btn-sm d-none d-md-inline-flex position-absolute end-0 top-50 translate-middle-y"
                 to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
                 params={{
                   orgUrlSlug: data.organization.urlSlug,
@@ -337,6 +337,19 @@ function CompetitionDetailPage() {
                 All Standings
               </Link>
             </summary>
+            <div className="d-md-none d-flex justify-content-center mt-2">
+              <Link
+                className="btn btn-outline-secondary btn-sm"
+                to="/org/$orgUrlSlug/competition/$competitionUrlSlug/stg/$stageUrlSlug/standings/all"
+                params={{
+                  orgUrlSlug: data.organization.urlSlug,
+                  competitionUrlSlug: data.competition.urlSlug ?? '',
+                  stageUrlSlug: stage.urlSlug ?? '',
+                }}
+              >
+                All Standings
+              </Link>
+            </div>
             {stageContent}
           </details>
           </div>

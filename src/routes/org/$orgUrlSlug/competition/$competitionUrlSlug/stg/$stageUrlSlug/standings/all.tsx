@@ -20,6 +20,7 @@ import { splitDivisionName, slugifyGroupTitle } from '@/domain/divisionGrouping'
 import { requireAdminPrincipal } from '@/server/auth'
 import { getSessionPrincipal } from '@/server/auth.server'
 import { PoolStandingsTable, type PoolStandingRow } from '@/components/PoolStandingsTable'
+import { StandingsLegend } from '@/components/StandingsLegend'
 
 type PoolStandings = {
   id: number
@@ -253,6 +254,8 @@ function AllStandingsPage() {
           </Link>
         </div>
       </header>
+
+      <StandingsLegend />
 
       {data.groupStandings.length === 0 ? (
         <p className="text-body-secondary mb-0">No divisions found for this stage.</p>
