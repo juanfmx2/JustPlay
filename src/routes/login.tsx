@@ -1,28 +1,37 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { findPrincipalByToken, getSessionPrincipal, setSessionPrincipal, clearSessionPrincipal } from '@/server/auth'
+import {
+  findPrincipalByToken,
+  getSessionPrincipal,
+  setSessionPrincipal,
+  clearSessionPrincipal,
+} from '@/server/auth.server'
+import { COMPETITION_PATH } from '@/lib/routePaths'
 
-const COMPETITION_PATH = '/org/cvc/competition/cvc-grass-2026'
+type LoginOutcome =
+  | { outcome: 'success'; principalType: 'admin' | 'team' }
+  | { outcome: 'switched' }
+  | { outcome: 'invalid' }
 
 const loginWithToken = createServerFn({ method: 'GET' })
   .inputValidator((token: string) => token)
-  .handler(async ({ data: token }): Promise<'success' | 'switched' | 'invalid'> => {
+  .handler(async ({ data: token }): Promise<LoginOutcome> => {
     const principal = findPrincipalByToken(token)
 
     if (!principal) {
-      return 'invalid'
+      return { outcome: 'invalid' }
     }
 
     const existing = await getSessionPrincipal()
 
     if (existing && (existing.type !== principal.type || existing.name !== principal.name)) {
       await clearSessionPrincipal()
-      return 'switched'
+      return { outcome: 'switched' }
     }
 
     await setSessionPrincipal(principal)
-    return 'success'
+    return { outcome: 'success', principalType: principal.type }
   })
 
 export const Route = createFileRoute('/login')({
@@ -35,9 +44,13 @@ export const Route = createFileRoute('/login')({
       return { status: 'missing' as const }
     }
 
-    const outcome = await loginWithToken({ data: deps.authToken })
+    const result = await loginWithToken({ data: deps.authToken })
 
-    if (outcome === 'success') {
+    if (result.outcome === 'success') {
+      if (result.principalType === 'admin') {
+        throw redirect({ to: '/admins', reloadDocument: true })
+      }
+
       throw redirect({
         to: '/org/$orgUrlSlug/competition/$competitionUrlSlug',
         params: { orgUrlSlug: 'cvc', competitionUrlSlug: 'cvc-grass-2026' },
@@ -45,7 +58,7 @@ export const Route = createFileRoute('/login')({
       })
     }
 
-    if (outcome === 'switched') {
+    if (result.outcome === 'switched') {
       throw redirect({ to: '/logout-exit', reloadDocument: true })
     }
 

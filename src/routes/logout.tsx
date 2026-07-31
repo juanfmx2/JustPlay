@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { clearSessionPrincipal } from '@/server/auth'
+import { clearSessionPrincipal } from '@/server/auth.server'
 
 const logoutSession = createServerFn({ method: 'GET' }).handler(async () => {
   await clearSessionPrincipal()

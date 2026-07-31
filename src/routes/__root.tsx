@@ -9,7 +9,7 @@ import {
 import { createServerFn } from '@tanstack/react-start'
 import { ThemeProvider } from '../hooks/ThemeContextProvider'
 import { NavBar } from '../components/NavBar'
-import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth'
+import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth.server'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../styles/styles.css'
 

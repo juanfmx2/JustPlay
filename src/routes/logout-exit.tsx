@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-const COMPETITION_PATH = '/org/cvc/competition/cvc-grass-2026'
+import { COMPETITION_PATH } from '@/lib/routePaths'
 
 export const Route = createFileRoute('/logout-exit')({
   component: LogoutExitPage,
