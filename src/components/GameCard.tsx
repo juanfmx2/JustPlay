@@ -3,33 +3,33 @@
 
 // function GameCard({game}: {game: Game}) {
 //     return (
-//         <article key={game.id} className="spring-league-game-card">
-//         <header className="spring-league-game-header">
+//         <article key={game.id} className="just-play-game-card">
+//         <header className="just-play-game-header">
 //             <span className="fw-semibold">{game.start} - {game.end}</span>
 //             <span className="small text-body-secondary">{game.id.toUpperCase()}</span>
 //         </header>
 
-//         <div className="spring-league-game-row">
+//         <div className="just-play-game-row">
 //             <span className="small text-body-secondary">Team A</span>
 //             <TeamBadge teamLabel={game.teamALabel} team={game.teamA} />
 //         </div>
 
-//         <div className="spring-league-game-row">
+//         <div className="just-play-game-row">
 //             <span className="small text-body-secondary">Team B</span>
 //             <TeamBadge teamLabel={game.teamBLabel} team={game.teamB} />
 //         </div>
 
-//         <div className="spring-league-game-row">
+//         <div className="just-play-game-row">
 //             <span className="small text-body-secondary">Ref</span>
 //             <TeamBadge teamLabel={game.refLabel} team={game.ref} />
 //         </div>
 
-//         <div className="spring-league-score-grid">
-//             <label className="spring-league-score-field">
+//         <div className="just-play-score-grid">
+//             <label className="just-play-score-field">
 //             <span className="small text-body-secondary">Score A</span>
 //             <input
 //                 aria-label={`${division.division_short} ${game.id} score for team A`}
-//                 className="form-control form-control-sm spring-league-score-input"
+//                 className="form-control form-control-sm just-play-score-input"
 //                 type="number"
 //                 min={0}
 //                 value={scores[scoreKey]?.teamA ?? ''}
@@ -37,11 +37,11 @@
 //             />
 //             </label>
 
-//             <label className="spring-league-score-field">
+//             <label className="just-play-score-field">
 //             <span className="small text-body-secondary">Score B</span>
 //             <input
 //                 aria-label={`${division.division_short} ${game.id} score for team B`}
-//                 className="form-control form-control-sm spring-league-score-input"
+//                 className="form-control form-control-sm just-play-score-input"
 //                 type="number"
 //                 min={0}
 //                 value={scores[scoreKey]?.teamB ?? ''}
@@ -53,4 +53,4 @@
 //     )
 // }
 
-// export default SpringLeague
+// export default 

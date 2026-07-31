@@ -10,10 +10,10 @@ if (!cvcOrg || !cvcOrg.id) {
     throw new Error('CVC organization not found')
 }
 const slComp = await db.query.competitions.findFirst({
-    where: and(eq(competitions.organizationId, cvcOrg.id), eq(competitions.urlSlug, 'spring-league-2026'))
+    where: and(eq(competitions.organizationId, cvcOrg.id), eq(competitions.urlSlug, 'cvc-grass-2026'))
 })
 if (!slComp || !slComp.id) {
-    throw new Error('Spring League 2026 competition not found')
+    throw new Error('CVC Grass 2026 competition not found')
 }
 
 const stage1 = await db.query.stages.findFirst({

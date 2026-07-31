@@ -12,7 +12,7 @@ import { games, gameSets } from '../../src/schema/game'
 import { standings } from '../../src/schema/standings'
 import { courts, venues } from '../../src/schema/venue'
 
-const COMPETITION_SLUG = 'spring-league-2026'
+const COMPETITION_SLUG = 'cvc-grass-2026'
 
 const START_TIME = '18:00'
 const END_TIME = '22:00'
@@ -134,7 +134,7 @@ async function getRegistrationStageOrThrow(competitionId: number, registrationSt
 			})
 
 	if (!stage) {
-		throw new Error('Registration stage not found for Spring League 2026.')
+		throw new Error('Registration stage not found for CVC Grass 2026.')
 	}
 
 	return stage
@@ -154,7 +154,7 @@ async function getOrCreateWeek1Stage(competitionId: number) {
 		.values({
 			competitionId,
 			name: 'Week 1',
-			description: 'Spring League 2026 - Week 1 fixtures',
+			description: 'CVC Grass 2026 - Week 1 fixtures',
 			urlSlug: 'week-1',
 			type: 'PLAY',
 		})

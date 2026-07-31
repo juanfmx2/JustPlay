@@ -46,8 +46,8 @@ export function NavBar() {
                 </a>
                 </li>
                 <li className="nav-item">
-                <a className="nav-link" href="/org/cvc/competition/spring-league-2026">
-                    Spring League
+                <a className="nav-link" href="/org/cvc/competition/cvc-grass-2026">
+                    CVC Grass
                 </a>
                 </li>
             </ul>

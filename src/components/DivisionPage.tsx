@@ -59,7 +59,7 @@ function buildRoundRobin(teams: string[]): Match[] {
   })
 }
 
-export function SpringLeagueDivisionPage({ divisionName, dayAndLocation, teamStart }: DivisionPageProps) {
+export function DivisionPage({ divisionName, dayAndLocation, teamStart }: DivisionPageProps) {
   const [selectedWeek, setSelectedWeek] = useState(1)
   const teams = useMemo(() => buildTeams(teamStart), [teamStart])
   const matches = useMemo(() => buildRoundRobin(teams), [teams])
@@ -69,7 +69,7 @@ export function SpringLeagueDivisionPage({ divisionName, dayAndLocation, teamSta
       <header className="mb-4">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h1 className="h2 mb-0">{divisionName}</h1>
-          <Link to="/spring-league" className="btn btn-outline-secondary btn-sm">
+          <Link to="/cvc-grass" className="btn btn-outline-secondary btn-sm">
             Back to Schedule
           </Link>
         </div>

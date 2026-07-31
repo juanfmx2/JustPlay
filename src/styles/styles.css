@@ -532,27 +532,27 @@ body {
   }
 }
 
-.spring-league-page .nav-tabs {
+.just-play-page .nav-tabs {
   border-bottom-color: color-mix(in srgb, var(--color-border-soft) 78%, transparent);
 }
 
-.spring-league-page .nav-tabs .nav-link {
+.just-play-page .nav-tabs .nav-link {
   color: var(--color-text-muted);
 }
 
-.spring-league-page .nav-tabs .nav-link.active {
+.just-play-page .nav-tabs .nav-link.active {
   color: var(--color-text-strong);
   background-color: color-mix(in srgb, var(--color-accent-pale) 60%, var(--bs-card-bg));
   border-color: color-mix(in srgb, var(--color-border-soft) 75%, transparent);
   border-bottom-color: color-mix(in srgb, var(--color-accent-pale) 80%, var(--bs-card-bg));
 }
 
-.spring-league-page .spring-league-schedule-stack {
+.just-play-page .just-play-schedule-stack {
   display: grid;
   gap: 0.75rem;
 }
 
-.spring-league-page .spring-league-special-block {
+.just-play-page .just-play-special-block {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -563,7 +563,7 @@ body {
   padding: 0.7rem 0.85rem;
 }
 
-.spring-league-page .spring-league-match-card {
+.just-play-page .just-play-match-card {
   border: 1px solid color-mix(in srgb, var(--color-border-soft) 72%, transparent);
   background:
     linear-gradient(
@@ -577,32 +577,32 @@ body {
   gap: 0.6rem;
 }
 
-.spring-league-page .spring-league-match-header {
+.just-play-page .just-play-match-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.6rem;
 }
 
-.spring-league-page .spring-league-match-row {
+.just-play-page .just-play-match-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.6rem;
 }
 
-.spring-league-page .spring-league-score-grid {
+.just-play-page .just-play-score-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
-.spring-league-page .spring-league-score-field {
+.just-play-page .just-play-score-field {
   display: grid;
   gap: 0.25rem;
 }
 
-.spring-league-page .spring-league-team-pill {
+.just-play-page .just-play-team-pill {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
@@ -610,15 +610,15 @@ body {
   text-align: left;
 }
 
-.spring-league-page .spring-league-score-input {
+.just-play-page .just-play-score-input {
   width: 100%;
   text-align: center;
   font-weight: 600;
 }
 
 @media (max-width: 575.98px) {
-  .spring-league-page .spring-league-special-block,
-  .spring-league-page .spring-league-match-row {
+  .just-play-page .just-play-special-block,
+  .just-play-page .just-play-match-row {
     flex-direction: column;
     align-items: flex-start;
   }

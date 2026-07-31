@@ -10,7 +10,7 @@ import { organizations } from '../../src/schema/organization'
 import { teams } from '../../src/schema/team'
 import { courts, venueBookings, venues } from '../../src/schema/venue'
 
-type SpringLeagueDivision = {
+type CVCGrassDivision = {
 	division_name: string
 	division_short: string
 	teams: Array<{
@@ -19,7 +19,7 @@ type SpringLeagueDivision = {
 	}>
 }
 
-type SpringLeagueRules = {
+type CVCGrassRules = {
 	rulesGroups: Array<{
 		heading: string
 		description: string
@@ -30,7 +30,7 @@ type SpringLeagueRules = {
 }
 
 const ORGANIZATION_SLUG = 'cvc'
-const COMPETITION_SLUG = 'spring-league-2026'
+const COMPETITION_SLUG = 'cvc-grass-2026'
 const TOTAL_WEEKS = 5
 
 function slugify(input: string): string {
@@ -76,8 +76,8 @@ async function getOrCreateCompetition(organizationId: number) {
 		.insert(competitions)
 		.values({
 			organizationId,
-			name: 'Spring League 2026',
-			description: 'Spring League 2026 by Cambridge Volleyball Club',
+			name: 'CVC Grass 2026',
+			description: 'CVC Grass 2026 by Cambridge Volleyball Club',
 			type: 'SEASON',
 			format: 'League',
 			urlSlug: COMPETITION_SLUG,
@@ -101,7 +101,7 @@ async function getOrCreateRegistrationStage(competitionId: number) {
 		.values({
 			competitionId,
 			name: 'Registration',
-			description: 'Registration stage for Spring League 2026',
+			description: 'Registration stage for CVC Grass 2026',
 			urlSlug: 'registration',
 			type: 'REGISTRATION',
 		})
@@ -112,7 +112,7 @@ async function getOrCreateRegistrationStage(competitionId: number) {
 
 async function upsertDivisionsAndTeams(
 	stageId: number,
-	data: SpringLeagueDivision[],
+	data: CVCGrassDivision[],
 	divisionType: 'MEN' | 'MIXED',
 ) {
 	let loadedTeams = 0
@@ -133,7 +133,7 @@ async function upsertDivisionsAndTeams(
 						.set({
 							stageId,
 							name: divisionEntry.division_name,
-							description: `Spring League 2026 - ${divisionEntry.division_short}`,
+							description: `CVC Grass 2026 - ${divisionEntry.division_short}`,
 							level: divisionEntry.division_short,
 							type: divisionType,
 							urlSlug: divisionSlug,
@@ -147,7 +147,7 @@ async function upsertDivisionsAndTeams(
 						.values({
 							stageId,
 							name: divisionEntry.division_name,
-							description: `Spring League 2026 - ${divisionEntry.division_short}`,
+							description: `CVC Grass 2026 - ${divisionEntry.division_short}`,
 							level: divisionEntry.division_short,
 							type: divisionType,
 							urlSlug: divisionSlug,
@@ -259,12 +259,12 @@ async function getOrCreateBooking(competitionId: number, venueId: number, startT
 	return true
 }
 
-async function upsertSpringLeagueVenuesAndBookings(competitionId: number) {
+async function upsertCVCGrassVenuesAndBookings(competitionId: number) {
 	const ncaVenue = await getOrCreateVenue(
 		'North Cambridge Academy (NCA)',
-		'Weekly Spring League venue',
+		'Weekly CVC Grass venue',
 	)
-	const perseVenue = await getOrCreateVenue('The Perse', 'Weekly Spring League venue')
+	const perseVenue = await getOrCreateVenue('The Perse', 'Weekly CVC Grass venue')
 
 	await getOrCreateCourt(ncaVenue.id, 'Sports Hall')
 	await getOrCreateCourt(perseVenue.id, 'Sports Hall A')
@@ -299,7 +299,7 @@ async function upsertSpringLeagueVenuesAndBookings(competitionId: number) {
 	}
 }
 
-async function upsertSpringLeagueRules(competitionId: number, rulesData: SpringLeagueRules) {
+async function upsertCVCGrassRules(competitionId: number, rulesData: CVCGrassRules) {
 	let loadedGroups = 0
 	let loadedRules = 0
 
@@ -352,9 +352,9 @@ async function upsertSpringLeagueRules(competitionId: number, rulesData: SpringL
 }
 
 async function run() {
-	const menDivisions = menDivisionsData as SpringLeagueDivision[]
-	const mixedDivisions = mixedDivisionsData as SpringLeagueDivision[]
-	const rulesData = rulesDataJson as SpringLeagueRules
+	const menDivisions = menDivisionsData as CVCGrassDivision[]
+	const mixedDivisions = mixedDivisionsData as CVCGrassDivision[]
+	const rulesData = rulesDataJson as CVCGrassRules
 
 	const organization = await getOrCreateOrganization()
 	const competition = await getOrCreateCompetition(organization.id)
@@ -376,11 +376,11 @@ async function run() {
 		'MIXED',
 	)
 	const loadedTeams = loadedMenTeams + loadedMixedTeams
-	const bookingsResult = await upsertSpringLeagueVenuesAndBookings(competition.id)
-	const rulesResult = await upsertSpringLeagueRules(competition.id, rulesData)
+	const bookingsResult = await upsertCVCGrassVenuesAndBookings(competition.id)
+	const rulesResult = await upsertCVCGrassRules(competition.id, rulesData)
 
 	console.log(
-		`Loaded Spring League data: org=${organization.urlSlug}, competition=${competition.urlSlug}, stage=${registrationStage.type}, teams=${loadedTeams}, bookings=${bookingsResult.totalExpected} (new ${bookingsResult.createdBookings}), ruleGroups=${rulesResult.loadedGroups}, rules=${rulesResult.loadedRules}`,
+		`Loaded CVC Grass data: org=${organization.urlSlug}, competition=${competition.urlSlug}, stage=${registrationStage.type}, teams=${loadedTeams}, bookings=${bookingsResult.totalExpected} (new ${bookingsResult.createdBookings}), ruleGroups=${rulesResult.loadedGroups}, rules=${rulesResult.loadedRules}`,
 	)
 }
 
