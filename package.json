@@ -20,7 +20,8 @@
     "db:drop-tables": "pnpm tsx src-util/dropTables.ts",
     "db:bkp": "pnpm tsx src-util/dbBackup.ts",
     "db:restore": "pnpm tsx src-util/dbRestore.ts",
-    "db:gen-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/generateAll.ts"
+    "db:gen-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/generateAll.ts",
+    "calc:standings-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/recalculateStageStandings.ts"
   },
   "keywords": [],
   "author": "",

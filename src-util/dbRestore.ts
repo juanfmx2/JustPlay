@@ -14,6 +14,8 @@ type BackupFile = {
   tables: Record<string, Array<Record<string, unknown>>>
 }
 
+type LegacyBackupFile = Record<string, Array<Record<string, unknown>>>
+
 function quoteIdentifier(identifier: string): string {
   return `"${identifier.replace(/"/g, '""')}"`
 }
@@ -32,10 +34,20 @@ async function insertRowsInBatches(
   client: PoolClient,
   tableName: string,
   rows: Array<Record<string, unknown>>,
+  tableColumns: string[],
 ): Promise<void> {
   if (rows.length === 0) return
 
-  const columns = Object.keys(rows[0])
+  const rowColumns = new Set(rows.flatMap((row) => Object.keys(row)))
+  const columns = tableColumns.filter((columnName) => rowColumns.has(columnName))
+
+  const skippedColumns = [...rowColumns].filter((columnName) => !tableColumns.includes(columnName))
+  if (skippedColumns.length > 0) {
+    console.warn(
+      `Table ${tableName}: ignoring ${skippedColumns.length} backup column(s) not in current schema: ${skippedColumns.join(', ')}`,
+    )
+  }
+
   if (columns.length === 0) return
 
   for (let index = 0; index < rows.length; index += INSERT_BATCH_SIZE) {
@@ -44,6 +56,27 @@ async function insertRowsInBatches(
     const params = batch.flatMap((row) => columns.map((column) => row[column] ?? null))
     await client.query(query, params)
   }
+}
+
+function normalizeBackupPayload(parsed: unknown): BackupFile {
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error(`Invalid backup file format at ${BACKUP_FILE_PATH}`)
+  }
+
+  if ('tables' in parsed && typeof (parsed as BackupFile).tables === 'object') {
+    return parsed as BackupFile
+  }
+
+  // Backward compatibility: support backups where the top-level object is just { tableName: rows[] }.
+  const legacy = parsed as LegacyBackupFile
+  const looksLikeLegacy = Object.values(legacy).every((value) => Array.isArray(value))
+  if (looksLikeLegacy) {
+    return {
+      tables: legacy,
+    }
+  }
+
+  throw new Error(`Invalid backup file format at ${BACKUP_FILE_PATH}`)
 }
 
 async function resetSerialSequences(client: PoolClient, tableNames: string[]): Promise<void> {
@@ -90,11 +123,7 @@ async function main() {
   }
 
   const fileText = await readFile(BACKUP_FILE_PATH, 'utf8')
-  const parsed = JSON.parse(fileText) as BackupFile
-
-  if (!parsed || typeof parsed !== 'object' || !parsed.tables || typeof parsed.tables !== 'object') {
-    throw new Error(`Invalid backup file format at ${BACKUP_FILE_PATH}`)
-  }
+  const parsed = normalizeBackupPayload(JSON.parse(fileText))
 
   const pool = new Pool({ connectionString })
   const client = await pool.connect()
@@ -112,6 +141,22 @@ async function main() {
 
     const existingTableNames = existingTablesResult.rows.map((row) => row.table_name)
     const backupTableNames = Object.keys(parsed.tables)
+
+    const tableColumnsResult = await client.query<{ table_name: string; column_name: string }>(
+      `
+      SELECT table_name, column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position;
+      `,
+    )
+
+    const columnsByTableName = new Map<string, string[]>()
+    for (const row of tableColumnsResult.rows) {
+      const columns = columnsByTableName.get(row.table_name) ?? []
+      columns.push(row.column_name)
+      columnsByTableName.set(row.table_name, columns)
+    }
 
     const unknownBackupTables = backupTableNames.filter((tableName) => !existingTableNames.includes(tableName))
     if (unknownBackupTables.length > 0) {
@@ -141,17 +186,28 @@ async function main() {
       let insertedInThisPass = 0
 
       for (const [tableName, rows] of [...pending.entries()]) {
+        const savepointName = `sp_restore_${tableName.replace(/[^a-zA-Z0-9_]/g, '_')}`
         try {
-          await insertRowsInBatches(client, tableName, rows)
+          await client.query(`SAVEPOINT ${quoteIdentifier(savepointName)};`)
+          await insertRowsInBatches(client, tableName, rows, columnsByTableName.get(tableName) ?? [])
+          await client.query(`RELEASE SAVEPOINT ${quoteIdentifier(savepointName)};`)
           pending.delete(tableName)
           insertedInThisPass += 1
           console.log(`Restored ${tableName}: ${rows.length} rows`)
         } catch (error) {
-          const pgError = error as { code?: string }
+          const pgError = error as { code?: string; message?: string }
           if (pgError?.code === '23503') {
+            await client.query(`ROLLBACK TO SAVEPOINT ${quoteIdentifier(savepointName)};`)
+            await client.query(`RELEASE SAVEPOINT ${quoteIdentifier(savepointName)};`)
             continue
           }
-          throw error
+
+          await client.query(`ROLLBACK TO SAVEPOINT ${quoteIdentifier(savepointName)};`)
+          await client.query(`RELEASE SAVEPOINT ${quoteIdentifier(savepointName)};`)
+
+          throw new Error(
+            `Restore failed while inserting table ${tableName}${pgError?.code ? ` [${pgError.code}]` : ''}: ${pgError?.message ?? 'Unknown database error'}`,
+          )
         }
       }
 

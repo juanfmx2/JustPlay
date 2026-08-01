@@ -110,16 +110,27 @@ function computeTeamStandingSummaryFromGames(
 
     pointsFor += teamScore
     pointsAgainst += opponentScore
-    if (teamScore > opponentScore) gamesWon += 1
-    else if (teamScore < opponentScore) gamesLost += 1
 
     const progress = computeMatchProgress(game.gameSets)
+    let teamSetWins = 0
+    let opponentSetWins = 0
     for (const set of progress.relevantSets) {
       const winner = setWinner(set)
       if (!winner) continue
       const teamWonSet = (winner === 'A') === teamIsA
-      if (teamWonSet) setsFor += 1
-      else setsAgainst += 1
+      if (teamWonSet) {
+        setsFor += 1
+        teamSetWins += 1
+      } else {
+        setsAgainst += 1
+        opponentSetWins += 1
+      }
+    }
+
+    // Match W/L is determined by sets won in the match, not by aggregate points.
+    if (progress.isComplete) {
+      if (teamSetWins > opponentSetWins) gamesWon += 1
+      else if (teamSetWins < opponentSetWins) gamesLost += 1
     }
   }
 
