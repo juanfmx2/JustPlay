@@ -41,4 +41,5 @@ Thumbs.db
 .turbo
 
 data/security-keys.json
+data/db/bkp/db.json
 drizzle/
