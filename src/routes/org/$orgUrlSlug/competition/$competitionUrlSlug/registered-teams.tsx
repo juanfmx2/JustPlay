@@ -5,8 +5,10 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db/client'
 import { competitions, divisions, organizations, stages } from '@/schema'
 
+const POOL_LABEL_PATTERN = '(Pool\\s+[A-Za-z0-9]+|[A-Za-z0-9]+(?:\\s+[A-Za-z0-9]+)*\\s+Pool)'
+
 function splitDivisionName(name: string): { groupTitle: string; poolLabel: string } {
-  const match = name.match(/^(.*?)\s*-\s*(Pool\s+[A-Za-z0-9]+)$/i)
+  const match = name.match(new RegExp(`^(.*?)\\s*-\\s*(${POOL_LABEL_PATTERN})$`, 'i'))
 
   if (!match) {
     return {
