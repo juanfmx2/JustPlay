@@ -73,6 +73,11 @@ const TEAM_PASTEL_PALETTE: TeamPalette[] = [
 ]
 
 const PALETTE_CLASS_BY_INDEX = TEAM_PASTEL_PALETTE.map((_, index) => `division-schedule-palette-${index}`)
+const WITHDRAWN_TEAM_NAME = 'BAD BOYS'
+
+const isWithdrawnTeam = (teamName: string | null | undefined): boolean => {
+  return teamName?.trim().toUpperCase() === WITHDRAWN_TEAM_NAME
+}
 
 const loadDivisionSchedule = createServerFn({ method: 'GET' })
   .inputValidator(
@@ -288,13 +293,14 @@ interface GameCardProps {
   teamAPaletteClass: string
   teamBPaletteClass: string
   refTeamPaletteClass: string
+  matchHasWithdrawnTeam: boolean
   mostCommonDate: Date | null
   mostCommonCourt: CourtWithVenue | null
   submittingGameId: number | null
   onSubmitGameId: (id: number | null) => void
 }
 
-function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, mostCommonDate, mostCommonCourt, submittingGameId, onSubmitGameId }: GameCardProps) {
+function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPaletteClass, refTeamPaletteClass, matchHasWithdrawnTeam, mostCommonDate, mostCommonCourt, submittingGameId, onSubmitGameId }: GameCardProps) {
   const sortedGameSets = React.useMemo(
     () =>
       [...game.gameSets].sort((a, b) => {
@@ -595,8 +601,17 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
     }
   }
 
+  const withdrawnMatchStyle: React.CSSProperties = {
+    backgroundColor: '#f3d6db',
+    border: '2px solid #7e2f39',
+  }
+
   return (
-    <article className="card shadow-sm" key={game.id}>
+    <article
+      className={`card shadow-sm ${matchHasWithdrawnTeam ? 'border-danger-subtle' : ''}`}
+      style={matchHasWithdrawnTeam ? withdrawnMatchStyle : undefined}
+      key={game.id}
+    >
       <div className="card-body d-flex flex-column flex-md-row gap-3 align-items-stretch">
         <aside
           className="d-flex flex-row flex-md-column text-center flex-shrink-0 division-schedule-game-time-column"
@@ -941,6 +956,10 @@ function DivisionSchedulePage() {
     paletteClassByTeamId.set(team.id, PALETTE_CLASS_BY_INDEX[index % PALETTE_CLASS_BY_INDEX.length])
   })
 
+  const withdrawnTeamInDivision = data.division.games.some((game) => {
+    return isWithdrawnTeam(game.teamA.name) || isWithdrawnTeam(game.teamB.name)
+  })
+
   return (
     <section className="container py-4 schedule-print-root">
 
@@ -959,6 +978,11 @@ function DivisionSchedulePage() {
             {data.mostCommonCourtName && (
               <p><b>Place:</b> {data.mostCommonCourtName}</p>
             )}
+            {withdrawnTeamInDivision && (
+            <p className="big text-danger mb-3">
+              Warning: Team {WITHDRAWN_TEAM_NAME} has withdrawn from the tournament.
+            </p>
+          )}
           </div>
           <div className="d-flex flex-wrap align-items-center gap-2 no-print align-self-stretch align-self-lg-auto justify-content-start justify-content-lg-end ms-lg-auto flex-shrink-0">
             <a
@@ -993,6 +1017,7 @@ function DivisionSchedulePage() {
               teamAPaletteClass={paletteClassByTeamId.get(game.teamA.id) ?? 'division-schedule-palette-0'}
               teamBPaletteClass={paletteClassByTeamId.get(game.teamB.id) ?? 'division-schedule-palette-1'}
               refTeamPaletteClass={game.reffingTeam ? (paletteClassByTeamId.get(game.reffingTeam.id) ?? 'division-schedule-palette-2') : ''}
+              matchHasWithdrawnTeam={isWithdrawnTeam(game.teamA.name) || isWithdrawnTeam(game.teamB.name)}
               mostCommonDate={data.mostCommonDate}
               mostCommonCourt={data.mostCommonCourt}
               submittingGameId={submittingGameId}
