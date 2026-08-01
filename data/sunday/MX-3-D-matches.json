@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "My digs don't lie",
+    "team_2": "The Great White Wall",
+    "referee": "The Laundromat",
+    "court": "19"
+  },
+  {
+    "match": 2,
+    "team_1": "The Laundromat",
+    "team_2": "Bober",
+    "referee": "My digs don't lie",
+    "court": "19"
+  },
+  {
+    "match": 3,
+    "team_1": "The Great White Wall",
+    "team_2": "The Laundromat",
+    "referee": "Bober",
+    "court": "19"
+  },
+  {
+    "match": 4,
+    "team_1": "My digs don't lie",
+    "team_2": "Bober",
+    "referee": "The Great White Wall",
+    "court": "19"
+  },
+  {
+    "match": 5,
+    "team_1": "The Great White Wall",
+    "team_2": "Bober",
+    "referee": "The Laundromat",
+    "court": "19"
+  },
+  {
+    "match": 6,
+    "team_1": "My digs don't lie",
+    "team_2": "The Laundromat",
+    "referee": "The Great White Wall",
+    "court": "19"
+  }
+]

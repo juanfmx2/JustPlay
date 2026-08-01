@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "Registered Set Offenders",
+    "referee": "Bump it Like It's Hot",
+    "court": "17"
+  },
+  {
+    "match": 2,
+    "team_1": "Bump it Like It's Hot",
+    "team_2": "VLA 2",
+    "referee": "Hills Road x CVC Juniors",
+    "court": "17"
+  },
+  {
+    "match": 3,
+    "team_1": "Registered Set Offenders",
+    "team_2": "Bump it Like It's Hot",
+    "referee": "VLA 2",
+    "court": "17"
+  },
+  {
+    "match": 4,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "VLA 2",
+    "referee": "Registered Set Offenders",
+    "court": "17"
+  },
+  {
+    "match": 5,
+    "team_1": "Registered Set Offenders",
+    "team_2": "VLA 2",
+    "referee": "Bump it Like It's Hot",
+    "court": "17"
+  },
+  {
+    "match": 6,
+    "team_1": "Hills Road x CVC Juniors",
+    "team_2": "Bump it Like It's Hot",
+    "referee": "Registered Set Offenders",
+    "court": "17"
+  }
+]

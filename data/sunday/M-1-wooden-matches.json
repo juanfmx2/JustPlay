@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "SOUTHEND VC",
+    "team_2": "Consensual Sets",
+    "referee": "Ola & the 7 Virgins",
+    "court": "3"
+  },
+  {
+    "match": 2,
+    "team_1": "Ola & the 7 Virgins",
+    "team_2": "OSNACK",
+    "referee": "SOUTHEND VC",
+    "court": "3"
+  },
+  {
+    "match": 3,
+    "team_1": "Consensual Sets",
+    "team_2": "Ola & the 7 Virgins",
+    "referee": "OSNACK",
+    "court": "3"
+  },
+  {
+    "match": 4,
+    "team_1": "SOUTHEND VC",
+    "team_2": "OSNACK",
+    "referee": "Consensual Sets",
+    "court": "3"
+  },
+  {
+    "match": 5,
+    "team_1": "Consensual Sets",
+    "team_2": "OSNACK",
+    "referee": "Ola & the 7 Virgins",
+    "court": "3"
+  },
+  {
+    "match": 6,
+    "team_1": "SOUTHEND VC",
+    "team_2": "Ola & the 7 Virgins",
+    "referee": "Consensual Sets",
+    "court": "3"
+  }
+]

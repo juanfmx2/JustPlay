@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "Bald Eagles",
+    "team_2": "Grass Bober Reborn",
+    "referee": "E6 Hooligans",
+    "court": "7"
+  },
+  {
+    "match": 2,
+    "team_1": "E6 Hooligans",
+    "team_2": "The Dream Team",
+    "referee": "Bald Eagles",
+    "court": "7"
+  },
+  {
+    "match": 3,
+    "team_1": "Grass Bober Reborn",
+    "team_2": "E6 Hooligans",
+    "referee": "The Dream Team",
+    "court": "7"
+  },
+  {
+    "match": 4,
+    "team_1": "Bald Eagles",
+    "team_2": "The Dream Team",
+    "referee": "Grass Bober Reborn",
+    "court": "7"
+  },
+  {
+    "match": 5,
+    "team_1": "Grass Bober Reborn",
+    "team_2": "The Dream Team",
+    "referee": "E6 Hooligans",
+    "court": "7"
+  },
+  {
+    "match": 6,
+    "team_1": "Bald Eagles",
+    "team_2": "E6 Hooligans",
+    "referee": "Grass Bober Reborn",
+    "court": "7"
+  }
+]

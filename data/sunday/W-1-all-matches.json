@@ -1,0 +1,72 @@
+[
+  {
+    "match": 1,
+    "team_1": "Big Dig Lovers - W1",
+    "team_2": "Peaches - W2",
+    "referee": "Chelmsford Ladies - W2",
+    "court": "4"
+  },
+  {
+    "match": 2,
+    "team_1": "Maniacs - W2",
+    "team_2": "Drunkats - W1",
+    "referee": "Big Dig Lovers - W1",
+    "court": "4"
+  },
+  {
+    "match": 3,
+    "team_1": "Peaches - W2",
+    "team_2": "Chelmsford Ladies - W2",
+    "referee": "Maniacs - W2",
+    "court": "4"
+  },
+  {
+    "match": 4,
+    "team_1": "Drunkats - W1",
+    "team_2": "Big Dig Lovers - W1",
+    "referee": "Peaches - W2",
+    "court": "4"
+  },
+  {
+    "match": 5,
+    "team_1": "Chelmsford Ladies - W2",
+    "team_2": "Maniacs - W2",
+    "referee": "Drunkats - W1",
+    "court": "4"
+  },
+  {
+    "match": 6,
+    "team_1": "Peaches - W2",
+    "team_2": "Drunkats - W1",
+    "referee": "Chelmsford Ladies - W2",
+    "court": "4"
+  },
+  {
+    "match": 7,
+    "team_1": "Big Dig Lovers - W1",
+    "team_2": "Chelmsford Ladies - W2",
+    "referee": "Maniacs - W2",
+    "court": "4"
+  },
+  {
+    "match": 8,
+    "team_1": "Peaches - W2",
+    "team_2": "Maniacs - W2",
+    "referee": "Drunkats - W1",
+    "court": "4"
+  },
+  {
+    "match": 9,
+    "team_1": "Chelmsford Ladies - W2",
+    "team_2": "Drunkats - W1",
+    "referee": "Big Dig Lovers - W1",
+    "court": "4"
+  },
+  {
+    "match": 10,
+    "team_1": "Big Dig Lovers - W1",
+    "team_2": "Maniacs - W2",
+    "referee": "Peaches - W2",
+    "court": "4"
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "match": 1,
+    "team_1": "Setsy 2.0",
+    "team_2": "MSG",
+    "referee": "WE'VE GOT CRABBS!",
+    "court": "12"
+  },
+  {
+    "match": 2,
+    "team_1": "Mikasa es su casa",
+    "team_2": "Suck My Block",
+    "referee": "Setsy 2.0",
+    "court": "12"
+  },
+  {
+    "match": 3,
+    "team_1": "MSG",
+    "team_2": "WE'VE GOT CRABBS!",
+    "referee": "Mikasa es su casa",
+    "court": "12"
+  },
+  {
+    "match": 4,
+    "team_1": "Suck My Block",
+    "team_2": "Setsy 2.0",
+    "referee": "MSG",
+    "court": "12"
+  },
+  {
+    "match": 5,
+    "team_1": "WE'VE GOT CRABBS!",
+    "team_2": "Mikasa es su casa",
+    "referee": "Suck My Block",
+    "court": "12"
+  },
+  {
+    "match": 6,
+    "team_1": "MSG",
+    "team_2": "Suck My Block",
+    "referee": "WE'VE GOT CRABBS!",
+    "court": "12"
+  },
+  {
+    "match": 7,
+    "team_1": "Setsy 2.0",
+    "team_2": "WE'VE GOT CRABBS!",
+    "referee": "Mikasa es su casa",
+    "court": "12"
+  },
+  {
+    "match": 8,
+    "team_1": "MSG",
+    "team_2": "Mikasa es su casa",
+    "referee": "Suck My Block",
+    "court": "12"
+  },
+  {
+    "match": 9,
+    "team_1": "WE'VE GOT CRABBS!",
+    "team_2": "Suck My Block",
+    "referee": "Setsy 2.0",
+    "court": "12"
+  },
+  {
+    "match": 10,
+    "team_1": "Setsy 2.0",
+    "team_2": "Mikasa es su casa",
+    "referee": "MSG",
+    "court": "12"
+  }
+]

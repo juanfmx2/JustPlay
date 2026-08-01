@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "Friday Group",
+    "team_2": "Banana",
+    "referee": "Southend platypus",
+    "court": "18"
+  },
+  {
+    "match": 2,
+    "team_1": "Southend platypus",
+    "team_2": "One Hit Wonders",
+    "referee": "Friday Group",
+    "court": "18"
+  },
+  {
+    "match": 3,
+    "team_1": "Banana",
+    "team_2": "Southend platypus",
+    "referee": "One Hit Wonders",
+    "court": "18"
+  },
+  {
+    "match": 4,
+    "team_1": "Friday Group",
+    "team_2": "One Hit Wonders",
+    "referee": "Banana",
+    "court": "18"
+  },
+  {
+    "match": 5,
+    "team_1": "Banana",
+    "team_2": "One Hit Wonders",
+    "referee": "Southend platypus",
+    "court": "18"
+  },
+  {
+    "match": 6,
+    "team_1": "Friday Group",
+    "team_2": "Southend platypus",
+    "referee": "Banana",
+    "court": "18"
+  }
+]

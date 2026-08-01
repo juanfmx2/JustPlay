@@ -1,0 +1,44 @@
+[
+  {
+    "match": 1,
+    "team_1": "Bury berries",
+    "team_2": "Sugar & Spike Remix",
+    "referee": "How You Doing?",
+    "court": "16"
+  },
+  {
+    "match": 2,
+    "team_1": "How You Doing?",
+    "team_2": "VLA 1",
+    "referee": "Bury berries",
+    "court": "16"
+  },
+  {
+    "match": 3,
+    "team_1": "Sugar & Spike Remix",
+    "team_2": "How You Doing?",
+    "referee": "VLA 1",
+    "court": "16"
+  },
+  {
+    "match": 4,
+    "team_1": "Bury berries",
+    "team_2": "VLA 1",
+    "referee": "Sugar & Spike Remix",
+    "court": "16"
+  },
+  {
+    "match": 5,
+    "team_1": "Sugar & Spike Remix",
+    "team_2": "VLA 1",
+    "referee": "How You Doing?",
+    "court": "16"
+  },
+  {
+    "match": 6,
+    "team_1": "Bury berries",
+    "team_2": "How You Doing?",
+    "referee": "Sugar & Spike Remix",
+    "court": "16"
+  }
+]

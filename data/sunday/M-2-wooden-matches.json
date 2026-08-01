@@ -1,0 +1,72 @@
+[
+  {
+    "match": 1,
+    "team_1": "Tip of the Iceberg",
+    "team_2": "Dad's Army",
+    "referee": "Oxford Templars",
+    "court": "11"
+  },
+  {
+    "match": 2,
+    "team_1": "Sky Ballers",
+    "team_2": "The Shortbreads",
+    "referee": "Tip of the Iceberg",
+    "court": "11"
+  },
+  {
+    "match": 3,
+    "team_1": "Dad's Army",
+    "team_2": "Oxford Templars",
+    "referee": "Sky Ballers",
+    "court": "11"
+  },
+  {
+    "match": 4,
+    "team_1": "The Shortbreads",
+    "team_2": "Tip of the Iceberg",
+    "referee": "Dad's Army",
+    "court": "11"
+  },
+  {
+    "match": 5,
+    "team_1": "Oxford Templars",
+    "team_2": "Sky Ballers",
+    "referee": "The Shortbreads",
+    "court": "11"
+  },
+  {
+    "match": 6,
+    "team_1": "Dad's Army",
+    "team_2": "The Shortbreads",
+    "referee": "Oxford Templars",
+    "court": "11"
+  },
+  {
+    "match": 7,
+    "team_1": "Tip of the Iceberg",
+    "team_2": "Oxford Templars",
+    "referee": "Sky Ballers",
+    "court": "11"
+  },
+  {
+    "match": 8,
+    "team_1": "Dad's Army",
+    "team_2": "Sky Ballers",
+    "referee": "The Shortbreads",
+    "court": "11"
+  },
+  {
+    "match": 9,
+    "team_1": "Oxford Templars",
+    "team_2": "The Shortbreads",
+    "referee": "Tip of the Iceberg",
+    "court": "11"
+  },
+  {
+    "match": 10,
+    "team_1": "Tip of the Iceberg",
+    "team_2": "Sky Ballers",
+    "referee": "Dad's Army",
+    "court": "11"
+  }
+]
