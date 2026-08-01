@@ -37,6 +37,8 @@ function asDisplayCoefficient(value: string | null): string {
   return value === null ? '--' : value
 }
 
+const COEFFICIENT_HIGHLIGHT_STYLE: React.CSSProperties = { backgroundColor: '#d8f3dc' }
+
 export function StandingsTable({
   rows,
   divNum,
@@ -80,10 +82,7 @@ export function StandingsTable({
               <th scope="col" className="text-center">PA</th>
               <th scope="col" className="text-center">Coef.</th>
               <th scope="col" className="text-center">P</th>
-              <th scope="col" className="text-center">LP</th>
-              <th scope="col" className="text-center">LP-P</th>
               <th scope="col" className="text-center">Global #</th>
-              <th scope="col" className="text-center">Global LP-P</th>
             </tr>
           </thead>
           <tbody>
@@ -95,12 +94,9 @@ export function StandingsTable({
                 <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
                 <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
                 <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
-                <td className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
+                <td className="text-center" style={COEFFICIENT_HIGHLIGHT_STYLE}>{asDisplayCoefficient(row.coefficient)}</td>
                 <td className="text-center">{asDisplayNumber(row.penalties)}</td>
-                <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
-                <td className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
                 <td className="text-center">{asDisplayNumber(row.globalRank ?? null)}</td>
-                <td className="text-center">{asDisplayNumber(row.globalLeaguePointsMinusPenalties ?? null)}</td>
               </tr>
             ))}
           </tbody>
@@ -133,22 +129,16 @@ export function StandingsTable({
                 </tr>
                 <tr className={rowClass(index)}>
                   <td colSpan={2} className="text-center"><b>Coef.</b></td>
-                  <td colSpan={2} className="text-center">{asDisplayCoefficient(row.coefficient)}</td>
-                </tr>
-                <tr className={rowClass(index)}>
-                  <td className="text-center"><b>P</b></td>
-                  <td className="text-center">{asDisplayNumber(row.penalties)}</td>
-                  <td className="text-center"><b>LP</b></td>
-                  <td className="text-center">{asDisplayNumber(row.leaguePoints)}</td>
+                  <td colSpan={2} className="text-center" style={COEFFICIENT_HIGHLIGHT_STYLE}>{asDisplayCoefficient(row.coefficient)}</td>
                 </tr>
                 <tr className={rowClass(index)} style={groupBorderStyle(index)}>
-                  <td colSpan={2} className="text-center"><b>LP-P</b></td>
-                  <td colSpan={2} className="text-center">{asDisplayNumber(row.leaguePointsMinusPenalties)}</td>
+                  <td colSpan={2} className="text-center"><b>P</b></td>
+                  <td colSpan={2} className="text-center">{asDisplayNumber(row.penalties)}</td>
                 </tr>
                 <tr className={rowClass(index)}>
-                  <td colSpan={2} className="text-center"><b>Global # / LP-P</b></td>
+                  <td colSpan={2} className="text-center"><b>Global #</b></td>
                   <td colSpan={2} className="text-center">
-                    {asDisplayNumber(row.globalRank ?? null)} / {asDisplayNumber(row.globalLeaguePointsMinusPenalties ?? null)}
+                    {asDisplayNumber(row.globalRank ?? null)}
                   </td>
                 </tr>
               </Fragment>

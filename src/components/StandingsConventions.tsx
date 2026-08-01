@@ -10,12 +10,11 @@ export function StandingsConventions({ showMovementColors = true, showDivisionWi
       <ul className="mb-0 ps-3">
         <li><b>GW</b> — Games Won</li>
         <li><b>GL</b> — Games Lost</li>
+        <li><b>S.Coef</b> — Sets coefficient (Sets For / Sets Against)</li>
         <li><b>PF</b> — Points For</li>
         <li><b>PA</b> — Points Against</li>
-        <li><b>Coef.</b> — Coefficient (PF / PA)</li>
+        <li><b>P.Coef</b> — Points coefficient (PF / PA)</li>
         <li><b>P</b> — Penalties</li>
-        <li><b>LP</b> — League Points</li>
-        <li><b>LP-P</b> — League Points minus Penalties</li>
         {showMovementColors ? (
           <>
             <li><span className="badge text-bg-success">Green</span> — Promotion spot (1st place moves up a division next week)</li>

@@ -236,7 +236,7 @@ function AllStandingsPage() {
         <div>
           <h1 className="h2 mb-1">{data.stage.name} — Standings</h1>
           <p className="text-body-secondary mb-0">
-            Sorted by league points, then sets coefficient, then points coefficient, then points for.
+            Sorted by sets coefficient, then points coefficient, then points for.
           </p>
         </div>
 

@@ -11,6 +11,8 @@ export type PoolStandingRow = RankedStandingRow<
   }
 >
 
+const COEFFICIENT_HIGHLIGHT_STYLE = { backgroundColor: '#d8f3dc' }
+
 type Props = {
   rows: PoolStandingRow[]
   isAdmin: boolean
@@ -58,7 +60,6 @@ export function PoolStandingsTable({ rows, isAdmin, pendingRowId, onSetTieBreakW
             <th scope="col" className="text-center">PF</th>
             <th scope="col" className="text-center">PA</th>
             <th scope="col" className="text-center">P.Coef</th>
-            <th scope="col" className="text-center">LP</th>
             {isAdmin ? <th scope="col" className="text-center">Tie-break</th> : null}
           </tr>
         </thead>
@@ -85,11 +86,10 @@ export function PoolStandingsTable({ rows, isAdmin, pendingRowId, onSetTieBreakW
                 <td className="text-center">{asDisplayNumber(row.gamesLost)}</td>
                 <td className="text-center">{asDisplayNumber(row.setsFor)}</td>
                 <td className="text-center">{asDisplayNumber(row.setsAgainst)}</td>
-                <td className="text-center">{asDisplayCoefficient(row.setsCoefficient, row.setsFor)}</td>
+                <td className="text-center" style={COEFFICIENT_HIGHLIGHT_STYLE}>{asDisplayCoefficient(row.setsCoefficient, row.setsFor)}</td>
                 <td className="text-center">{asDisplayNumber(row.pointsFor)}</td>
                 <td className="text-center">{asDisplayNumber(row.pointsAgainst)}</td>
-                <td className="text-center">{asDisplayCoefficient(row.coefficient, row.pointsFor)}</td>
-                <td className="text-center fw-semibold">{asDisplayNumber(row.leaguePoints)}</td>
+                <td className="text-center" style={COEFFICIENT_HIGHLIGHT_STYLE}>{asDisplayCoefficient(row.coefficient, row.pointsFor)}</td>
                 {isAdmin ? (
                   <td className="text-center">
                     {row.isTied || hasBonus ? (

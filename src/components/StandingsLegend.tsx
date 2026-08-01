@@ -28,16 +28,12 @@ export function StandingsLegend() {
               <th scope="row">P.Coef</th>
               <td>Points For/Against coefficient</td>
             </tr>
-            <tr>
-              <th scope="row">LP</th>
-              <td colSpan={5}>League Points - 1 point per set won, 0 for a set lost</td>
-            </tr>
           </tbody>
         </table>
       </div>
       <p className="text-body-secondary small mb-0">
         <span className="badge text-bg-warning-subtle text-warning-emphasis me-2">Highlighted rows</span>
-        are tied on league points, sets coefficient, points coefficient, and points for - per the rules, a coin toss
+        are tied on sets coefficient, points coefficient, and points for - per the rules, a coin toss
         decides the order.
       </p>
     </div>
