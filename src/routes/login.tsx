@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
@@ -7,6 +8,8 @@ import {
   setSessionPrincipal,
   clearSessionPrincipal,
 } from '@/server/auth.server'
+import { db } from '@/db/client'
+import { teams } from '@/schema'
 import { COMPETITION_PATH } from '@/lib/routePaths'
 
 type LoginOutcome =
@@ -31,6 +34,11 @@ const loginWithToken = createServerFn({ method: 'GET' })
     }
 
     await setSessionPrincipal(principal)
+
+    if (principal.type === 'team') {
+      await db.update(teams).set({ lastLoginAt: new Date() }).where(eq(teams.name, principal.name))
+    }
+
     return { outcome: 'success', principalType: principal.type }
   })
 

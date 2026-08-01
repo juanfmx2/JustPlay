@@ -119,9 +119,15 @@ export function NavBar({ principal, teamLatestScheduleHref }: NavBarProps) {
                     QR
                 </a>
                 ) : null}
+                {principal.type === 'admin' ? (
+                <a className="btn btn-sm btn-outline-dark" href="/admins">
+                    Admin Home
+                </a>
+                ) : (
                 <a className="btn btn-sm btn-outline-dark" href="/org/cvc/competition/cvc-grass-2026">
                     Competition
                 </a>
+                )}
                 <a className="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1" href="/logout" onClick={confirmLogout}>
                     <span aria-hidden="true">X</span>
                 </a>

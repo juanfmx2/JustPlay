@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
 import { divisions } from './division'
 
@@ -10,6 +10,7 @@ export const teams = pgTable('teams', {
   name: text('name').notNull(),
   description: text('description'),
   urlSlug: text('url_slug').notNull().unique(),
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
 })
 
 export type Team = typeof teams.$inferSelect
