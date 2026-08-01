@@ -45,6 +45,18 @@ type LoaderData = {
   isAdmin: boolean
 }
 
+function getStandingsGrouping(divisionName: string): { groupTitle: string; poolLabel: string | null } {
+  const { groupTitle, poolLabel } = splitDivisionName(divisionName)
+
+  // Only classic lettered pools are merged into combined standings groups.
+  // Named pools like "Wooden Pool" or "All Pool" stay standalone.
+  if (poolLabel && /^Pool\s+[A-Z0-9]+$/i.test(poolLabel)) {
+    return { groupTitle, poolLabel }
+  }
+
+  return { groupTitle: divisionName, poolLabel: null }
+}
+
 const loadAllStandings = createServerFn({ method: 'GET' })
   .inputValidator(
     (input: {
@@ -128,7 +140,7 @@ const loadAllStandings = createServerFn({ method: 'GET' })
 
     const groups: GroupStandings[] = []
     for (const division of stageDivisions) {
-      const { groupTitle, poolLabel } = splitDivisionName(division.name)
+      const { groupTitle, poolLabel } = getStandingsGrouping(division.name)
       const divisionRows = rowsByDivisionId.get(division.id) ?? []
 
       const pool: PoolStandings = {
