@@ -20,6 +20,11 @@ import {
   approveGameForTeam,
   validateGameByAdmin,
 } from '@/domain/scorer'
+import {
+  isPlayoffPlaceholderGameDescription,
+  isSundayStageAdvanced,
+  SUNDAY_STAGE_SLUG,
+} from '@/domain/sundayStage'
 import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth.server'
 import '@/styles/print-schedules.css'
 import '@/styles/division-schedule.css'
@@ -58,6 +63,31 @@ async function assertCanManageGame(principal: AuthPrincipal | null, gameId: numb
   const isReferee = principal?.type === 'team' && principal.name === game.reffingTeam?.name
   if (!isReferee) {
     throw new Error('Only the referee team or an admin can manage this game.')
+  }
+}
+
+async function assertSundayPoolGameUnlocked(gameId: number): Promise<void> {
+  const game = await db.query.games.findFirst({
+    where: eq(games.id, gameId),
+    with: {
+      division: {
+        with: {
+          stage: true,
+        },
+      },
+    },
+  })
+
+  if (!game) {
+    throw new Error(`Game #${gameId} was not found.`)
+  }
+
+  const isSundayStage = game.division?.stage?.urlSlug === SUNDAY_STAGE_SLUG
+  const isPoolGame = !isPlayoffPlaceholderGameDescription(game.description)
+  const isLocked = isSundayStageAdvanced(game.division?.stage?.description)
+
+  if (isSundayStage && isPoolGame && isLocked) {
+    throw new Error('Sunday pool games are locked because the stage has already advanced.')
   }
 }
 
@@ -197,6 +227,7 @@ const submitScore = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const principal = await getSessionPrincipal()
+    await assertSundayPoolGameUnlocked(data.gameId)
     await assertCanManageGame(principal, data.gameId)
 
     await applyGameSetScoreAndUpdateStandings({
@@ -211,6 +242,7 @@ const finishGameServerFn = createServerFn({ method: 'POST' })
   .inputValidator((input: { gameId: number }) => input)
   .handler(async ({ data }): Promise<GameApprovalFields> => {
     const principal = await getSessionPrincipal()
+    await assertSundayPoolGameUnlocked(data.gameId)
     await assertCanManageGame(principal, data.gameId)
 
     return finishGame(data.gameId)
@@ -220,6 +252,7 @@ const approveGameServerFn = createServerFn({ method: 'POST' })
   .inputValidator((input: { gameId: number; team: 'A' | 'B' }) => input)
   .handler(async ({ data }): Promise<GameApprovalFields> => {
     const principal = await getSessionPrincipal()
+    await assertSundayPoolGameUnlocked(data.gameId)
 
     const game = await db.query.games.findFirst({
       where: eq(games.id, data.gameId),
@@ -240,6 +273,7 @@ const validateGameServerFn = createServerFn({ method: 'POST' })
   .inputValidator((input: { gameId: number }) => input)
   .handler(async ({ data }): Promise<GameApprovalFields> => {
     const principal = await getSessionPrincipal()
+    await assertSundayPoolGameUnlocked(data.gameId)
     if (principal?.type !== 'admin') {
       throw new Error('Only an admin can validate this result.')
     }

@@ -11,6 +11,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { ThemeProvider } from '../hooks/ThemeContextProvider'
 import { NavBar } from '../components/NavBar'
 import { db } from '@/db/client'
+import { isPlayoffDivisionLevel } from '@/domain/sundayStage'
 import { getSessionPrincipal, type AuthPrincipal } from '@/server/auth.server'
 import { competitions, organizations, stages, teams } from '@/schema'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -64,6 +65,7 @@ const loadTeamLatestScheduleHref = createServerFn({ method: 'GET' }).handler(asy
               id: true,
               teamAId: true,
               teamBId: true,
+              reffingTeamId: true,
               startTime: true,
             },
           },
@@ -78,6 +80,7 @@ const loadTeamLatestScheduleHref = createServerFn({ method: 'GET' }).handler(asy
     divisionId: number
     divisionSlug: string
     latestTimeMs: number
+    isPlayoffDivision: boolean
   }> = []
 
   for (const stage of playStages) {
@@ -88,7 +91,10 @@ const loadTeamLatestScheduleHref = createServerFn({ method: 'GET' }).handler(asy
 
       const inDivisionTeams = division.teams.some((team) => teamIds.has(team.id))
       const inDivisionGames = division.games.some(
-        (game) => teamIds.has(game.teamAId) || teamIds.has(game.teamBId),
+        (game) =>
+          teamIds.has(game.teamAId) ||
+          teamIds.has(game.teamBId) ||
+          (game.reffingTeamId !== null && teamIds.has(game.reffingTeamId)),
       )
 
       if (!inDivisionTeams && !inDivisionGames) continue
@@ -104,6 +110,7 @@ const loadTeamLatestScheduleHref = createServerFn({ method: 'GET' }).handler(asy
         divisionId: division.id,
         divisionSlug: division.urlSlug,
         latestTimeMs,
+        isPlayoffDivision: isPlayoffDivisionLevel(division.level),
       })
     }
   }
@@ -111,6 +118,9 @@ const loadTeamLatestScheduleHref = createServerFn({ method: 'GET' }).handler(asy
   if (candidates.length === 0) return null
 
   candidates.sort((a, b) => {
+    if (a.isPlayoffDivision !== b.isPlayoffDivision) {
+      return a.isPlayoffDivision ? -1 : 1
+    }
     if (b.latestTimeMs !== a.latestTimeMs) return b.latestTimeMs - a.latestTimeMs
     if (b.stageId !== a.stageId) return b.stageId - a.stageId
     return b.divisionId - a.divisionId

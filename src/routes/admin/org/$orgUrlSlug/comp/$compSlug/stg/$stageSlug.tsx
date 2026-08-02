@@ -1,11 +1,17 @@
 import { and, eq } from 'drizzle-orm'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import React from 'react'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { CheckCircleFill, XCircleFill } from 'react-bootstrap-icons'
 
 import { db } from '@/db/client'
 import { competitions, divisions, organizations, stages } from '@/schema'
 import { splitDivisionName } from '@/domain/divisionGrouping'
+import {
+  isPlayoffDivisionLevel,
+  isSundayStageAdvanced,
+  SUNDAY_STAGE_SLUG,
+} from '@/domain/sundayStage'
 import { requireAdminPrincipal } from '@/server/auth'
 import { CompletionBadge } from '@/components/CompletionBadge'
 
@@ -53,6 +59,9 @@ type LoaderData =
       orgUrlSlug: string
       competitionUrlSlug: string
       stageUrlSlug: string
+      canAdvanceStage: boolean
+      isStageAdvanced: boolean
+      advancedMarker: string | null
       pools: PoolRow[]
       poolsOverallPercent: number
       poolsAdminOverallPercent: number
@@ -144,7 +153,12 @@ const loadStageSummary = createServerFn({ method: 'GET' })
 
     stageDivisions.sort((a, b) => divisionSortKey(a.level) - divisionSortKey(b.level))
 
-    const pools: PoolRow[] = stageDivisions.map((division) => {
+    const summaryDivisions =
+      stage.urlSlug === SUNDAY_STAGE_SLUG
+        ? stageDivisions.filter((division) => !isPlayoffDivisionLevel(division.level))
+        : stageDivisions
+
+    const pools: PoolRow[] = summaryDivisions.map((division) => {
       const total = division.games.length
       const completed = division.games.filter((game) => game.finishedAt !== null).length
       const adminChecked = division.games.filter((game) => game.adminValidatedAt !== null).length
@@ -164,7 +178,7 @@ const loadStageSummary = createServerFn({ method: 'GET' })
       { teamName: string; registrationDivisionName: string | null; total: number; completed: number; adminChecked: number }
     >()
 
-    for (const division of stageDivisions) {
+    for (const division of summaryDivisions) {
       for (const game of division.games) {
         for (const team of [game.teamA, game.teamB]) {
           if (!team) continue
@@ -219,6 +233,16 @@ const loadStageSummary = createServerFn({ method: 'GET' })
     const teamsCompletedGames = allTeamStats.reduce((sum, team) => sum + team.completed, 0)
     const teamsAdminCheckedGames = allTeamStats.reduce((sum, team) => sum + team.adminChecked, 0)
 
+    const isSundayStage = stage.urlSlug === SUNDAY_STAGE_SLUG
+    const isStageAdvanced = isSundayStageAdvanced(stage.description)
+    const advancedMarker =
+      stage.description
+        ?.split('\n')
+        .find((line) => line.includes('[SUNDAY_ADVANCED_LOCKED_AT=')) ?? null
+
+    const canAdvanceStage =
+      isSundayStage && !isStageAdvanced && poolsTotalGames > 0 && poolsAdminCheckedGames === poolsTotalGames
+
     return {
       kind: 'play',
       orgName: organization.name,
@@ -227,6 +251,9 @@ const loadStageSummary = createServerFn({ method: 'GET' })
       orgUrlSlug: organization.urlSlug,
       competitionUrlSlug: competition.urlSlug ?? '',
       stageUrlSlug: stage.urlSlug ?? '',
+      canAdvanceStage,
+      isStageAdvanced,
+      advancedMarker,
       pools,
       poolsOverallPercent: percentOf(poolsCompletedGames, poolsTotalGames),
       poolsAdminOverallPercent: percentOf(poolsAdminCheckedGames, poolsTotalGames),
@@ -234,6 +261,20 @@ const loadStageSummary = createServerFn({ method: 'GET' })
       teamsOverallPercent: percentOf(teamsCompletedGames, teamsTotalGames),
       teamsAdminOverallPercent: percentOf(teamsAdminCheckedGames, teamsTotalGames),
     }
+  })
+
+const advanceStageServerFn = createServerFn({ method: 'POST' })
+  .inputValidator((input: { orgUrlSlug: string; compSlug: string; stageSlug: string }) => input)
+  .handler(async ({ data }) => {
+    await requireAdminPrincipal()
+
+    const { advanceSundayStage } = await import('@/domain/stageTransition')
+
+    return advanceSundayStage({
+      orgUrlSlug: data.orgUrlSlug,
+      competitionUrlSlug: data.compSlug,
+      stageUrlSlug: data.stageSlug,
+    })
   })
 
 export const Route = createFileRoute('/admin/org/$orgUrlSlug/comp/$compSlug/stg/$stageSlug')({
@@ -246,6 +287,9 @@ export const Route = createFileRoute('/admin/org/$orgUrlSlug/comp/$compSlug/stg/
 
 function StageSummaryPage() {
   const data = Route.useLoaderData()
+  const router = useRouter()
+  const [isAdvancing, setIsAdvancing] = React.useState(false)
+  const [advanceMessage, setAdvanceMessage] = React.useState<string | null>(null)
 
   if (!data) {
     return (
@@ -312,6 +356,39 @@ function StageSummaryPage() {
     )
   }
 
+  const handleAdvanceStage = async () => {
+    const confirmed = window.confirm(
+      'Advance Sunday stage now? This will assign qualified teams to playoffs and lock Sunday pool games from further edits.',
+    )
+    if (!confirmed) return
+
+    setAdvanceMessage(null)
+    setIsAdvancing(true)
+    try {
+      const result = await advanceStageServerFn({
+        data: {
+          orgUrlSlug: data.orgUrlSlug,
+          compSlug: data.competitionUrlSlug,
+          stageSlug: data.stageUrlSlug,
+        },
+      })
+
+      if (result.alreadyAdvanced) {
+        setAdvanceMessage('Stage was already advanced earlier. No additional changes were made.')
+      } else {
+        setAdvanceMessage(
+          `Stage advanced successfully. Updated ${result.updatedGames} playoff game(s) across ${result.updatedGroups} group(s).`,
+        )
+      }
+
+      await router.invalidate()
+    } catch (error) {
+      setAdvanceMessage(error instanceof Error ? error.message : 'Could not advance this stage.')
+    } finally {
+      setIsAdvancing(false)
+    }
+  }
+
   return (
     <section className="container py-4">
       <header className="mb-4">
@@ -320,6 +397,41 @@ function StageSummaryPage() {
           {data.orgName} / {data.competitionName}
         </p>
       </header>
+
+      {data.stageUrlSlug === SUNDAY_STAGE_SLUG ? (
+        <section className="border rounded p-3 mb-3">
+          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+              <h2 className="h5 mb-1">Sunday Stage Transition</h2>
+              <p className="text-body-secondary mb-0">
+                Assign real qualifiers to playoff placeholders and lock Sunday pool game edits.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="btn btn-banana"
+              disabled={!data.canAdvanceStage || isAdvancing || data.isStageAdvanced}
+              onClick={handleAdvanceStage}
+            >
+              {data.isStageAdvanced ? 'Already Advanced' : isAdvancing ? 'Advancing...' : 'Move To Next Stage'}
+            </button>
+          </div>
+
+          {!data.canAdvanceStage && !data.isStageAdvanced ? (
+            <p className="small text-body-secondary mb-0 mt-2">
+              This action unlocks when Sunday reaches 100% admin-validated games.
+            </p>
+          ) : null}
+
+          {data.advancedMarker ? (
+            <p className="small text-success mb-0 mt-2">{data.advancedMarker}</p>
+          ) : null}
+
+          {advanceMessage ? (
+            <p className="small mb-0 mt-2">{advanceMessage}</p>
+          ) : null}
+        </section>
+      ) : null}
 
       <details open className="border rounded p-3 mb-3">
         <summary className="h5 mb-0 d-flex flex-wrap align-items-center gap-2" style={{ cursor: 'pointer' }}>

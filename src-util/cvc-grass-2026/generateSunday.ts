@@ -10,6 +10,10 @@ import { games, gameSets } from '../../src/schema/game'
 import { standings } from '../../src/schema/standings'
 import { teams } from '../../src/schema/team'
 import { courts, venues } from '../../src/schema/venue'
+import {
+  PLAYOFF_DIVISION_LEVEL_SUFFIX,
+  PLAYOFF_PLACEHOLDER_TAG,
+} from '../../src/domain/sundayStage'
 import rulesData from '../../data/rules.json'
 
 type PoolGender = 'MEN' | 'WOMEN' | 'MIXED'
@@ -28,7 +32,7 @@ type RulesGroup = {
   rules: Array<{ html: string }>
 }
 
-type RulesData = {
+export type RulesData = {
   rulesGroups: RulesGroup[]
 }
 
@@ -38,12 +42,12 @@ type SetRule = {
   winByTwo: boolean
 }
 
-type MatchRuleProfile = {
+export type MatchRuleProfile = {
   label: string
   setRules: [SetRule, SetRule, SetRule]
 }
 
-type DivisionFile = {
+export type DivisionFile = {
   divisionLevel: string
   gender: PoolGender
   divisionNumber: number
@@ -54,6 +58,17 @@ type DivisionFile = {
   matches: SundayMatch[]
 }
 
+type SundayPoolGroup = {
+  groupKey: string
+  genderCode: 'M' | 'MX' | 'W'
+  gender: PoolGender
+  divisionNumber: number
+  type: 'MEN' | 'WOMEN' | 'MIXED'
+  letterPools: string[]
+}
+
+type PlayoffMode = 'AB_FINAL' | 'ABCD_SEMIS'
+
 const COMPETITION_SLUG = 'cvc-grass-2026'
 const SUNDAY_DATE = '2026-08-02'
 const SUNDAY_START_TIME = '08:15'
@@ -62,6 +77,7 @@ const SUNDAY_STAGE_NAME = 'Sunday 2 August 2026'
 const SUNDAY_STAGE_DESCRIPTION = 'CVC Grass 2026 - Sunday fixtures'
 const SUNDAY_VENUE_NAME = 'CVC Grass 2026 Sunday Venue'
 const SUNDAY_VENUE_DESCRIPTION = 'CVC Grass 2026 Sunday fixtures venue'
+const SUNDAY_PLAYOFF_START_TIME = '15:00'
 
 const SETS_PER_MATCH = 3
 const POINTS_PER_MINUTE = 3.5
@@ -166,6 +182,73 @@ function parseSundayDivisionFileName(fileName: string): Omit<DivisionFile, 'matc
   }
 }
 
+function parseDivisionLevel(level: string):
+  | { genderCode: 'M' | 'MX' | 'W'; divisionNumber: number; poolSlug: string; groupKey: string }
+  | null {
+  const match = level.match(/^(M|MX|W)-(\d+)-(.+)$/i)
+  if (!match) return null
+
+  const genderCode = match[1].toUpperCase() as 'M' | 'MX' | 'W'
+  const divisionNumber = Number(match[2])
+  const poolSlug = match[3]
+  if (!Number.isInteger(divisionNumber) || divisionNumber <= 0) return null
+
+  return {
+    genderCode,
+    divisionNumber,
+    poolSlug,
+    groupKey: `${genderCode}-${divisionNumber}`,
+  }
+}
+
+function getPoolLetter(poolSlug: string): string | null {
+  return /^[a-z]$/i.test(poolSlug) ? poolSlug.toUpperCase() : null
+}
+
+function hasExactLetters(poolLetters: string[], expected: string[]): boolean {
+  const current = [...new Set(poolLetters)].sort()
+  const target = [...expected].sort()
+  return current.length === target.length && current.every((item, index) => item === target[index])
+}
+
+function classifyPlayoffMode(poolLetters: string[]): PlayoffMode | null {
+  if (hasExactLetters(poolLetters, ['A', 'B'])) {
+    return 'AB_FINAL'
+  }
+
+  if (hasExactLetters(poolLetters, ['A', 'B', 'C', 'D'])) {
+    return 'ABCD_SEMIS'
+  }
+
+  return null
+}
+
+function buildSundayPoolGroups(divisionFiles: DivisionFile[]): SundayPoolGroup[] {
+  const groups = new Map<string, SundayPoolGroup>()
+
+  for (const divisionFile of divisionFiles) {
+    const parsed = parseDivisionLevel(divisionFile.divisionLevel)
+    if (!parsed) continue
+
+    const letter = getPoolLetter(parsed.poolSlug)
+    if (!letter) continue
+
+    const existing = groups.get(parsed.groupKey) ?? {
+      groupKey: parsed.groupKey,
+      genderCode: parsed.genderCode,
+      gender: divisionFile.gender,
+      divisionNumber: parsed.divisionNumber,
+      type: divisionFile.type,
+      letterPools: [],
+    }
+
+    existing.letterPools.push(letter)
+    groups.set(parsed.groupKey, existing)
+  }
+
+  return Array.from(groups.values())
+}
+
 function extractNumbersFromHtml(ruleHtml: string): number[] {
   const matches = [...ruleHtml.matchAll(/<b>\s*(\d+)/g)]
   return matches.map((match) => Number(match[1]))
@@ -206,7 +289,7 @@ function getRulesGroupOrThrow(rulesByHeading: Map<string, RulesGroup>, heading: 
   return found
 }
 
-function buildMatchRuleProfilesFromRules(rulesJson: RulesData): Record<string, MatchRuleProfile> {
+export function buildMatchRuleProfilesFromRules(rulesJson: RulesData): Record<string, MatchRuleProfile> {
   const rulesByHeading = new Map(rulesJson.rulesGroups.map((group) => [group.heading, group]))
 
   const mixedPool5 = getRulesGroupOrThrow(rulesByHeading, 'Pools of 5 - Mixed')
@@ -335,7 +418,7 @@ function getUniqueTeamNames(matches: SundayMatch[]): string[] {
   return Array.from(unique.values())
 }
 
-async function loadSundayDivisionFiles(): Promise<DivisionFile[]> {
+export async function loadSundayDivisionFiles(): Promise<DivisionFile[]> {
   const files = (await readdir(SUNDAY_DATA_DIR))
     .filter((name) => name.endsWith('-matches.json'))
     .sort((a, b) => a.localeCompare(b))
@@ -363,7 +446,7 @@ async function loadSundayDivisionFiles(): Promise<DivisionFile[]> {
   return divisionsLoaded
 }
 
-async function getCompetitionOrThrow() {
+export async function getCompetitionOrThrow() {
   const competition = await db.query.competitions.findFirst({
     where: eq(competitions.urlSlug, COMPETITION_SLUG),
   })
@@ -375,7 +458,7 @@ async function getCompetitionOrThrow() {
   return competition
 }
 
-async function getOrCreateSundayStage(competitionId: number) {
+export async function getOrCreateSundayStage(competitionId: number) {
   const existing = await db.query.stages.findFirst({
     where: and(eq(stages.competitionId, competitionId), eq(stages.urlSlug, SUNDAY_STAGE_SLUG)),
   })
@@ -500,7 +583,204 @@ async function getOrCreateSundayDivision(stageId: number, sourceDivision: Omit<D
   return created
 }
 
-async function regenerateStandingsForCompetition(competitionId: number) {
+async function getOrCreatePlayoffDivision(stageId: number, poolGroup: SundayPoolGroup) {
+  const level = `${poolGroup.groupKey}${PLAYOFF_DIVISION_LEVEL_SUFFIX}`
+  const existing = await db.query.divisions.findFirst({
+    where: and(eq(divisions.stageId, stageId), eq(divisions.level, level)),
+  })
+
+  if (existing) {
+    return existing
+  }
+
+  const [created] = await db
+    .insert(divisions)
+    .values({
+      stageId,
+      name: `${getGenderLabel(poolGroup.gender)} Division ${poolGroup.divisionNumber} - Playoffs`,
+      description: `Sunday playoffs placeholders for ${poolGroup.groupKey}`,
+      level,
+      type: poolGroup.type,
+      urlSlug: `${poolGroup.groupKey.toLowerCase()}-playoff`,
+    })
+    .returning()
+
+  return created
+}
+
+async function getOrCreatePlaceholderTeam(divisionId: number, teamName: string) {
+  const existing = await db.query.teams.findFirst({
+    where: and(eq(teams.divisionId, divisionId), eq(teams.name, teamName)),
+  })
+
+  if (existing) {
+    return existing
+  }
+
+  const safeName = teamName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  const [created] = await db
+    .insert(teams)
+    .values({
+      divisionId,
+      name: teamName,
+      description: `${PLAYOFF_PLACEHOLDER_TAG} team`,
+      urlSlug: `tmp-${divisionId}-${safeName}`,
+    })
+    .returning()
+
+  return created
+}
+
+async function insertPlayoffGame(input: {
+  divisionId: number
+  name: string
+  description: string
+  teamAId: number
+  teamBId: number
+  reffingTeamId: number | null
+  courtId: number
+  matchStartMinutes: number
+  setDurations: [number, number, number]
+}) {
+  const setTimes = buildSetTimesForMatch(SUNDAY_DATE, input.matchStartMinutes, input.setDurations)
+  const gameStartTime = setTimes[0]?.startTime
+  const gameEndTime = setTimes[setTimes.length - 1]?.endTime
+
+  if (!gameStartTime || !gameEndTime) {
+    throw new Error(`Could not derive playoff game window for ${input.name}.`)
+  }
+
+  const [game] = await db
+    .insert(games)
+    .values({
+      divisionId: input.divisionId,
+      teamAId: input.teamAId,
+      teamBId: input.teamBId,
+      reffingTeamId: input.reffingTeamId,
+      name: input.name,
+      description: input.description,
+      startTime: gameStartTime,
+      endTime: gameEndTime,
+    })
+    .returning()
+
+  await db.insert(gameSets).values(
+    setTimes.map((setTime, index) => ({
+      gameId: game.id,
+      courtId: input.courtId,
+      name: `Set ${index + 1}`,
+      description: `${PLAYOFF_PLACEHOLDER_TAG} scheduled set`,
+      startTime: setTime.startTime,
+      endTime: setTime.endTime,
+    })),
+  )
+}
+
+export async function generatePlayoffPlaceholders(input: {
+  sundayStageId: number
+  divisionFiles: DivisionFile[]
+  matchRuleProfiles: Record<string, MatchRuleProfile>
+}) {
+  const poolGroups = buildSundayPoolGroups(input.divisionFiles)
+  const setDurations = getSetDurationsMinutes(input.matchRuleProfiles['pool-4'].setRules)
+  const matchDurationMinutes =
+    setDurations.reduce((sum, value) => sum + value, 0) +
+    SET_BREAK_MINUTES * Math.max(0, SETS_PER_MATCH - 1)
+
+  let generatedGames = 0
+  let generatedGameSets = 0
+
+  for (const group of poolGroups) {
+    const mode = classifyPlayoffMode(group.letterPools)
+    if (!mode) continue
+
+    const playoffDivision = await getOrCreatePlayoffDivision(input.sundayStageId, group)
+    await db.delete(games).where(eq(games.divisionId, playoffDivision.id))
+
+    const court = await getCourtOrCreate(`Court Playoff ${group.groupKey}`)
+    let matchStartMinutes = parseTimeToMinutes(SUNDAY_PLAYOFF_START_TIME)
+
+    if (mode === 'AB_FINAL') {
+      const team1A = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool A')
+      const team1B = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool B')
+      const refAB = await getOrCreatePlaceholderTeam(playoffDivision.id, 'Last Pool A or B')
+
+      await insertPlayoffGame({
+        divisionId: playoffDivision.id,
+        teamAId: team1A.id,
+        teamBId: team1B.id,
+        reffingTeamId: refAB.id,
+        courtId: court.id,
+        matchStartMinutes,
+        setDurations,
+        name: `${playoffDivision.level} - Final Placeholder`,
+        description: `${PLAYOFF_PLACEHOLDER_TAG} | AB_FINAL | ${group.groupKey}`,
+      })
+
+      generatedGames += 1
+      generatedGameSets += SETS_PER_MATCH
+      continue
+    }
+
+    const team1A = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool A')
+    const team1B = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool B')
+    const team1C = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool C')
+    const team1D = await getOrCreatePlaceholderTeam(playoffDivision.id, '1st Pool D')
+    const winnerSF1 = await getOrCreatePlaceholderTeam(playoffDivision.id, 'Winner SF1')
+    const winnerSF2 = await getOrCreatePlaceholderTeam(playoffDivision.id, 'Winner SF2')
+    const refLast = await getOrCreatePlaceholderTeam(playoffDivision.id, 'Last Overall')
+    const refSecondLast = await getOrCreatePlaceholderTeam(playoffDivision.id, '2nd Last Overall')
+
+    await insertPlayoffGame({
+      divisionId: playoffDivision.id,
+      teamAId: team1A.id,
+      teamBId: team1D.id,
+      reffingTeamId: refLast.id,
+      courtId: court.id,
+      matchStartMinutes,
+      setDurations,
+      name: `${playoffDivision.level} - SF1 Placeholder`,
+      description: `${PLAYOFF_PLACEHOLDER_TAG} | SF1 | ${group.groupKey}`,
+    })
+    matchStartMinutes += matchDurationMinutes
+
+    await insertPlayoffGame({
+      divisionId: playoffDivision.id,
+      teamAId: team1B.id,
+      teamBId: team1C.id,
+      reffingTeamId: refSecondLast.id,
+      courtId: court.id,
+      matchStartMinutes,
+      setDurations,
+      name: `${playoffDivision.level} - SF2 Placeholder`,
+      description: `${PLAYOFF_PLACEHOLDER_TAG} | SF2 | ${group.groupKey}`,
+    })
+    matchStartMinutes += matchDurationMinutes
+
+    await insertPlayoffGame({
+      divisionId: playoffDivision.id,
+      teamAId: winnerSF1.id,
+      teamBId: winnerSF2.id,
+      reffingTeamId: null,
+      courtId: court.id,
+      matchStartMinutes,
+      setDurations,
+      name: `${playoffDivision.level} - Final Placeholder`,
+      description: `${PLAYOFF_PLACEHOLDER_TAG} | FINAL | ${group.groupKey}`,
+    })
+
+    generatedGames += 3
+    generatedGameSets += SETS_PER_MATCH * 3
+  }
+
+  return { generatedGames, generatedGameSets }
+}
+
+export async function regenerateStandingsForCompetition(competitionId: number) {
   const competitionStages = await db.query.stages.findMany({
     where: and(eq(stages.competitionId, competitionId), eq(stages.type, 'PLAY')),
     with: {
@@ -555,7 +835,7 @@ async function regenerateStandingsForCompetition(competitionId: number) {
   return standingsRows
 }
 
-async function run() {
+export async function runSundayGeneration() {
   const competition = await getCompetitionOrThrow()
   const sundayStage = await getOrCreateSundayStage(competition.id)
   const divisionFiles = await loadSundayDivisionFiles()
@@ -638,6 +918,15 @@ async function run() {
     }
   }
 
+  const playoffGeneration = await generatePlayoffPlaceholders({
+    sundayStageId: sundayStage.id,
+    divisionFiles,
+    matchRuleProfiles,
+  })
+
+  totalGames += playoffGeneration.generatedGames
+  totalGameSets += playoffGeneration.generatedGameSets
+
   const totalStandings = await regenerateStandingsForCompetition(competition.id)
 
   console.log(
@@ -645,4 +934,8 @@ async function run() {
   )
 }
 
-await run()
+const isDirectExecution = process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+
+if (isDirectExecution) {
+  await runSundayGeneration()
+}
