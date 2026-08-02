@@ -96,10 +96,35 @@ function findGameByTeams(
     return { id: found.id }
 }
 
+function findPlayoffGameByDescriptionTag(
+    divisionGames: Array<{ id: number; description: string | null }>,
+    tag: 'AB_FINAL' | 'SF1' | 'SF2',
+): { id: number } {
+    const found = divisionGames.find((game) => game.description?.includes(`| ${tag} |`))
+    if (!found) {
+        throw new Error(`Could not find playoff placeholder game with tag ${tag}.`)
+    }
+
+    return { id: found.id }
+}
+
 async function getTopRankedTeamForDivision(
     stageId: number,
     divisionId: number,
 ): Promise<{ id: number; name: string }> {
+    const ranked = await getRankedTeamsForDivision(stageId, divisionId)
+    const top = ranked[0]
+    if (!top) {
+        throw new Error(`Could not determine top team for division #${divisionId}.`)
+    }
+
+    return top
+}
+
+async function getRankedTeamsForDivision(
+    stageId: number,
+    divisionId: number,
+): Promise<Array<{ id: number; name: string }>> {
     const rows = await db.query.standings.findMany({
         where: eq(standings.divisionId, divisionId),
         with: {
@@ -127,12 +152,31 @@ async function getTopRankedTeamForDivision(
     }
 
     const ranked = rankStandings(rankingRows)
-    const top = ranked[0]
-    if (!top) {
-        throw new Error(`Could not determine top team for division #${divisionId}.`)
+    return ranked.map((row) => ({
+        id: row.teamId,
+        name: row.teamName,
+    }))
+}
+
+async function getBottomRankedTeamsForDivisions(
+    stageId: number,
+    divisionIds: number[],
+    count: number,
+): Promise<Array<{ id: number; name: string }>> {
+    if (divisionIds.length === 0) {
+        throw new Error('Cannot determine referee teams without source divisions.')
     }
 
-    return { id: top.teamId, name: top.teamName }
+    const rankedPerDivision = await Promise.all(
+        divisionIds.map((divisionId) => getRankedTeamsForDivision(stageId, divisionId)),
+    )
+
+    const combined = rankedPerDivision.flat()
+    if (combined.length < count) {
+        throw new Error(`Not enough ranked teams (${combined.length}) to select ${count} referee team(s).`)
+    }
+
+    return combined.slice(-count).reverse()
 }
 
 function getSundayPoolGroups(stageDivisions: Array<{ id: number; level: string }>): SundayPoolGroup[] {
@@ -163,6 +207,10 @@ function parsePlayoffDivisionLevel(level: string): { groupKey: string } | null {
     const match = level.match(/^(M|MX|W)-(\d+)-PLAYOFF$/i)
     if (!match) return null
     return { groupKey: `${match[1].toUpperCase()}-${match[2]}` }
+}
+
+function getRequiredPoolLettersForPlayoffDivision(playoffGameCount: number): string[] {
+    return playoffGameCount <= 1 ? ['A', 'B'] : ['A', 'B', 'C', 'D']
 }
 
 export async function advanceSundayStage(input: {
@@ -259,17 +307,19 @@ export async function advanceSundayStage(input: {
             const poolB = group.poolsByLetter.get('B')
             if (!poolA || !poolB) continue
 
-            const [teamA, teamB] = await Promise.all([
+            const [teamA, teamB, [refTeam]] = await Promise.all([
                 getTopRankedTeamForDivision(stage.id, poolA.id),
                 getTopRankedTeamForDivision(stage.id, poolB.id),
+                getBottomRankedTeamsForDivisions(stage.id, [poolA.id, poolB.id], 1),
             ])
 
-            const targetGame = findGameByTeams(playoffGames, '1st Pool A', '1st Pool B')
+            const targetGame = findPlayoffGameByDescriptionTag(playoffGames, 'AB_FINAL')
             await db
                 .update(games)
                 .set({
                     teamAId: teamA.id,
                     teamBId: teamB.id,
+                    reffingTeamId: refTeam.id,
                     name: `${playoffDivision.level} - ${teamA.name} vs ${teamB.name}`,
                 })
                 .where(eq(games.id, targetGame.id))
@@ -285,21 +335,27 @@ export async function advanceSundayStage(input: {
         const poolD = group.poolsByLetter.get('D')
         if (!poolA || !poolB || !poolC || !poolD) continue
 
-        const [seedA, seedB, seedC, seedD] = await Promise.all([
+        const [seedA, seedB, seedC, seedD, refTeams] = await Promise.all([
             getTopRankedTeamForDivision(stage.id, poolA.id),
             getTopRankedTeamForDivision(stage.id, poolB.id),
             getTopRankedTeamForDivision(stage.id, poolC.id),
             getTopRankedTeamForDivision(stage.id, poolD.id),
+            getBottomRankedTeamsForDivisions(stage.id, [poolA.id, poolB.id, poolC.id, poolD.id], 2),
         ])
+        const [lastOverall, secondLastOverall] = refTeams
+        if (!lastOverall || !secondLastOverall) {
+            throw new Error(`Could not determine referee teams for ${playoffDivision.name}.`)
+        }
 
-        const semi1 = findGameByTeams(playoffGames, '1st Pool A', '1st Pool D')
-        const semi2 = findGameByTeams(playoffGames, '1st Pool B', '1st Pool C')
+        const semi1 = findPlayoffGameByDescriptionTag(playoffGames, 'SF1')
+        const semi2 = findPlayoffGameByDescriptionTag(playoffGames, 'SF2')
 
         await db
             .update(games)
             .set({
                 teamAId: seedA.id,
                 teamBId: seedD.id,
+                reffingTeamId: lastOverall.id,
                 name: `${playoffDivision.level} - SF1 ${seedA.name} vs ${seedD.name}`,
             })
             .where(eq(games.id, semi1.id))
@@ -309,6 +365,7 @@ export async function advanceSundayStage(input: {
             .set({
                 teamAId: seedB.id,
                 teamBId: seedC.id,
+                reffingTeamId: secondLastOverall.id,
                 name: `${playoffDivision.level} - SF2 ${seedB.name} vs ${seedC.name}`,
             })
             .where(eq(games.id, semi2.id))
@@ -424,11 +481,21 @@ export async function advanceSundayPlayoffDivision(input: {
         throw new Error(`Unsupported playoff layout for ${targetDivision.name}.`)
     }
 
-    const poolGames = sourceGroup
-        ? poolDivisions.filter((division) => sourceGroup.poolsByLetter.has((parseDivisionLevel(division.level)?.poolSlug ?? '').toUpperCase()))
-        : []
+    const requiredPoolLetters = getRequiredPoolLettersForPlayoffDivision(targetDivision.games.length)
+    const sourcePoolDivisions = poolDivisions.filter((division) => {
+        const parsed = parseDivisionLevel(division.level)
+        if (!parsed) return false
+        if (parsed.groupKey !== sourceGroup.key) return false
+
+        const poolLetter = getPoolLetter(parsed.poolSlug)
+        if (!poolLetter) return false
+
+        return requiredPoolLetters.includes(poolLetter)
+    })
+
     const allPoolGamesAdminValidated =
-        poolGames.length > 0 && poolGames.flatMap((division) => division.games).every((game) => game.adminValidatedAt !== null)
+        sourcePoolDivisions.length > 0 &&
+        sourcePoolDivisions.flatMap((division) => division.games).every((game) => game.adminValidatedAt !== null)
     if (!allPoolGamesAdminValidated) {
         throw new Error(`Playoff division ${targetDivision.name} can only advance when all source pool games are admin-validated.`)
     }
@@ -443,17 +510,19 @@ export async function advanceSundayPlayoffDivision(input: {
             throw new Error(`Missing pool A/B divisions for ${targetDivision.name}.`)
         }
 
-        const [teamA, teamB] = await Promise.all([
+        const [teamA, teamB, [refTeam]] = await Promise.all([
             getTopRankedTeamForDivision(stage.id, poolA.id),
             getTopRankedTeamForDivision(stage.id, poolB.id),
+            getBottomRankedTeamsForDivisions(stage.id, [poolA.id, poolB.id], 1),
         ])
 
-        const targetGame = findGameByTeams(playoffGames, '1st Pool A', '1st Pool B')
+        const targetGame = findPlayoffGameByDescriptionTag(playoffGames, 'AB_FINAL')
         await db
             .update(games)
             .set({
                 teamAId: teamA.id,
                 teamBId: teamB.id,
+                reffingTeamId: refTeam.id,
                 name: `${targetDivision.level} - ${teamA.name} vs ${teamB.name}`,
             })
             .where(eq(games.id, targetGame.id))
@@ -468,21 +537,27 @@ export async function advanceSundayPlayoffDivision(input: {
             throw new Error(`Missing pool A/B/C/D divisions for ${targetDivision.name}.`)
         }
 
-        const [seedA, seedB, seedC, seedD] = await Promise.all([
+        const [seedA, seedB, seedC, seedD, refTeams] = await Promise.all([
             getTopRankedTeamForDivision(stage.id, poolA.id),
             getTopRankedTeamForDivision(stage.id, poolB.id),
             getTopRankedTeamForDivision(stage.id, poolC.id),
             getTopRankedTeamForDivision(stage.id, poolD.id),
+            getBottomRankedTeamsForDivisions(stage.id, [poolA.id, poolB.id, poolC.id, poolD.id], 2),
         ])
+        const [lastOverall, secondLastOverall] = refTeams
+        if (!lastOverall || !secondLastOverall) {
+            throw new Error(`Could not determine referee teams for ${targetDivision.name}.`)
+        }
 
-        const semi1 = findGameByTeams(playoffGames, '1st Pool A', '1st Pool D')
-        const semi2 = findGameByTeams(playoffGames, '1st Pool B', '1st Pool C')
+        const semi1 = findPlayoffGameByDescriptionTag(playoffGames, 'SF1')
+        const semi2 = findPlayoffGameByDescriptionTag(playoffGames, 'SF2')
 
         await db
             .update(games)
             .set({
                 teamAId: seedA.id,
                 teamBId: seedD.id,
+                reffingTeamId: lastOverall.id,
                 name: `${targetDivision.level} - SF1 ${seedA.name} vs ${seedD.name}`,
             })
             .where(eq(games.id, semi1.id))
@@ -492,6 +567,7 @@ export async function advanceSundayPlayoffDivision(input: {
             .set({
                 teamAId: seedB.id,
                 teamBId: seedC.id,
+                reffingTeamId: secondLastOverall.id,
                 name: `${targetDivision.level} - SF2 ${seedB.name} vs ${seedC.name}`,
             })
             .where(eq(games.id, semi2.id))
