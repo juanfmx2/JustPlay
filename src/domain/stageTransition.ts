@@ -3,9 +3,11 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '@/db/client'
 import {
     appendSundayAdvancedMarker,
+    appendSundayPlayoffDivisionAdvancedMarker,
     isPlayoffDivisionLevel,
     isPlayoffPlaceholderGameDescription,
     isSundayStageAdvanced,
+    isSundayPlayoffDivisionAdvanced,
     PLAYOFF_DIVISION_LEVEL_SUFFIX,
     SUNDAY_ADVANCED_MARKER_PREFIX,
     SUNDAY_STAGE_SLUG,
@@ -41,6 +43,13 @@ export type AdvanceSundayStageResult = {
     updatedGames: number
     updatedGroups: number
     marker: string
+}
+
+export type AdvanceSundayPlayoffDivisionResult = {
+    alreadyAdvanced: boolean
+    updatedGames: number
+    marker: string
+    divisionName: string
 }
 
 function parseDivisionLevel(level: string): ParsedDivisionLevel | null {
@@ -148,6 +157,12 @@ function getSundayPoolGroups(stageDivisions: Array<{ id: number; level: string }
     }
 
     return Array.from(groups.values())
+}
+
+function parsePlayoffDivisionLevel(level: string): { groupKey: string } | null {
+    const match = level.match(/^(M|MX|W)-(\d+)-PLAYOFF$/i)
+    if (!match) return null
+    return { groupKey: `${match[1].toUpperCase()}-${match[2]}` }
 }
 
 export async function advanceSundayStage(input: {
@@ -317,5 +332,187 @@ export async function advanceSundayStage(input: {
         updatedGames,
         updatedGroups,
         marker,
+    }
+}
+
+export async function advanceSundayPlayoffDivision(input: {
+    orgUrlSlug: string
+    competitionUrlSlug: string
+    stageUrlSlug: string
+    divisionUrlSlug: string
+}): Promise<AdvanceSundayPlayoffDivisionResult> {
+    const organization = await db.query.organizations.findFirst({
+        where: eq(organizations.urlSlug, input.orgUrlSlug),
+    })
+    if (!organization) {
+        throw new Error(`Organization ${input.orgUrlSlug} not found.`)
+    }
+
+    const resolvedCompetition = await db.query.competitions.findFirst({
+        where: and(
+            eq(competitions.urlSlug, input.competitionUrlSlug),
+            eq(competitions.organizationId, organization.id),
+        ),
+    })
+    if (!resolvedCompetition) {
+        throw new Error(`Competition ${input.competitionUrlSlug} not found for ${input.orgUrlSlug}.`)
+    }
+
+    const stage = await db.query.stages.findFirst({
+        where: and(
+            eq(stages.urlSlug, input.stageUrlSlug),
+            eq(stages.competitionId, resolvedCompetition.id),
+        ),
+    })
+    if (!stage) {
+        throw new Error(`Stage ${input.stageUrlSlug} not found for this competition.`)
+    }
+
+    if (stage.urlSlug !== SUNDAY_STAGE_SLUG) {
+        throw new Error('Playoff division advance is only implemented for Sunday stage right now.')
+    }
+
+    const stageDivisions = await db.query.divisions.findMany({
+        where: eq(divisions.stageId, stage.id),
+        with: {
+            games: {
+                with: {
+                    teamA: { columns: { name: true } },
+                    teamB: { columns: { name: true } },
+                },
+            },
+        },
+    })
+
+    const targetDivision = stageDivisions.find((division) => division.urlSlug === input.divisionUrlSlug)
+    if (!targetDivision) {
+        throw new Error(`Division ${input.divisionUrlSlug} not found for this stage.`)
+    }
+
+    if (!isPlayoffDivisionLevel(targetDivision.level)) {
+        throw new Error('This action only applies to playoff divisions.')
+    }
+
+    if (isSundayPlayoffDivisionAdvanced(targetDivision.description)) {
+        const marker = (targetDivision.description ?? '')
+            .split('\n')
+            .find((line) => line.includes('[SUNDAY_PLAYOFF_DIVISION_ADVANCED_AT=')) ?? ''
+        return {
+            alreadyAdvanced: true,
+            updatedGames: 0,
+            marker,
+            divisionName: targetDivision.name,
+        }
+    }
+
+    const poolDivisions = stageDivisions.filter((division) => !isPlayoffDivisionLevel(division.level))
+    const poolGroups = getSundayPoolGroups(poolDivisions)
+    const playoffPlan = parsePlayoffDivisionLevel(targetDivision.level)
+    if (!playoffPlan) {
+        throw new Error(`Could not parse playoff division level ${targetDivision.level}.`)
+    }
+
+    const sourceGroup = poolGroups.find((group) => group.key === playoffPlan.groupKey)
+    if (!sourceGroup) {
+        throw new Error(`Could not find pool group for playoff division ${targetDivision.name}.`)
+    }
+
+    const letters = Array.from(sourceGroup.poolsByLetter.keys())
+    const isAB = hasExactLetters(letters, ['A', 'B'])
+    const isABCD = hasExactLetters(letters, ['A', 'B', 'C', 'D'])
+    if (!isAB && !isABCD) {
+        throw new Error(`Unsupported playoff layout for ${targetDivision.name}.`)
+    }
+
+    const poolGames = sourceGroup
+        ? poolDivisions.filter((division) => sourceGroup.poolsByLetter.has((parseDivisionLevel(division.level)?.poolSlug ?? '').toUpperCase()))
+        : []
+    const allPoolGamesAdminValidated =
+        poolGames.length > 0 && poolGames.flatMap((division) => division.games).every((game) => game.adminValidatedAt !== null)
+    if (!allPoolGamesAdminValidated) {
+        throw new Error(`Playoff division ${targetDivision.name} can only advance when all source pool games are admin-validated.`)
+    }
+
+    const playoffGames = targetDivision.games.filter((game) => isPlayoffPlaceholderGameDescription(game.description))
+    let updatedGames = 0
+
+    if (isAB) {
+        const poolA = sourceGroup.poolsByLetter.get('A')
+        const poolB = sourceGroup.poolsByLetter.get('B')
+        if (!poolA || !poolB) {
+            throw new Error(`Missing pool A/B divisions for ${targetDivision.name}.`)
+        }
+
+        const [teamA, teamB] = await Promise.all([
+            getTopRankedTeamForDivision(stage.id, poolA.id),
+            getTopRankedTeamForDivision(stage.id, poolB.id),
+        ])
+
+        const targetGame = findGameByTeams(playoffGames, '1st Pool A', '1st Pool B')
+        await db
+            .update(games)
+            .set({
+                teamAId: teamA.id,
+                teamBId: teamB.id,
+                name: `${targetDivision.level} - ${teamA.name} vs ${teamB.name}`,
+            })
+            .where(eq(games.id, targetGame.id))
+
+        updatedGames = 1
+    } else {
+        const poolA = sourceGroup.poolsByLetter.get('A')
+        const poolB = sourceGroup.poolsByLetter.get('B')
+        const poolC = sourceGroup.poolsByLetter.get('C')
+        const poolD = sourceGroup.poolsByLetter.get('D')
+        if (!poolA || !poolB || !poolC || !poolD) {
+            throw new Error(`Missing pool A/B/C/D divisions for ${targetDivision.name}.`)
+        }
+
+        const [seedA, seedB, seedC, seedD] = await Promise.all([
+            getTopRankedTeamForDivision(stage.id, poolA.id),
+            getTopRankedTeamForDivision(stage.id, poolB.id),
+            getTopRankedTeamForDivision(stage.id, poolC.id),
+            getTopRankedTeamForDivision(stage.id, poolD.id),
+        ])
+
+        const semi1 = findGameByTeams(playoffGames, '1st Pool A', '1st Pool D')
+        const semi2 = findGameByTeams(playoffGames, '1st Pool B', '1st Pool C')
+
+        await db
+            .update(games)
+            .set({
+                teamAId: seedA.id,
+                teamBId: seedD.id,
+                name: `${targetDivision.level} - SF1 ${seedA.name} vs ${seedD.name}`,
+            })
+            .where(eq(games.id, semi1.id))
+
+        await db
+            .update(games)
+            .set({
+                teamAId: seedB.id,
+                teamBId: seedC.id,
+                name: `${targetDivision.level} - SF2 ${seedB.name} vs ${seedC.name}`,
+            })
+            .where(eq(games.id, semi2.id))
+
+        updatedGames = 2
+    }
+
+    const updatedDescription = appendSundayPlayoffDivisionAdvancedMarker(targetDivision.description)
+    const marker = updatedDescription
+        .split('\n')
+        .find((line) => line.includes('[SUNDAY_PLAYOFF_DIVISION_ADVANCED_AT=')) ?? ''
+
+    await db
+        .update(divisions)
+        .set({ description: updatedDescription })
+        .where(eq(divisions.id, targetDivision.id))
+
+    return {
+        alreadyAdvanced: false,
+        updatedGames,
+        marker,
+        divisionName: targetDivision.name,
     }
 }

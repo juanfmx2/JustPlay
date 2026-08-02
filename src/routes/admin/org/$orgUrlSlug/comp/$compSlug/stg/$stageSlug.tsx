@@ -9,7 +9,7 @@ import { competitions, divisions, organizations, stages } from '@/schema'
 import { splitDivisionName } from '@/domain/divisionGrouping'
 import {
   isPlayoffDivisionLevel,
-  isSundayStageAdvanced,
+  isSundayPlayoffDivisionAdvanced,
   SUNDAY_STAGE_SLUG,
 } from '@/domain/sundayStage'
 import { requireAdminPrincipal } from '@/server/auth'
@@ -37,6 +37,18 @@ type TeamGroup = {
   teams: TeamRow[]
 }
 
+type PlayoffDivisionRow = {
+  divisionId: number
+  divisionName: string
+  divisionUrlSlug: string | null
+  total: number
+  completed: number
+  adminChecked: number
+  isAdvanced: boolean
+  canAdvance: boolean
+  requiredPoolsLabel: string
+}
+
 type RegTeamRow = {
   teamId: number
   teamName: string
@@ -59,9 +71,7 @@ type LoaderData =
       orgUrlSlug: string
       competitionUrlSlug: string
       stageUrlSlug: string
-      canAdvanceStage: boolean
-      isStageAdvanced: boolean
-      advancedMarker: string | null
+      playoffDivisions: PlayoffDivisionRow[]
       pools: PoolRow[]
       poolsOverallPercent: number
       poolsAdminOverallPercent: number
@@ -85,6 +95,20 @@ function divisionSortKey(level: string): number {
 
 function percentOf(completed: number, total: number): number {
   return total === 0 ? 0 : Math.round((completed / total) * 100)
+}
+
+function parsePlayoffDivisionKey(level: string): { groupKey: string } | null {
+  const match = level.match(/^(M|MX|W)-(\d+)-PLAYOFF$/i)
+  if (!match) return null
+  return { groupKey: `${match[1].toUpperCase()}-${match[2]}` }
+}
+
+function getRequiredPoolLettersForPlayoffDivision(gameCount: number): string[] {
+  return gameCount <= 1 ? ['A', 'B'] : ['A', 'B', 'C', 'D']
+}
+
+function formatRequiredPoolsLabel(letters: string[]): string {
+  return letters.map((letter) => `Pool ${letter}`).join(' and ')
 }
 
 const loadStageSummary = createServerFn({ method: 'GET' })
@@ -157,6 +181,41 @@ const loadStageSummary = createServerFn({ method: 'GET' })
       stage.urlSlug === SUNDAY_STAGE_SLUG
         ? stageDivisions.filter((division) => !isPlayoffDivisionLevel(division.level))
         : stageDivisions
+
+    const playoffDivisions: PlayoffDivisionRow[] = stage.urlSlug === SUNDAY_STAGE_SLUG
+      ? stageDivisions
+          .filter((division) => isPlayoffDivisionLevel(division.level))
+          .map((division) => {
+            const playoffKey = parsePlayoffDivisionKey(division.level)
+            const requiredPoolLetters = getRequiredPoolLettersForPlayoffDivision(division.games.length)
+            const sourcePoolDivisions = playoffKey
+              ? stageDivisions.filter((candidate) => {
+                  if (isPlayoffDivisionLevel(candidate.level)) return false
+                  const candidateKey = candidate.level.match(/^(M|MX|W)-(\d+)-([A-Za-z]+)$/i)
+                  if (!candidateKey) return false
+                  const groupKey = `${candidateKey[1].toUpperCase()}-${candidateKey[2]}`
+                  const poolLetter = candidateKey[3].toUpperCase()
+                  return groupKey === playoffKey.groupKey && requiredPoolLetters.includes(poolLetter)
+                })
+              : []
+
+            const sourcePoolGames = sourcePoolDivisions.flatMap((division) => division.games)
+            const canAdvance =
+              sourcePoolGames.length > 0 && sourcePoolGames.every((game) => game.adminValidatedAt !== null)
+
+            return {
+              divisionId: division.id,
+              divisionName: division.name,
+              divisionUrlSlug: division.urlSlug,
+              total: sourcePoolGames.length,
+              completed: sourcePoolGames.filter((game) => game.finishedAt !== null).length,
+              adminChecked: sourcePoolGames.filter((game) => game.adminValidatedAt !== null).length,
+              isAdvanced: isSundayPlayoffDivisionAdvanced(division.description),
+              canAdvance,
+              requiredPoolsLabel: formatRequiredPoolsLabel(requiredPoolLetters),
+            }
+          })
+      : []
 
     const pools: PoolRow[] = summaryDivisions.map((division) => {
       const total = division.games.length
@@ -233,16 +292,6 @@ const loadStageSummary = createServerFn({ method: 'GET' })
     const teamsCompletedGames = allTeamStats.reduce((sum, team) => sum + team.completed, 0)
     const teamsAdminCheckedGames = allTeamStats.reduce((sum, team) => sum + team.adminChecked, 0)
 
-    const isSundayStage = stage.urlSlug === SUNDAY_STAGE_SLUG
-    const isStageAdvanced = isSundayStageAdvanced(stage.description)
-    const advancedMarker =
-      stage.description
-        ?.split('\n')
-        .find((line) => line.includes('[SUNDAY_ADVANCED_LOCKED_AT=')) ?? null
-
-    const canAdvanceStage =
-      isSundayStage && !isStageAdvanced && poolsTotalGames > 0 && poolsAdminCheckedGames === poolsTotalGames
-
     return {
       kind: 'play',
       orgName: organization.name,
@@ -251,9 +300,7 @@ const loadStageSummary = createServerFn({ method: 'GET' })
       orgUrlSlug: organization.urlSlug,
       competitionUrlSlug: competition.urlSlug ?? '',
       stageUrlSlug: stage.urlSlug ?? '',
-      canAdvanceStage,
-      isStageAdvanced,
-      advancedMarker,
+      playoffDivisions,
       pools,
       poolsOverallPercent: percentOf(poolsCompletedGames, poolsTotalGames),
       poolsAdminOverallPercent: percentOf(poolsAdminCheckedGames, poolsTotalGames),
@@ -263,17 +310,18 @@ const loadStageSummary = createServerFn({ method: 'GET' })
     }
   })
 
-const advanceStageServerFn = createServerFn({ method: 'POST' })
-  .inputValidator((input: { orgUrlSlug: string; compSlug: string; stageSlug: string }) => input)
+const advancePlayoffDivisionServerFn = createServerFn({ method: 'POST' })
+  .inputValidator((input: { orgUrlSlug: string; compSlug: string; stageSlug: string; divisionSlug: string }) => input)
   .handler(async ({ data }) => {
     await requireAdminPrincipal()
 
-    const { advanceSundayStage } = await import('@/domain/stageTransition')
+    const { advanceSundayPlayoffDivision } = await import('@/domain/stageTransition')
 
-    return advanceSundayStage({
+    return advanceSundayPlayoffDivision({
       orgUrlSlug: data.orgUrlSlug,
       competitionUrlSlug: data.compSlug,
       stageUrlSlug: data.stageSlug,
+      divisionUrlSlug: data.divisionSlug,
     })
   })
 
@@ -288,8 +336,8 @@ export const Route = createFileRoute('/admin/org/$orgUrlSlug/comp/$compSlug/stg/
 function StageSummaryPage() {
   const data = Route.useLoaderData()
   const router = useRouter()
-  const [isAdvancing, setIsAdvancing] = React.useState(false)
-  const [advanceMessage, setAdvanceMessage] = React.useState<string | null>(null)
+  const [advancingDivisionSlug, setAdvancingDivisionSlug] = React.useState<string | null>(null)
+  const [actionMessage, setActionMessage] = React.useState<string | null>(null)
 
   if (!data) {
     return (
@@ -356,36 +404,37 @@ function StageSummaryPage() {
     )
   }
 
-  const handleAdvanceStage = async () => {
+  const handleAdvancePlayoffDivision = async (divisionSlug: string, divisionName: string) => {
     const confirmed = window.confirm(
-      'Advance Sunday stage now? This will assign qualified teams to playoffs and lock Sunday pool games from further edits.',
+      `Advance ${divisionName} now? This will assign qualified teams into that playoff bracket.`,
     )
     if (!confirmed) return
 
-    setAdvanceMessage(null)
-    setIsAdvancing(true)
+    setActionMessage(null)
+    setAdvancingDivisionSlug(divisionSlug)
     try {
-      const result = await advanceStageServerFn({
+      const result = await advancePlayoffDivisionServerFn({
         data: {
           orgUrlSlug: data.orgUrlSlug,
           compSlug: data.competitionUrlSlug,
           stageSlug: data.stageUrlSlug,
+          divisionSlug,
         },
       })
 
       if (result.alreadyAdvanced) {
-        setAdvanceMessage('Stage was already advanced earlier. No additional changes were made.')
+        setActionMessage(`${result.divisionName} was already advanced earlier. No additional changes were made.`)
       } else {
-        setAdvanceMessage(
-          `Stage advanced successfully. Updated ${result.updatedGames} playoff game(s) across ${result.updatedGroups} group(s).`,
+        setActionMessage(
+          `${result.divisionName} advanced successfully. Updated ${result.updatedGames} playoff game(s).`,
         )
       }
 
       await router.invalidate()
     } catch (error) {
-      setAdvanceMessage(error instanceof Error ? error.message : 'Could not advance this stage.')
+      setActionMessage(error instanceof Error ? error.message : 'Could not advance this division.')
     } finally {
-      setIsAdvancing(false)
+      setAdvancingDivisionSlug(null)
     }
   }
 
@@ -400,35 +449,51 @@ function StageSummaryPage() {
 
       {data.stageUrlSlug === SUNDAY_STAGE_SLUG ? (
         <section className="border rounded p-3 mb-3">
-          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <div>
-              <h2 className="h5 mb-1">Sunday Stage Transition</h2>
-              <p className="text-body-secondary mb-0">
-                Assign real qualifiers to playoff placeholders and lock Sunday pool game edits.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="btn btn-banana"
-              disabled={!data.canAdvanceStage || isAdvancing || data.isStageAdvanced}
-              onClick={handleAdvanceStage}
-            >
-              {data.isStageAdvanced ? 'Already Advanced' : isAdvancing ? 'Advancing...' : 'Move To Next Stage'}
-            </button>
+          <h2 className="h5 mb-1">Playoff Divisions</h2>
+          <p className="text-body-secondary mb-3">
+            Advance each playoff bracket independently. A bracket only unlocks from the pool divisions it depends on.
+          </p>
+
+          <div className="table-responsive">
+            <table className="table table-striped table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th scope="col">Division</th>
+                  <th scope="col">Depends On</th>
+                  <th scope="col" className="text-center">Completed</th>
+                  <th scope="col" className="text-center">Admin Checked</th>
+                  <th scope="col" className="text-end"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.playoffDivisions.map((division) => (
+                  <tr key={division.divisionId}>
+                    <td>{division.divisionName}</td>
+                    <td className="text-body-secondary">{division.requiredPoolsLabel}</td>
+                    <td className="text-center"><CompletionBadge percent={percentOf(division.completed, division.total)} /></td>
+                    <td className="text-center"><CompletionBadge percent={percentOf(division.adminChecked, division.total)} /></td>
+                    <td className="text-end">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-banana"
+                        disabled={!division.divisionUrlSlug || !division.canAdvance || division.isAdvanced || advancingDivisionSlug === division.divisionUrlSlug}
+                        onClick={() => void handleAdvancePlayoffDivision(division.divisionUrlSlug ?? '', division.divisionName)}
+                      >
+                        {division.isAdvanced
+                          ? 'Already Advanced'
+                          : advancingDivisionSlug === division.divisionUrlSlug
+                            ? 'Advancing...'
+                            : `Advance ${division.divisionName}`}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {!data.canAdvanceStage && !data.isStageAdvanced ? (
-            <p className="small text-body-secondary mb-0 mt-2">
-              This action unlocks when Sunday reaches 100% admin-validated games.
-            </p>
-          ) : null}
-
-          {data.advancedMarker ? (
-            <p className="small text-success mb-0 mt-2">{data.advancedMarker}</p>
-          ) : null}
-
-          {advanceMessage ? (
-            <p className="small mb-0 mt-2">{advanceMessage}</p>
+          {actionMessage ? (
+            <p className="small mb-0 mt-2">{actionMessage}</p>
           ) : null}
         </section>
       ) : null}
