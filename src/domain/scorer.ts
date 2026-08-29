@@ -54,33 +54,31 @@ function setWinner(set: ScoredSet): 'A' | 'B' | null {
 }
 
 type MatchProgress<T> = {
-  // A game is complete once one team has won 2 sets: either sets 1-2 both
-  // went the same way, or the series is split 1-1 and a 3rd/decider set
-  // has been played.
+  // A game is complete once one team has won the majority of sets scheduled
+  // for the match (e.g. 1 of 1, 2 of 3), based on however many game sets
+  // were created for it.
   isComplete: boolean
   relevantSets: T[]
 }
 
 function computeMatchProgress<T extends ScoredSet>(sets: T[]): MatchProgress<T> {
-  const [set1, set2, set3] = orderSets(sets)
+  const ordered = orderSets(sets)
+  const setsToWin = Math.max(1, Math.ceil(ordered.length / 2))
 
-  const winner1 = set1 ? setWinner(set1) : null
-  const winner2 = set2 ? setWinner(set2) : null
+  let winsA = 0
+  let winsB = 0
 
-  if (winner1 && winner2 && winner1 === winner2) {
-    return { isComplete: true, relevantSets: [set1, set2] }
+  for (let index = 0; index < ordered.length; index += 1) {
+    const winner = setWinner(ordered[index])
+    if (winner === 'A') winsA += 1
+    else if (winner === 'B') winsB += 1
+
+    if (winsA === setsToWin || winsB === setsToWin) {
+      return { isComplete: true, relevantSets: ordered.slice(0, index + 1) }
+    }
   }
 
-  if (!winner1 || !winner2) {
-    return { isComplete: false, relevantSets: [set1, set2].filter((set): set is T => Boolean(set)) }
-  }
-
-  const winner3 = set3 ? setWinner(set3) : null
-  if (!winner3) {
-    return { isComplete: false, relevantSets: [set1, set2, set3].filter((set): set is T => Boolean(set)) }
-  }
-
-  return { isComplete: true, relevantSets: [set1, set2, set3] }
+  return { isComplete: false, relevantSets: ordered }
 }
 
 function ratioToFixed(numerator: number, denominator: number): string | null {
@@ -284,7 +282,7 @@ export async function finishGame(gameId: number): Promise<Game> {
     const progress = computeMatchProgress(allSetsForGame)
 
     if (!progress.isComplete) {
-      throw new Error('A team must win at least 2 sets before the game can be finished.')
+      throw new Error('A team must win the majority of sets before the game can be finished.')
     }
 
     const [updated] = await tx

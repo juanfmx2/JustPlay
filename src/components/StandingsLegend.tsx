@@ -33,7 +33,7 @@ export function StandingsLegend() {
       </div>
       <p className="text-body-secondary small mb-0">
         <span className="badge text-bg-warning-subtle text-warning-emphasis me-2">Highlighted rows</span>
-        are tied on sets coefficient, points coefficient, and points for - per the rules, a coin toss
+        are tied on wins, sets coefficient, points coefficient, and points for - per the rules, a coin toss
         decides the order.
       </p>
     </div>

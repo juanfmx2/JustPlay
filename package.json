@@ -23,7 +23,8 @@
     "db:gen-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/generateAll.ts",
     "db:gen-cvc-grass-2026-sunday": "pnpm tsx src-util/cvc-grass-2026/generateSunday.ts",
     "db:gen-playoffs": "pnpm tsx src-util/cvc-grass-2026/generateSundayPlayoffs.ts",
-    "calc:standings-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/recalculateStageStandings.ts"
+    "calc:standings-cvc-grass-2026": "pnpm tsx src-util/cvc-grass-2026/recalculateStageStandings.ts",
+    "db:gen-banana-cup": "pnpm tsx src-util/banana-temp/generateBananaCup.ts"
   },
   "keywords": [],
   "author": "",

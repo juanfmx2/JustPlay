@@ -31,6 +31,7 @@ type RankingRow = {
     id: number
     teamId: number
     teamName: string
+    gamesWon: number
     setsFor: number
     setsAgainst: number
     pointsFor: number
@@ -140,6 +141,7 @@ async function getRankedTeamsForDivision(
             id: row.id,
             teamId: row.teamId,
             teamName: row.team?.name ?? `Team ${row.teamId}`,
+            gamesWon: row.gamesWon ?? 0,
             setsFor: row.setsFor ?? 0,
             setsAgainst: row.setsAgainst ?? 0,
             pointsFor: row.pointsFor ?? 0,

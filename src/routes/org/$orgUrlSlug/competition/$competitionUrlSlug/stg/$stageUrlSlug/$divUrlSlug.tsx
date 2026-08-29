@@ -304,6 +304,16 @@ function formatDate(date: Date | null): string {
   }).format(date)
 }
 
+function formatTime(date: Date | null): string {
+  if (!date) return '--'
+  return new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'Europe/London',
+  }).format(date)
+}
+
 function sameDay(date1: Date | null, date2: Date | null): boolean {
   if (!date1 || !date2) return false
   return date1.getFullYear() === date2.getFullYear() &&
@@ -347,6 +357,7 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
   )
 
   const firstSet = sortedGameSets[0]
+  const lastSet = sortedGameSets[sortedGameSets.length - 1]
 
   const [scoresBySetId, setScoresBySetId] = React.useState<Record<number, { scoreA: number; scoreB: number }>>(
     () =>
@@ -654,7 +665,15 @@ function GameCard({ game, matchNumber, principal, teamAPaletteClass, teamBPalett
             <div className="small text-body-secondary text-uppercase division-schedule-time-label">Match</div>
             <div className="fw-semibold division-schedule-time-value">{matchNumber}</div>
           </div>
-            
+          <div className={`division-schedule-time-slot`}>
+            <div className="small text-body-secondary text-uppercase division-schedule-time-label">Time</div>
+            <div className="fw-semibold division-schedule-time-value">
+              {formatTime(firstSet?.startTime ?? game.startTime)}
+              {' - '}
+              {formatTime(lastSet?.endTime ?? game.endTime)}
+            </div>
+          </div>
+
         </aside>
 
         <div className="d-flex flex-column gap-3 flex-grow-1 division-schedule-game-content">

@@ -53,7 +53,7 @@ export async function getDivisionTeamsAndStandingsSortedByStandings(divId: numbe
     .from(teams)
     .innerJoin(standings, eq(standings.teamId, teams.id))
     .where(eq(standings.divisionId, divId))
-    .orderBy(desc(standings.gamesWon), desc(standings.coefficient))
+    .orderBy(desc(standings.gamesWon), desc(standings.setsCoefficient), desc(standings.coefficient))
   console.log(teamsInDivSorted)
   return teamsInDivSorted
 } 

@@ -1,14 +1,16 @@
 // Ranks standings rows per tie-break order:
-//   1. Sets For/Against coefficient
-//   2. Points For/Against coefficient
-//   3. Points For
-//   4. Admin bonus point (manual coin-toss resolution - the only tie-break
+//   1. Wins
+//   2. Sets For/Against coefficient
+//   3. Points For/Against coefficient
+//   4. Points For
+//   5. Admin bonus point (manual coin-toss resolution - the only tie-break
 //      that isn't derived purely from match results)
-//   5. Team name (stable fallback, not a real rule)
+//   6. Team name (stable fallback, not a real rule)
 
 export type RankableStandingRow = {
   id: number
   teamName: string
+  gamesWon: number | null
   setsFor: number | null
   setsAgainst: number | null
   pointsFor: number | null
@@ -33,10 +35,11 @@ function ratio(numerator: number, denominator: number): number {
 }
 
 function naturalTieKey(row: RankableStandingRow): string {
+  const gamesWon = row.gamesWon ?? 0
   const setsRatio = ratio(row.setsFor ?? 0, row.setsAgainst ?? 0)
   const pointsRatio = ratio(row.pointsFor ?? 0, row.pointsAgainst ?? 0)
   const pointsFor = row.pointsFor ?? 0
-  return `${setsRatio}|${pointsRatio}|${pointsFor}`
+  return `${gamesWon}|${setsRatio}|${pointsRatio}|${pointsFor}`
 }
 
 export function rankStandings<T extends RankableStandingRow>(rows: T[]): Array<RankedStandingRow<T>> {
@@ -47,6 +50,10 @@ export function rankStandings<T extends RankableStandingRow>(rows: T[]): Array<R
   }
 
   const sorted = [...rows].sort((a, b) => {
+    const winsA = a.gamesWon ?? 0
+    const winsB = b.gamesWon ?? 0
+    if (winsB !== winsA) return winsB - winsA
+
     const setsRatioA = ratio(a.setsFor ?? 0, a.setsAgainst ?? 0)
     const setsRatioB = ratio(b.setsFor ?? 0, b.setsAgainst ?? 0)
     if (setsRatioB !== setsRatioA) return setsRatioB - setsRatioA
